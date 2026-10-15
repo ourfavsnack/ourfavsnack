@@ -783,28 +783,28 @@ div[id^="modal"]:not(.hidden) > div {
         <div id="wrapperTabelLaporan" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden"></div>
       </div>
 
-
 <!-- ==================== TAB 2B: LABA RUGI (PROFIT & LOSS) ==================== -->
       <div id="tabPnl" class="hidden space-y-5">
-        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
           <div>
-            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
               <span>💎</span> Laporan Laba Rugi (P&L) Aktual
             </h2>
             <p class="text-xs text-slate-400 mt-0.5">Keuntungan nyata setelah dipotong HPP dan seluruh biaya operasional & admin.</p>
           </div>
-          <!-- FITUR BARU: Input Filter Bulan & Tombol PDF P&L -->
-          <div class="flex items-center gap-2">
-            <button type="button" onclick="unduhPdfPnL()" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 dark:border-blue-900 font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <!-- FITUR BARU: Input Filter Bulan & Tombol PDF P&L Responsif -->
+          <div class="grid grid-cols-2 sm:flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-700">
+            <button type="button" onclick="unduhPdfPnL()" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 dark:border-blue-900 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
               <span>📄</span> Cetak PDF
             </button>
-            <div class="px-3 py-1.5 bg-emerald-50 dark:bg-slate-700/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs rounded-xl border border-emerald-200 dark:border-slate-600 shadow-xs flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Bulan:</span>
-              <input type="month" id="pnlBulanFilter" onchange="selectedMonthBulanan=this.value; currentTimeframe='bulanan'; renderLaporanPnL();" class="bg-transparent border-none outline-none font-black text-emerald-800 dark:text-emerald-200 cursor-pointer">
+            <div class="w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 bg-emerald-50 dark:bg-slate-700/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs rounded-xl border border-emerald-200 dark:border-slate-600 shadow-xs flex items-center justify-between sm:justify-start gap-1.5">
+              <span class="hidden sm:inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span class="text-[11px] sm:text-xs shrink-0">Bulan:</span>
+              <input type="month" id="pnlBulanFilter" onchange="selectedMonthBulanan=this.value; currentTimeframe='bulanan'; renderLaporanPnL();" class="bg-transparent border-none outline-none font-black text-emerald-800 dark:text-emerald-200 cursor-pointer text-xs min-w-0 w-full text-right sm:text-left">
             </div>
           </div>
         </div>
+<!-- --- BATAS AKHIR PERUBAHAN 3A --- -->
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
           <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
@@ -929,50 +929,57 @@ div[id^="modal"]:not(.hidden) > div {
 
       <!-- ==================== TAB 3: TARGET & BEP TOKO ==================== -->
 <div id="tabBep" class="hidden space-y-5">
-  <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+  <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
     <div>
-      <h2 class="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+      <h2 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
         <span>🎯</span> Target Titik Impas (BEP Toko)
       </h2>
       <p class="text-xs text-slate-400 mt-0.5">Struktur biaya tetap (Gaji, Depresiasi, Operasional) & target omzet bulanan</p>
     </div>
-    <button onclick="simpanDataBEPKeServer()" id="btnSimpanBep" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-2">
+    <button onclick="simpanDataBEPKeServer()" id="btnSimpanBep" class="w-full md:w-auto px-4 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2">
       <span>💾</span> Simpan Data BEP
     </button>
   </div>
 
-  <!-- 4 KARTU METRIK BEP (GRID DITUTUP DENGAN BENAR) -->
-  <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
-    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border-2 border-emerald-500/30 shadow-sm">
-      <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Target BEP Bulanan</p>
-      <h3 id="bepSumBulanan" class="text-lg font-extrabold text-slate-900 dark:text-white mt-1">Rp 0</h3>
-      <p class="text-[11px] text-slate-400 mt-0.5">Biaya Tetap ÷ Margin (<span id="txtBepMarginLabel">25</span>%)</p>
-    </div>
-    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Target BEP Harian</p>
-      <h3 id="bepSumHarian" class="text-lg font-extrabold text-slate-900 dark:text-white mt-1">Rp 0</h3>
-      <p class="text-[11px] text-slate-400 mt-0.5">BEP Bulanan ÷ Hari Kerja</p>
-    </div>
-    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Biaya Tetap</p>
-      <h3 id="bepSumFixedCost" class="text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-1">Rp 0</h3>
-      <p class="text-[11px] text-slate-400 mt-0.5">Gaji + Depresiasi + Ops</p>
-    </div>
-    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-1.5">
-      <div class="flex justify-between items-center text-xs">
-        <span class="font-bold text-slate-400">Margin (%)</span>
-        <input type="number" id="bepInputMargin" value="25" oninput="hitungUlangBEP()" class="w-14 border rounded px-1 text-center font-bold dark:bg-slate-700 dark:text-white">
+  <!-- 4 KARTU METRIK BEP (GRID 2x2 DI MOBILE, 4 KOLOM DI DESKTOP) -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+    <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border-2 border-emerald-500/30 shadow-sm min-w-0 flex flex-col justify-between">
+      <div>
+        <p class="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider truncate">Target BEP Bulanan</p>
+        <h3 id="bepSumBulanan" class="text-sm sm:text-lg font-extrabold text-slate-900 dark:text-white mt-1 truncate">Rp 0</h3>
       </div>
-      <div class="flex justify-between items-center text-xs">
-        <span class="font-bold text-slate-400">Hari Kerja</span>
-        <input type="number" id="bepInputHariKerja" value="30" oninput="hitungUlangBEP()" class="w-14 border rounded px-1 text-center font-bold dark:bg-slate-700 dark:text-white">
+      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">Biaya Tetap ÷ Margin (<span id="txtBepMarginLabel">25</span>%)</p>
+    </div>
+    <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm min-w-0 flex flex-col justify-between">
+      <div>
+        <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Target BEP Harian</p>
+        <h3 id="bepSumHarian" class="text-sm sm:text-lg font-extrabold text-slate-900 dark:text-white mt-1 truncate">Rp 0</h3>
       </div>
-      <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-100 dark:border-slate-700">
-        <span class="font-bold text-emerald-600">Baseline (%)</span>
-        <input type="number" id="bepInputBaselinePct" value="10" oninput="hitungUlangBEP()" class="w-14 border rounded px-1 text-center font-bold dark:bg-slate-700 dark:text-white">
+      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">BEP Bulanan ÷ Hari Kerja</p>
+    </div>
+    <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm min-w-0 flex flex-col justify-between">
+      <div>
+        <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Total Biaya Tetap</p>
+        <h3 id="bepSumFixedCost" class="text-sm sm:text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-1 truncate">Rp 0</h3>
+      </div>
+      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">Gaji + Depresiasi + Ops</p>
+    </div>
+    <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-1.5 min-w-0">
+      <div class="flex justify-between items-center text-[11px] sm:text-xs gap-1">
+        <span class="font-bold text-slate-400 truncate">Margin (%)</span>
+        <input type="number" id="bepInputMargin" value="25" oninput="hitungUlangBEP()" class="w-12 sm:w-14 border rounded px-1 py-0.5 text-center font-bold dark:bg-slate-700 dark:text-white shrink-0">
+      </div>
+      <div class="flex justify-between items-center text-[11px] sm:text-xs gap-1">
+        <span class="font-bold text-slate-400 truncate">Hari Kerja</span>
+        <input type="number" id="bepInputHariKerja" value="30" oninput="hitungUlangBEP()" class="w-12 sm:w-14 border rounded px-1 py-0.5 text-center font-bold dark:bg-slate-700 dark:text-white shrink-0">
+      </div>
+      <div class="flex justify-between items-center text-[11px] sm:text-xs pt-1 border-t border-slate-100 dark:border-slate-700 gap-1">
+        <span class="font-bold text-emerald-600 truncate">Baseline (%)</span>
+        <input type="number" id="bepInputBaselinePct" value="10" oninput="hitungUlangBEP()" class="w-12 sm:w-14 border rounded px-1 py-0.5 text-center font-bold dark:bg-slate-700 dark:text-white shrink-0">
       </div>
     </div>
   </div> <!-- PENUTUP GRID 4 KARTU METRIK -->
+<!-- --- BATAS AKHIR PERUBAHAN 3B --- -->
 
   <!-- KARTU GRAFIK BEP KUMULATIF (SEKARANG LEBAR PENUH & LEGA) -->
   <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 shadow-sm space-y-3">
@@ -1119,25 +1126,26 @@ div[id^="modal"]:not(.hidden) > div {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center text-xs pt-3 border-t border-slate-100 dark:border-slate-700">
-            <div class="bg-emerald-50 dark:bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1">Langkah 2: Excess Omset</span>
-              <span id="simResExcess" class="text-base font-extrabold text-emerald-600 dark:text-emerald-400">Rp 0</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-center text-xs pt-3 border-t border-slate-100 dark:border-slate-700">
+            <div class="bg-emerald-50 dark:bg-emerald-950/40 p-3 sm:p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/50 min-w-0 flex flex-col justify-center">
+              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1 text-[11px] sm:text-xs truncate">Langkah 2: Excess Omset</span>
+              <span id="simResExcess" class="text-sm sm:text-base font-extrabold text-emerald-600 dark:text-emerald-400 truncate block">Rp 0</span>
             </div>
-            <div class="bg-amber-50 dark:bg-amber-950/40 p-3.5 rounded-xl border border-amber-100 dark:border-amber-900/50">
-              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1">Langkah 3: Bonus Tim (4%)</span>
-              <span id="simResBonusKaryawan" class="text-base font-extrabold text-amber-600">Rp 0</span>
-              <span class="block text-[10px] text-slate-400 mt-0.5" id="simResHakPerOrang">Hak per orang: Rp 0</span>
+            <div class="bg-amber-50 dark:bg-amber-950/40 p-3 sm:p-3.5 rounded-xl border border-amber-100 dark:border-amber-900/50 min-w-0 flex flex-col justify-center">
+              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1 text-[11px] sm:text-xs truncate">Langkah 3: Bonus Tim (4%)</span>
+              <span id="simResBonusKaryawan" class="text-sm sm:text-base font-extrabold text-amber-600 truncate block">Rp 0</span>
+              <span class="block text-[10px] text-slate-400 mt-0.5 truncate" id="simResHakPerOrang">Hak per orang: Rp 0</span>
             </div>
-            <div class="bg-teal-50 dark:bg-teal-950/40 p-3.5 rounded-xl border border-teal-100 dark:border-teal-900/50">
-              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1">Langkah 4: Tangan Kanan (30%)</span>
-              <span id="simResTanganKanan" class="text-base font-extrabold text-teal-600">Rp 0</span>
+            <div class="bg-teal-50 dark:bg-teal-950/40 p-3 sm:p-3.5 rounded-xl border border-teal-100 dark:border-teal-900/50 min-w-0 flex flex-col justify-center">
+              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1 text-[11px] sm:text-xs truncate">Langkah 4: Tangan Kanan (30%)</span>
+              <span id="simResTanganKanan" class="text-sm sm:text-base font-extrabold text-teal-600 truncate block">Rp 0</span>
             </div>
-            <div class="bg-emerald-50 dark:bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1">Langkah 4: Sisa Owner (70%)</span>
-              <span id="simResOwner" class="text-base font-extrabold text-emerald-600">Rp 0</span>
+            <div class="bg-emerald-50 dark:bg-emerald-950/40 p-3 sm:p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/50 min-w-0 flex flex-col justify-center">
+              <span class="text-slate-500 dark:text-slate-400 font-bold block mb-1 text-[11px] sm:text-xs truncate">Langkah 4: Sisa Owner (70%)</span>
+              <span id="simResOwner" class="text-sm sm:text-base font-extrabold text-emerald-600 truncate block">Rp 0</span>
             </div>
           </div>
+          <!-- --- BATAS AKHIR PERUBAHAN 3C --- -->
         </div>
       </div>
 
@@ -1174,101 +1182,103 @@ div[id^="modal"]:not(.hidden) > div {
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             <!-- Form Input (Kiri) -->
             <form id="formGajiBiWeekly" onsubmit="handleSimpanGajiBiWeekly(event)" onreset="setTimeout(hitungGajiRealtime, 50)" class="lg:col-span-7 space-y-3 text-xs">
-              
               <!-- 1. Nama Karyawan, Bulan Penggajian Fleksibel & Periode -->
               <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                <div class="sm:col-span-5">
+                <div class="sm:col-span-5 flex flex-col justify-between">
                   <div class="flex justify-between items-center mb-1">
                     <label class="block font-bold text-slate-500">Pilih Karyawan <span class="text-rose-500">*</span></label>
                     <button type="button" onclick="bukaModalAturKaryawan()" class="text-emerald-600 dark:text-emerald-400 font-bold hover:underline text-[11px] flex items-center gap-1">
                       <span>⚙️</span> Kelola Database
                     </button>
                   </div>
-                  <select id="gajiNamaKaryawan" required onchange="pilihKaryawanDariDatabase()" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+                  <select id="gajiNamaKaryawan" required onchange="pilihKaryawanDariDatabase()" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500 h-[38px]">
                     <option value="">-- Pilih Profil Karyawan --</option>
                   </select>
                   <input type="hidden" id="gajiTarifHadirTersimpan" value="25000">
                 </div>
 
-                <div class="sm:col-span-4">
-                  <label class="block font-bold text-slate-500 mb-1">Bulan Gaji <span class="text-rose-500">*</span></label>
-                  <input type="month" id="gajiBulanPeriode" onchange="autoDeteksiKasbonKaryawan(); hitungGajiRealtime();" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
+                <div class="grid grid-cols-2 gap-2 sm:col-span-7">
+                  <div class="flex flex-col justify-between">
+                    <label class="block font-bold text-slate-500 mb-1 truncate">Bulan Gaji <span class="text-rose-500">*</span></label>
+                    <input type="month" id="gajiBulanPeriode" onchange="autoDeteksiKasbonKaryawan(); hitungGajiRealtime();" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500 h-[38px]">
+                  </div>
 
-                <div class="sm:col-span-3">
-                  <label class="block font-bold text-slate-500 mb-1">Periode <span class="text-rose-500">*</span></label>
-                  <select id="gajiPilihanPeriode" onchange="sesuaikanTunjanganDenganPeriode(); autoDeteksiKasbonKaryawan(); hitungGajiRealtime();" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option value="1">Periode 1 (1-15)</option>
-                    <option value="2">Periode 2 (16-Akhir)</option>
-                  </select>
+                  <div class="flex flex-col justify-between">
+                    <label class="block font-bold text-slate-500 mb-1 truncate">Periode <span class="text-rose-500">*</span></label>
+                    <select id="gajiPilihanPeriode" onchange="sesuaikanTunjanganDenganPeriode(); autoDeteksiKasbonKaryawan(); hitungGajiRealtime();" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-xs outline-none focus:ring-2 focus:ring-emerald-500 h-[38px]">
+                      <option value="1">Periode 1 (1-15)</option>
+                      <option value="2">Periode 2 (16-Akhir)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               
               <!-- 2. Gaji Pokok (Fleksibel Bisa Diedit) & Jadwal Kerja -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label class="block font-bold text-emerald-600 dark:text-emerald-400 mb-1">Gaji Pokok Periode Ini (Rp) <span class="text-rose-500">*</span></label>
-                  <input type="text" inputmode="numeric" id="gajiPokokInput" required value="987.500" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-3 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/20 dark:text-white font-black text-xs">
-                  <span class="text-[10px] text-slate-400 mt-0.5 block">💡 Default 987.500, dapat diubah sesuai kesepakatan</span>
+              <div class="grid grid-cols-2 gap-2.5 items-start">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-emerald-600 dark:text-emerald-400 mb-1 leading-tight">Gaji Pokok (Rp) <span class="text-rose-500">*</span></label>
+                  <input type="text" inputmode="numeric" id="gajiPokokInput" required value="987.500" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-3 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/20 dark:text-white font-black text-xs h-[38px]">
+                  <span class="text-[10px] text-slate-400 mt-1 block leading-tight">💡 Default 987.500, bisa diubah</span>
                 </div>
-                <div>
-                  <label class="block font-bold text-slate-500 mb-1">Jadwal Kerja (Hari)</label>
-                  <input type="number" id="gajiHariJadwal" min="0" value="13" oninput="sinkronkanHariOtomatis('jadwal'); hitungGajiRealtime();" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-center">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-slate-500 mb-1 leading-tight">Jadwal Kerja (Hari)</label>
+                  <input type="number" id="gajiHariJadwal" min="0" value="13" oninput="sinkronkanHariOtomatis('jadwal'); hitungGajiRealtime();" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-center h-[38px]">
                 </div>
               </div>
 
               <!-- 3. Masuk Kerja & Tunjangan Tambahan -->
-              <div class="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Masuk Fisik (Hari) <span class="text-rose-500">*</span></label>
-                  <input type="number" id="gajiHariMasuk" min="0" value="13" oninput="sinkronkanHariOtomatis('masuk'); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-black text-center">
+              <div class="grid grid-cols-2 gap-2.5 items-stretch">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1 leading-tight">Masuk Fisik (Hari) <span class="text-rose-500">*</span></label>
+                  <input type="number" id="gajiHariMasuk" min="0" value="13" oninput="sinkronkanHariOtomatis('masuk'); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-black text-center h-[36px]">
                 </div>
-                <div>
-                  <label class="block font-bold text-emerald-600 dark:text-emerald-400 mb-1">Tunjangan Tambahan (Rp)</label>
-                  <input type="text" inputmode="numeric" id="gajiTunjanganTambahan" placeholder="0" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-right">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-emerald-600 dark:text-emerald-400 mb-1 leading-tight">Tunjangan Tambahan (Rp)</label>
+                  <input type="text" inputmode="numeric" id="gajiTunjanganTambahan" placeholder="0" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-right h-[36px]">
                 </div>
               </div>
 
               <!-- 4. Tidak Hadir, Sakit & Tarif Lembur -->
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div>
-                  <label class="block font-bold text-rose-600 dark:text-rose-400 mb-1">Alpa / Mangkir</label>
-                  <input type="number" id="gajiHariAlpa" min="0" value="0" oninput="sinkronkanHariOtomatis('tidakHadir'); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 dark:text-white font-black text-center">
+              <div class="grid grid-cols-3 gap-2 sm:gap-2.5 items-stretch">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-rose-600 dark:text-rose-400 mb-1 text-[11px] sm:text-xs leading-tight">Alpa / Mangkir</label>
+                  <input type="number" id="gajiHariAlpa" min="0" value="0" oninput="sinkronkanHariOtomatis('tidakHadir'); hitungGajiRealtime();" class="w-full px-2 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20 dark:text-white font-black text-center h-[36px]">
                 </div>
-                <div>
-                  <label class="block font-bold text-sky-600 dark:text-sky-400 mb-1">Sakit (Srt Dokter)</label>
-                  <input type="number" id="gajiHariSakit" min="0" value="0" oninput="sinkronkanHariOtomatis('sakit'); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-sky-200 dark:border-sky-900 bg-sky-50/50 dark:bg-sky-950/20 dark:text-white font-black text-center">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-sky-600 dark:text-sky-400 mb-1 text-[11px] sm:text-xs leading-tight">Sakit (Dokter)</label>
+                  <input type="number" id="gajiHariSakit" min="0" value="0" oninput="sinkronkanHariOtomatis('sakit'); hitungGajiRealtime();" class="w-full px-2 py-1.5 rounded-xl border border-sky-200 dark:border-sky-900 bg-sky-50/50 dark:bg-sky-950/20 dark:text-white font-black text-center h-[36px]">
                 </div>
-                <div>
-                  <label class="block font-bold text-teal-600 dark:text-teal-400 mb-1">Lembur / Jam (Rp)</label>
-                  <input type="text" inputmode="numeric" id="gajiTarifLemburInput" value="15.000" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/40 dark:bg-teal-950/20 dark:text-white font-bold text-right text-xs">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-teal-600 dark:text-teal-400 mb-1 text-[11px] sm:text-xs leading-tight">Lembur/Jam (Rp)</label>
+                  <input type="text" inputmode="numeric" id="gajiTarifLemburInput" value="15.000" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-2 py-1.5 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/40 dark:bg-teal-950/20 dark:text-white font-bold text-right text-xs h-[36px]">
                 </div>
               </div>
 
               <!-- Durasi Lembur: Jam & Menit Presisi -->
-              <div class="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Lembur (Jam)</label>
-                  <input type="number" id="gajiJamLembur" min="0" value="0" oninput="hitungGajiRealtime()" placeholder="Contoh: 1" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-center">
+              <div class="grid grid-cols-2 gap-2.5 items-stretch">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1 leading-tight">Lembur (Jam)</label>
+                  <input type="number" id="gajiJamLembur" min="0" value="0" oninput="hitungGajiRealtime()" placeholder="Contoh: 1" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-center h-[36px]">
                 </div>
-                <div>
-                  <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Lembur (Menit)</label>
-                  <input type="number" id="gajiMenitLembur" min="0" max="59" value="0" oninput="hitungGajiRealtime()" placeholder="Contoh: 45 atau 10" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-center">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1 leading-tight">Lembur (Menit)</label>
+                  <input type="number" id="gajiMenitLembur" min="0" max="59" value="0" oninput="hitungGajiRealtime()" placeholder="Contoh: 45 atau 10" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white font-bold text-center h-[36px]">
                 </div>
               </div>
-              
 
               <!-- 5. Denda Telat & Potongan Kasbon -->
-              <div class="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label class="block font-bold text-amber-600 dark:text-amber-400 mb-1">Telat Kena Denda (Kali)</label>
-                  <input type="number" id="gajiJumlahTelat" min="0" value="0" oninput="hitungGajiRealtime()" class="w-full px-2.5 py-1.5 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 dark:text-white font-bold text-center">
+              <div class="grid grid-cols-2 gap-2.5 items-stretch">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-amber-600 dark:text-amber-400 mb-1 leading-tight">Telat Kena Denda (Kali)</label>
+                  <input type="number" id="gajiJumlahTelat" min="0" value="0" oninput="hitungGajiRealtime()" class="w-full px-2.5 py-1.5 rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 dark:text-white font-bold text-center h-[36px]">
                 </div>
-                <div>
-                  <label class="block font-bold text-rose-600 dark:text-rose-400 mb-1">Potongan Kasbon (Rp)</label>
-                  <input type="text" inputmode="numeric" id="gajiKasbonInput" placeholder="0" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 font-extrabold text-right">
+                <div class="flex flex-col justify-between">
+                  <label class="block font-bold text-rose-600 dark:text-rose-400 mb-1 leading-tight">Potongan Kasbon (Rp)</label>
+                  <input type="text" inputmode="numeric" id="gajiKasbonInput" placeholder="0" oninput="formatNominalOtomatis(this); hitungGajiRealtime();" onblur="autoKoreksiRibuan(this); hitungGajiRealtime();" class="w-full px-2.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 font-extrabold text-right h-[36px]">
                 </div>
               </div>
+              <!-- --- BATAS AKHIR PERUBAHAN BAGIAN 2 --- -->  
+            
 
               <!-- 6. Catatan Tambahan / Memo (Input 2 Baris) -->
               <div>
@@ -1436,44 +1446,49 @@ div[id^="modal"]:not(.hidden) > div {
         </div>
       </div> <!-- Penutup Resmi tabGaji -->
 
-      <!-- TAB 6: ARUS KAS (Kini Berdiri Mandiri & Tidak Tertelan Lagi) -->
+      <!-- --- UBAH DARI SINI (TAB 6: ARUS KAS RESPONSIF MOBILE) --- -->
       <div id="tabAruskas" class="hidden space-y-5">
-        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3">
           <div>
-            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Arus Kas Bisnis (Cash Flow)</h2>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">Arus Kas Bisnis (Cash Flow)</h2>
             <p class="text-xs text-slate-400 mt-0.5">Pantau mutasi fisik saldo tunai kas masuk dan kas keluar sesuai periode</p>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-700 p-1.5 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold">
-              <input type="date" id="kasPdfStart" onchange="limitMutasiKas = 20; renderArusKas();" class="bg-transparent outline-none dark:text-white cursor-pointer">
-              <span class="text-slate-400">s/d</span>
-              <input type="date" id="kasPdfEnd" onchange="limitMutasiKas = 20; renderArusKas();" class="bg-transparent outline-none dark:text-white cursor-pointer">
-              <button type="button" onclick="resetFilterTanggalKas()" class="px-2 py-0.5 bg-slate-200 dark:bg-slate-600 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold transition" title="Tampilkan Semua Waktu">Semua</button>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
+            <div class="bg-slate-50 dark:bg-slate-700/80 p-2 sm:p-1.5 rounded-xl border border-slate-200 dark:border-slate-600 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-1.5 text-xs font-semibold">
+              <div class="grid grid-cols-2 sm:flex items-center gap-1.5">
+                <input type="date" id="kasPdfStart" onchange="limitMutasiKas = 20; renderArusKas();" class="w-full sm:w-auto px-2 py-1.5 sm:p-0 rounded-lg sm:rounded-none bg-white sm:bg-transparent dark:bg-slate-800 sm:dark:bg-transparent border sm:border-0 border-slate-200 dark:border-slate-600 outline-none dark:text-white cursor-pointer text-xs">
+                <span class="hidden sm:inline text-slate-400">s/d</span>
+                <input type="date" id="kasPdfEnd" onchange="limitMutasiKas = 20; renderArusKas();" class="w-full sm:w-auto px-2 py-1.5 sm:p-0 rounded-lg sm:rounded-none bg-white sm:bg-transparent dark:bg-slate-800 sm:dark:bg-transparent border sm:border-0 border-slate-200 dark:border-slate-600 outline-none dark:text-white cursor-pointer text-xs">
+              </div>
+              <button type="button" onclick="resetFilterTanggalKas()" class="w-full sm:w-auto px-2.5 py-1.5 sm:py-0.5 bg-slate-200 dark:bg-slate-600 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-200 rounded-lg text-[11px] sm:text-[10px] font-bold transition text-center" title="Tampilkan Semua Waktu">Semua</button>
             </div>
-            <button type="button" onclick="unduhPdfArusKas()" class="px-3.5 py-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 dark:border-blue-900 font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 whitespace-nowrap">
-              <span>📄</span> Unduh PDF
-            </button>
-            <button type="button" onclick="eksporExcelArusKas()" id="btnExcelKas" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5 whitespace-nowrap">
-              <span>📊</span> Unduh Excel
-            </button>
+            <div class="grid grid-cols-2 sm:flex items-center gap-2">
+              <button type="button" onclick="unduhPdfArusKas()" class="w-full sm:w-auto px-3.5 py-2.5 sm:py-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 dark:border-blue-900 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <span>📄</span> Unduh PDF
+              </button>
+              <button type="button" onclick="eksporExcelArusKas()" id="btnExcelKas" class="w-full sm:w-auto px-3.5 py-2.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <span>📊</span> Unduh Excel
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Saldo Kas Bersih</p>
-            <h3 id="kasCardSaldo" class="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">Rp 0</h3>
-            <p class="text-[11px] text-slate-400 mt-0.5">Kas Masuk - Kas Keluar</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
+          <div class="col-span-2 sm:col-span-1 bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+            <p class="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Saldo Kas Bersih</p>
+            <h3 id="kasCardSaldo" class="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 truncate">Rp 0</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Kas Masuk - Kas Keluar</p>
           </div>
-          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Kas Masuk (+)</p>
-            <h3 id="kasCardMasuk" class="text-xl font-extrabold text-emerald-600 mt-1">Rp 0</h3>
+          <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm min-w-0">
+            <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Total Kas Masuk (+)</p>
+            <h3 id="kasCardMasuk" class="text-sm sm:text-xl font-extrabold text-emerald-600 mt-1 truncate">Rp 0</h3>
           </div>
-          <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Kas Keluar (-)</p>
-            <h3 id="kasCardKeluar" class="text-xl font-extrabold text-rose-600 mt-1">Rp 0</h3>
+          <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm min-w-0">
+            <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Total Kas Keluar (-)</p>
+            <h3 id="kasCardKeluar" class="text-sm sm:text-xl font-extrabold text-rose-600 mt-1 truncate">Rp 0</h3>
           </div>
         </div>
+      <!-- --- BATAS AKHIR PERUBAHAN BAGIAN 1 --- -->
 
         <!-- TABEL ARUS KAS (KOMPAK) -->
         <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
