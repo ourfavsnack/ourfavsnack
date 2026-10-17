@@ -1662,11 +1662,14 @@ div[id^="modal"]:not(.hidden) > div {
     <div class="space-y-4">
       <!-- Header Sidebar (dengan tombol tutup X di HP) -->
       <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
-        <div>
-          <h2 class="font-extrabold text-slate-900 dark:text-white text-base tracking-tight flex items-center gap-2">
-            <span class="text-indigo-600 dark:text-indigo-400">📦</span> OFS Inventori
-          </h2>
-          <p class="text-xs text-slate-400 mt-0.5">Manajemen Gudang & Stok</p>
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50 shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+          <div>
+            <h2 class="font-extrabold text-slate-900 dark:text-white text-base tracking-tight leading-tight">OFS Inventori</h2>
+            <p class="text-[11px] text-slate-400">Manajemen Gudang & Stok</p>
+          </div>
         </div>
         <button type="button" onclick="toggleSidebarStok()" class="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold leading-none p-1">×</button>
       </div>
@@ -3893,15 +3896,15 @@ function renderTabelInvoice() {
   const itemsTampil = list.slice(0, limitRiwayatInvoice);
 
   // 1. Render Tabel Desktop
-  tbody.innerHTML = itemsTampil.map(it => {
+tbody.innerHTML = itemsTampil.map(it => {
     const statusTarget = it.isLunas ? 'Belum Lunas' : 'Lunas';
     let badgeStatus = '';
     if (it.isLunas) {
-      badgeStatus = `<button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, '${statusTarget}')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-100 hover:bg-emerald-200 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 transition" title="Klik untuk batalkan status Lunas">✅ LUNAS</button>`;
+      badgeStatus = `<button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, '${statusTarget}')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-100 hover:bg-emerald-200 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 transition flex items-center justify-center gap-1 w-full" title="Klik untuk batalkan status Lunas"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> LUNAS</button>`;
     } else if (it.dp > 0) {
-      badgeStatus = `<button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, 'Lunas')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-sky-100 hover:bg-emerald-600 hover:text-white text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 transition" title="Klik jika sisa tagihan sudah dilunasi">💳 DP MASUK</button>`;
+      badgeStatus = `<button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, 'Lunas')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-sky-100 hover:bg-emerald-600 hover:text-white text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 transition flex items-center justify-center gap-1 w-full" title="Klik jika sisa tagihan sudah dilunasi"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> DP MASUK</button>`;
     } else {
-      badgeStatus = `<button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, 'Lunas')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-100 hover:bg-emerald-600 hover:text-white text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 transition" title="Klik untuk tandai Lunas">⏳ BELUM BAYAR</button>`;
+      badgeStatus = `<button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, 'Lunas')" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-100 hover:bg-emerald-600 hover:text-white text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 transition flex items-center justify-center gap-1 w-full" title="Klik untuk tandai Lunas"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> BELUM BAYAR</button>`;
     }
 
     const infoRincianDp = (!it.isLunas && it.dp > 0)
@@ -3918,13 +3921,15 @@ function renderTabelInvoice() {
           ${infoRincianDp}
         </td>
         <td class="px-3.5 py-3 text-center">${badgeStatus}</td>
-        <td class="px-3.5 py-3 text-center space-x-1">
-          ${it.link && it.link.includes('http') 
-            ? `<a href="${it.link}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 font-bold rounded-lg text-xs transition" title="Buka PDF di Drive">Buka PDF</a>` 
-            : ''
-          }
-          <button type="button" onclick="bukaModalEditInvoice(${it.sheetRowIdx})" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-600 font-bold rounded-lg text-xs transition" title="Edit DP / Barang & Cetak Ulang PDF">Edit</button>
-          <button type="button" onclick="konfirmasiHapusInvoice(${it.sheetRowIdx}, '${it.noInv}', '${it.nama.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold rounded-lg text-xs transition" title="Hapus Invoice & PDF">🗑️</button>
+        <td class="px-3.5 py-3 text-center whitespace-nowrap">
+          <div class="flex items-center justify-center gap-1">
+            ${it.link && it.link.includes('http') 
+              ? `<a href="${it.link}" target="_blank" class="flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 font-bold rounded-lg text-xs transition" title="Buka PDF di Drive"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Buka PDF</a>` 
+              : ''
+            }
+            <button type="button" onclick="bukaModalEditInvoice(${it.sheetRowIdx})" class="flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-600 font-bold rounded-lg text-xs transition" title="Edit DP / Barang & Cetak Ulang PDF"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit</button>
+            <button type="button" onclick="konfirmasiHapusInvoice(${it.sheetRowIdx}, '${it.noInv}', '${it.nama.replace(/'/g, "\\'")}')" class="flex items-center justify-center px-2 py-1.5 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold rounded-lg text-xs transition" title="Hapus Invoice & PDF"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+          </div>
         </td>
       </tr>
     `;
@@ -3934,6 +3939,8 @@ function renderTabelInvoice() {
   if (cardsMobile) {
     cardsMobile.innerHTML = itemsTampil.map(it => {
       const statusTarget = it.isLunas ? 'Belum Lunas' : 'Lunas';
+      const svgIconStatus = it.isLunas ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>' : (it.dp > 0 ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>' : '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>');
+
       return `
         <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-2.5">
           <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
@@ -3941,7 +3948,9 @@ function renderTabelInvoice() {
               <span class="font-mono font-bold text-xs text-slate-800 dark:text-white">${it.noInv}</span>
               <span class="block text-[10px] text-slate-400">${it.tgl}</span>
             </div>
-            <button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, '${statusTarget}')" class="px-2 py-0.5 rounded text-[10px] font-black ${it.isLunas ? 'bg-emerald-100 text-emerald-700' : (it.dp > 0 ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700')}">${it.status}</button>
+            <button type="button" onclick="gantiStatusInvoiceCepat(${it.sheetRowIdx}, '${statusTarget}')" class="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black ${it.isLunas ? 'bg-emerald-100 text-emerald-700' : (it.dp > 0 ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700')}">
+              ${svgIconStatus} ${it.status}
+            </button>
           </div>
           <div class="flex justify-between items-start">
             <h4 class="font-bold text-slate-900 dark:text-white text-xs capitalize">${it.nama}</h4>
@@ -3951,9 +3960,9 @@ function renderTabelInvoice() {
             </div>
           </div>
           <div class="flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700">
-            ${it.link && it.link.includes('http') ? `<a href="${it.link}" target="_blank" class="flex-1 py-1.5 bg-blue-50 text-blue-600 font-bold rounded-xl text-center text-xs">📁 Buka PDF</a>` : ''}
-            <button type="button" onclick="bukaModalEditInvoice(${it.sheetRowIdx})" class="px-3 py-1.5 bg-amber-50 text-amber-600 font-bold rounded-xl text-xs">✏️ Edit</button>
-            <button type="button" onclick="konfirmasiHapusInvoice(${it.sheetRowIdx}, '${it.noInv}', '${it.nama.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs">🗑️</button>
+            ${it.link && it.link.includes('http') ? `<a href="${it.link}" target="_blank" class="flex-1 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 font-bold rounded-xl flex items-center justify-center gap-1.5 text-xs transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Buka PDF</a>` : ''}
+            <button type="button" onclick="bukaModalEditInvoice(${it.sheetRowIdx})" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-600 font-bold rounded-xl flex items-center justify-center gap-1.5 text-xs transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit</button>
+            <button type="button" onclick="konfirmasiHapusInvoice(${it.sheetRowIdx}, '${it.noInv}', '${it.nama.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold rounded-xl flex items-center justify-center gap-1.5 text-xs transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
           </div>
         </div>
       `;
@@ -4606,11 +4615,19 @@ function renderChartBebanDonut() {
       document.getElementById('loginPassword').value = '';
       document.getElementById('loginErrorMsg').classList.add('hidden');
 
+      const iconContainer = document.getElementById('loginIconModul');
+
       if (portalTarget === 'pembukuan') {
-        document.getElementById('loginIconModul').innerText = '📊';
+        if (iconContainer) {
+          iconContainer.className = "w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-2.5 border border-emerald-100 dark:border-emerald-800/40 shadow-xs";
+          iconContainer.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>`;
+        }
         document.getElementById('loginTitleModul').innerText = 'Masuk Kotak Pembukuan';
       } else {
-        document.getElementById('loginIconModul').innerText = '📦';
+        if (iconContainer) {
+          iconContainer.className = "w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-2.5 border border-indigo-100 dark:border-indigo-800/40 shadow-xs";
+          iconContainer.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
+        }
         document.getElementById('loginTitleModul').innerText = 'Masuk Kotak Stok & Bundling';
       }
 
@@ -4719,8 +4736,10 @@ function renderTabelUser() {
   tbody.innerHTML = daftarUserCache.map(u => `
     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
       <td class="px-3 py-2 font-bold text-slate-900 dark:text-white">
-        <div class="flex items-center gap-1.5">
-          <span class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs">👤</span>
+      <div class="flex items-center gap-1.5">
+          <span class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </span>
           <div>
             <div class="font-extrabold text-xs text-slate-900 dark:text-white">${u.username}</div>
             <span class="block text-[10px] text-slate-400 font-normal">${u.nama || '-'}</span>
@@ -4729,7 +4748,9 @@ function renderTabelUser() {
       </td>
       <td class="px-3 py-2 font-mono text-slate-500 whitespace-nowrap text-[11px]">
         <span id="passText_${u.username}">••••••••</span>
-        <button type="button" onclick="toggleLihatPassword('${u.username}', '${u.password}')" class="ml-1 p-0.5 rounded hover:bg-slate-200 text-xs" title="Lihat Sandi">👁️</button>
+        <button type="button" onclick="toggleLihatPassword('${u.username}', '${u.password}')" class="ml-1 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400 transition" title="Lihat Sandi">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
       </td>
       <td class="px-3 py-2">
         <span class="px-2 py-0.5 rounded font-black text-[10px] ${u.role === 'owner' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'}">
@@ -4737,9 +4758,9 @@ function renderTabelUser() {
         </span>
       </td>
       <td class="px-3 py-2 font-bold text-emerald-600 text-xs">${u.akses}</td>
-      <td class="px-3 py-2 text-center space-x-1 whitespace-nowrap">
-        <button type="button" onclick="editUserDipilih('${u.username}'); document.getElementById('formKelolaUserContainer').classList.remove('hidden');" class="px-2 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white font-bold rounded-lg text-xs transition">✏️</button>
-        ${u.username.toLowerCase() !== 'admin' ? `<button type="button" onclick="konfirmasiHapusUser('${u.username}')" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white font-bold rounded-lg text-xs transition">🗑️</button>` : ''}
+      <td class="px-3 py-2 text-center whitespace-nowrap flex items-center justify-center gap-1.5">
+        <button type="button" onclick="editUserDipilih('${u.username}'); document.getElementById('formKelolaUserContainer').classList.remove('hidden');" class="flex items-center justify-center w-7 h-7 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white font-bold rounded-lg transition" title="Edit"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+        ${u.username.toLowerCase() !== 'admin' ? `<button type="button" onclick="konfirmasiHapusUser('${u.username}')" class="flex items-center justify-center w-7 h-7 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white font-bold rounded-lg transition" title="Hapus"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>` : ''}
       </td>
     </tr>
   `).join('');
@@ -5412,9 +5433,15 @@ _Sistem Penggajian Otomatis Our Fav Snack_`;
     function updateDarkIcons(isDark) {
       const iconM = document.getElementById('darkIconMobile');
       const iconD = document.getElementById('darkIconDesktop');
+      const iconS = document.getElementById('darkIconStokMobile');
       const labelD = document.getElementById('darkLabelDesktop');
-      if (iconM) iconM.innerText = isDark ? '☀️' : '🌙';
-      if (iconD) iconD.innerText = isDark ? '☀️' : '🌙';
+      
+      const sunSvg = `<svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+      const moonSvg = `<svg class="w-4 h-4 text-slate-500 dark:text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`;
+      
+      if (iconM) iconM.innerHTML = isDark ? sunSvg : moonSvg;
+      if (iconD) iconD.innerHTML = isDark ? sunSvg : moonSvg;
+      if (iconS) iconS.innerHTML = isDark ? sunSvg : moonSvg;
       if (labelD) labelD.innerText = isDark ? 'Terang' : 'Gelap';
     }
 
@@ -6369,9 +6396,9 @@ function renderTabelPengaturanKaryawan() {
         <td class="px-3 py-2 font-bold text-teal-600">${formatRupiah((k.tarifLembur !== undefined && k.tarifLembur !== null) ? k.tarifLembur : 15000)}/jam</td>
         <td class="px-3 py-2 text-slate-600 dark:text-slate-300">${formatRupiah((k.tunjHadir !== undefined && k.tunjHadir !== null) ? k.tunjHadir : 25000)}/hari</td>
         <td class="px-3 py-2">${infoTunjKhusus}</td>
-        <td class="px-3 py-2 text-center space-x-1 whitespace-nowrap">
-          <button type="button" onclick="editTarifKaryawan(${idx})" class="px-2 py-0.5 bg-emerald-50 text-emerald-600 font-bold rounded-lg text-xs hover:bg-emerald-600 hover:text-white transition">✏️ Edit</button>
-          <button type="button" onclick="hapusTarifKaryawan(${idx})" class="px-2 py-0.5 bg-rose-50 text-rose-600 font-bold rounded-lg text-xs hover:bg-rose-600 hover:text-white transition">🗑️</button>
+        <td class="px-3 py-2 text-center whitespace-nowrap flex items-center justify-center gap-1.5">
+          <button type="button" onclick="editTarifKaryawan(${idx})" class="inline-flex items-center gap-1 px-2 py-1.5 bg-emerald-50 text-emerald-600 font-bold rounded-lg text-[11px] hover:bg-emerald-600 hover:text-white transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit</button>
+          <button type="button" onclick="hapusTarifKaryawan(${idx})" class="inline-flex items-center justify-center w-7 h-7 bg-rose-50 text-rose-600 font-bold rounded-lg hover:bg-rose-600 hover:text-white transition" title="Hapus"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
         </td>
       </tr>
     `;
@@ -6485,8 +6512,8 @@ function renderTableGajiKaryawan() {
         <td class="px-3 py-2 text-slate-500">${item.durasi}</td>
         <td class="px-3 py-2 font-black text-emerald-600 dark:text-emerald-400">${formatRupiah(item.total)}</td>
         <td class="px-3 py-2 text-center">
-          <button type="button" onclick="konfirmasiHapusGaji(${item.sheetRowIdx}, '${item.nama}', '${item.hari}')" class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold text-xs transition" title="Hapus Riwayat">
-            🗑️
+          <button type="button" onclick="konfirmasiHapusGaji(${item.sheetRowIdx}, '${item.nama}', '${item.hari}')" class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold transition" title="Hapus Riwayat">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </td>
       </tr>
@@ -6502,7 +6529,9 @@ function renderTableGajiKaryawan() {
             <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">${item.hari}</span>
             <span class="text-[11px] font-medium text-slate-400">${item.tgl}</span>
           </div>
-          <button type="button" onclick="konfirmasiHapusGaji(${item.sheetRowIdx}, '${item.nama}', '${item.hari}')" class="px-2 py-1 bg-rose-50 text-rose-600 font-bold rounded-lg text-xs" title="Hapus">🗑️</button>
+          <button type="button" onclick="konfirmasiHapusGaji(${item.sheetRowIdx}, '${item.nama}', '${item.hari}')" class="flex items-center justify-center w-7 h-7 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white font-bold rounded-lg transition" title="Hapus">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
         </div>
         <div class="flex justify-between items-center">
           <div>
@@ -7137,8 +7166,9 @@ function renderTableBodyTransaksi() {
     // ====================================================================
 // FUNGSI EXPORT LAPORAN STOK KE PDF
 // ====================================================================
+// Index.html | CLIENT (JavaScript) - KODE BARU
+// --- UBAH DARI SINI (PENGGANTIAN FUNGSI unduhPdfStok) ---
 function unduhPdfStok() {
-  // Cek apakah library jsPDF berhasil dimuat
   if (!window.jspdf) {
     alert("Library PDF belum termuat sempurna. Pastikan koneksi internet aktif atau refresh halaman.");
     return;
@@ -7148,10 +7178,29 @@ function unduhPdfStok() {
   const doc = new jsPDF();
   
   const items = dataStokGlobal.stok || [];
+  const mutasi = dataStokGlobal.mutasi || [];
   if (items.length === 0) {
     alert("Belum ada data stok barang untuk dicetak.");
     return;
   }
+
+  // Kalkulasi Kecepatan Laku (Run Rate 30 Hari) untuk kebutuhan PDF
+  const today = new Date();
+  const sales30HariMap = {};
+  mutasi.forEach(m => {
+    const tgl = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(m[0]) : String(m[0] || '').split('T')[0];
+    const tipe = String(m[2] || '');
+    const nama = String(m[3] || '').trim().toLowerCase();
+    const qty = Number(m[4]) || 0;
+
+    if (tgl && (tipe.includes('Keluar') || tipe.includes('Jual') || tipe.includes('Bundling'))) {
+      const d = new Date(tgl + 'T00:00:00');
+      const diffDays = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 30) {
+        sales30HariMap[nama] = (sales30HariMap[nama] || 0) + qty;
+      }
+    }
+  });
 
   // 1. Desain Kop Laporan
   doc.setFontSize(16);
@@ -7162,14 +7211,13 @@ function unduhPdfStok() {
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 116, 139); // Warna Abu-abu
-  doc.text("Dibuat pada: " + getTanggalLokalWIB() + " (Format: YYYY-MM-DD)", 14, 26);
+  doc.text("Dibuat pada: " + (typeof getTanggalLokalWIB === 'function' ? getTanggalLokalWIB() : new Date().toISOString().split('T')[0]), 14, 26);
 
-  // 2. Siapkan Data Tabel
-  const head = [['No', 'SKU', 'Nama Barang', 'Kategori', 'Stok', 'Modal Satuan', 'Total Nilai Aset']];
+  // 2. Siapkan Data Tabel (Penambahan Kolom Est. Habis)
+  const head = [['No', 'SKU', 'Nama Barang', 'Kategori', 'Stok Fisik', 'Est. Habis', 'Modal Satuan', 'Total Nilai Aset']];
   const body = [];
   let totalAsetKeseluruhan = 0;
 
-  // Urutkan abjad A-Z
   const sortedItems = [...items].sort((a, b) => String(a[1]).localeCompare(String(b[1])));
 
   sortedItems.forEach((it, index) => {
@@ -7179,25 +7227,54 @@ function unduhPdfStok() {
     const stok = Number(it[3]) || 0;
     const satuan = it[4] || 'pcs';
     const hpp = Number(it[5]) || 0;
+    const minStok = Number(it[6]) || 5;
+    const isKritis = stok <= minStok;
     const nilaiTotal = stok * hpp;
     
     totalAsetKeseluruhan += nilaiTotal;
+
+    const namaKey = nama.trim().toLowerCase();
+    const totalTerjual30 = sales30HariMap[namaKey] || 0;
+    const runRateHarian = totalTerjual30 / 30;
+
+    let estimasiTeks = '';
+    let estStyle = {};
+    if (stok <= 0) {
+      estimasiTeks = 'Habis';
+      estStyle = { textColor: [225, 29, 72], fontStyle: 'bold' }; // Merah (Kosong)
+    } else if (runRateHarian <= 0) {
+      estimasiTeks = 'Pasif';
+      estStyle = { textColor: [148, 163, 184] }; // Abu-abu
+    } else {
+      const sisaHari = Math.round(stok / runRateHarian);
+      estimasiTeks = `~${sisaHari} hr`;
+      if (sisaHari <= 3) estStyle = { textColor: [225, 29, 72], fontStyle: 'bold' }; // Merah
+      else if (sisaHari <= 7) estStyle = { textColor: [217, 119, 6], fontStyle: 'bold' }; // Kuning
+      else estStyle = { textColor: [5, 150, 105], fontStyle: 'bold' }; // Hijau
+    }
+
+    // Format teks stok agar berwarna merah dan berlabel KRITIS jika di bawah batas minimum
+    const stokCell = { 
+      content: isKritis ? `[KRITIS]\n${stok.toLocaleString('id-ID')} ${satuan}` : `${stok.toLocaleString('id-ID')} ${satuan}`,
+      styles: isKritis ? { textColor: [225, 29, 72], fontStyle: 'bold' } : {}
+    };
 
     body.push([
       index + 1,
       sku,
       nama,
       kategori,
-      stok.toLocaleString('id-ID') + ' ' + satuan,
-      formatRupiah(hpp),
-      formatRupiah(nilaiTotal)
+      stokCell,
+      { content: estimasiTeks, styles: estStyle },
+      typeof formatRupiah === 'function' ? formatRupiah(hpp) : hpp,
+      typeof formatRupiah === 'function' ? formatRupiah(nilaiTotal) : nilaiTotal
     ]);
   });
 
   // 3. Tambahkan Baris Total di paling bawah
   body.push([
-    { content: 'TOTAL ESTIMASI NILAI ASET GUDANG:', colSpan: 6, styles: { halign: 'right', fontStyle: 'bold', fillColor: [241, 245, 249] } },
-    { content: formatRupiah(totalAsetKeseluruhan), styles: { fontStyle: 'bold', textColor: [255, 255, 255], fillColor: [5, 150, 105] } }
+    { content: 'TOTAL ESTIMASI NILAI ASET GUDANG:', colSpan: 7, styles: { halign: 'right', fontStyle: 'bold', fillColor: [241, 245, 249] } },
+    { content: typeof formatRupiah === 'function' ? formatRupiah(totalAsetKeseluruhan) : totalAsetKeseluruhan, styles: { fontStyle: 'bold', textColor: [255, 255, 255], fillColor: [5, 150, 105] } }
   ]);
 
   // 4. Proses Cetak Tabel dengan autoTable
@@ -7209,27 +7286,32 @@ function unduhPdfStok() {
     styles: { 
       fontSize: 8, 
       cellPadding: 3,
-      font: "helvetica"
+      font: "helvetica",
+      valign: 'middle'
     },
     headStyles: { 
-      fillColor: [5, 150, 105], // Emerald 600
+      fillColor: [5, 150, 105],
       textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fontStyle: 'bold',
+      halign: 'center'
     },
     columnStyles: {
-      0: { cellWidth: 10, halign: 'center' }, // No
+      0: { cellWidth: 8, halign: 'center' }, // No
       1: { cellWidth: 20 }, // SKU
-      4: { halign: 'center', fontStyle: 'bold' }, // Stok
-      5: { halign: 'right' }, // Harga Satuan
-      6: { halign: 'right', fontStyle: 'bold' }  // Total Nilai
+      2: { cellWidth: 'auto' }, // Nama
+      4: { cellWidth: 18, halign: 'center', fontStyle: 'bold' }, // Stok Fisik
+      5: { cellWidth: 18, halign: 'center' }, // Est. Habis
+      6: { cellWidth: 23, halign: 'right' }, // Harga Satuan
+      7: { cellWidth: 26, halign: 'right', fontStyle: 'bold' }  // Total Nilai
     }
   });
 
   // 5. Eksekusi Download PDF
-  const namaFile = `Laporan_Stok_OFS_${getTanggalLokalWIB()}.pdf`;
+  const namaFile = `Laporan_Stok_OFS_${typeof getTanggalLokalWIB === 'function' ? getTanggalLokalWIB() : new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(namaFile);
   showToast("PDF Laporan Stok berhasil diunduh! ✨");
 }
+// --- BATAS AKHIR ---
 
 // ====================================================================
 // FUNGSI EXPORT LAPORAN LABA RUGI (P&L) KE PDF
@@ -7992,15 +8074,17 @@ function renderArusKas() {
             // Tombol pulihkan hanya muncul jika baris tersebut adalah aksi HAPUS
             // Tombol pulihkan hanya muncul jika baris tersebut adalah aksi HAPUS
             const tombolPulihkan = (l.aksi === 'HAPUS' && l.dataLama && l.dataLama !== '-') 
-              ? `<button type="button" onclick="pulihkanDataDariLog('${encodeURIComponent(JSON.stringify(l))}', this, ${l.rowIdx})" class="mt-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg font-bold text-[10px] transition flex items-center gap-1 active:scale-95 shadow-xs">
-                   <span>🔄</span> Pulihkan Data
+              ? `<button type="button" onclick="pulihkanDataDariLog('${encodeURIComponent(JSON.stringify(l))}', this,${l.rowIdx})" class="mt-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg font-bold text-[10px] transition inline-flex items-center gap-1.5 active:scale-95 shadow-xs">
+                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 2v6h6"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 8"></path></svg> Pulihkan Data
                  </button>`
               : '';
 
             return `
               <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
                 <td class="px-3 py-2 whitespace-nowrap text-slate-400 font-mono text-[10px]">${l.waktu}</td>
-                <td class="px-3 py-2 whitespace-nowrap font-bold text-emerald-600 dark:text-emerald-400">👤 ${l.user}</td>
+                <td class="px-3 py-2 whitespace-nowrap font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${l.user}
+                </td>
                 <td class="px-3 py-2 whitespace-nowrap"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${l.aksi}</span></td>
                 <td class="px-3 py-2 whitespace-nowrap font-semibold">${l.kategori}</td>
                 <td class="px-3 py-2 text-[11px] leading-tight">
@@ -8606,17 +8690,18 @@ function renderTabelMasterStok() {
         </td>
         <td class="px-3.5 py-2 font-semibold text-[11px]">${formatRupiah(harga)}</td>
         <td class="px-3.5 py-2 text-center">
-          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isKritis ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'}">
-            ${isKritis ? '⚠️ Kritis' : '✅ Aman'}
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${isKritis ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'}">
+            ${isKritis ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Kritis' : '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Aman'}
           </span>
           <div class="mt-0.5">${runwayBadge}</div>
         </td>
         <td class="px-3.5 py-2 text-center space-x-1 whitespace-nowrap">
-          <button type="button" onclick="bukaModalEditStok('${kode}')" class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white font-bold rounded text-xs transition" title="Edit Barang">✏️</button>
-          <button type="button" onclick="bukaModalKartuStok('${kode}')" class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-600 hover:text-white font-bold rounded text-xs transition" title="Kartu Stok">📜</button>
-          <button type="button" onclick="bukaModalRestock('${kode}')" class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white font-bold rounded text-xs transition" title="Tambah">+ Masuk</button>
-          <button type="button" onclick="bukaModalKeluarBarang('${kode}')" class="px-2 py-0.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white font-bold rounded text-xs transition" title="Kurang">- Keluar</button>
+          <button type="button" onclick="bukaModalEditStok('${kode}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white font-bold rounded-lg text-xs transition" title="Edit Barang"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+          <button type="button" onclick="bukaModalKartuStok('${kode}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-600 hover:text-white font-bold rounded-lg text-xs transition" title="Kartu Stok"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></button>
+          <button type="button" onclick="bukaModalRestock('${kode}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white font-bold rounded-lg text-xs transition" title="Tambah"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Masuk</button>
+          <button type="button" onclick="bukaModalKeluarBarang('${kode}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white font-bold rounded-lg text-xs transition" title="Kurang"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Keluar</button>
         </td>
+        
       </tr>
     `;
 
@@ -8630,8 +8715,8 @@ function renderTabelMasterStok() {
             <span class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-[10px]">${kat}</span>
           </div>
           <div class="flex items-center gap-1">
-            <span class="px-2 py-0.5 rounded-md text-[10px] font-black ${isKritis ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'}">
-              ${isKritis ? '⚠️ Kritis' : '✅ Aman'}
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black ${isKritis ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'}">
+              ${isKritis ? '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Kritis' : '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Aman'}
             </span>
           </div>
         </div>
@@ -8655,16 +8740,16 @@ function renderTabelMasterStok() {
 
         <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700/60">
           <button type="button" onclick="bukaModalEditStok('${kode}')" class="py-1.5 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-600 hover:text-white text-amber-600 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1" title="Edit">
-            <span>✏️</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
           </button>
-          <button type="button" onclick="bukaModalKartuStok('${kode}')" class="py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1" title="Kartu">
-            <span>📜</span>
+          <button type="button" onclick="bukaModalKartuStok('${kode}')" class="py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1" title="Kartu Stok">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
           </button>
-          <button type="button" onclick="bukaModalRestock('${kode}')" class="py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1">
-            <span>+</span> Masuk
+          <button type="button" onclick="bukaModalRestock('${kode}')" class="py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Masuk
           </button>
-          <button type="button" onclick="bukaModalKeluarBarang('${kode}')" class="py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1">
-            <span>-</span> Keluar
+          <button type="button" onclick="bukaModalKeluarBarang('${kode}')" class="py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Keluar
           </button>
         </div>
       </div>
@@ -8823,8 +8908,8 @@ function renderTabelMasterStok() {
                 <button type="button" onclick="bukaModalEditBundling('${id}', '${namaEnc}', ${hargaJual}, '${resepEnc}', '${kategoriEnc}')" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-50 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-lg transition">
                    Edit Resep
                 </button>
-                <button type="button" onclick="konfirmasiHapusBundling('${id}', '${namaEnc}')" class="p-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-rose-50 text-slate-400 font-bold text-xs rounded-lg transition" title="Hapus Paket">
-                  🗑️
+                <button type="button" onclick="konfirmasiHapusBundling('${id}', '${namaEnc}')" class="flex items-center justify-center w-7 h-7 bg-slate-100 dark:bg-slate-700 hover:bg-rose-50 hover:text-rose-600 text-slate-400 font-bold rounded-lg transition" title="Hapus Paket">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                 </button>
                 <button type="button" onclick="bukaModalJualBundling('${namaPaket.replace(/'/g, "\\'")}', '${resepEnc}', ${hargaJual}, ${maxBisaDibuat})" class="flex-grow py-1.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1 shadow-xs">
                  Catat Terjual
@@ -8902,7 +8987,6 @@ function renderTabelMasterStok() {
                   <option value="Rusak / Remuk" ${row.alasan === 'Rusak / Remuk' ? 'selected' : ''}>Rusak / Remuk</option>
                   <option value="Kadaluarsa" ${row.alasan === 'Kadaluarsa' ? 'selected' : ''}>Kadaluarsa</option>
                   <option value="Hilang / Selisih Fisik" ${row.alasan === 'Hilang / Selisih Fisik' ? 'selected' : ''}>Hilang / Selisih Fisik</option>
-                  <option value="Koreksi Input" ${row.alasan === 'Koreksi Input' ? 'selected' : ''}>Koreksi Input</option>
                 </select>
               </td>
               <td class="px-3 py-2 text-right font-semibold ${rugi > 0 ? 'text-rose-600' : 'text-slate-400'}" id="opnRugi_${row.kode}">
@@ -9057,8 +9141,8 @@ function renderTabelMutasiStok() {
           <td class="px-3.5 py-2 font-extrabold ${isMasuk ? 'text-emerald-600' : 'text-rose-600'}">${isMasuk ? '+' : '-'}${m[4]}</td>
           <td class="px-3.5 py-2 text-[11px] text-slate-400">${m[5]}</td>
           <td class="px-3.5 py-2 text-center">
-            <button type="button" onclick="konfirmasiBatalMutasiStok(${item.rowIdx}, '${m[2]}', '${m[3]}', ${m[4]}, this)" class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold text-[10px] transition whitespace-nowrap shadow-xs">
-              🔄 Pulihkan
+            <button type="button" onclick="konfirmasiBatalMutasiStok(${item.rowIdx}, '${m[2]}', '${m[3]}', ${m[4]}, this)" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold text-[10px] transition whitespace-nowrap shadow-xs">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 2v6h6"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 8"></path></svg> Pulihkan
             </button>
           </td>
         </tr>
@@ -9083,8 +9167,8 @@ function renderTabelMutasiStok() {
           </div>
           <p class="text-[11px] text-slate-400 dark:text-slate-400 leading-snug pt-1">${m[5] || '-'}</p>
           <div class="pt-2 mt-1 border-t border-slate-100 dark:border-slate-700/60 text-right">
-            <button type="button" onclick="konfirmasiBatalMutasiStok(${item.rowIdx}, '${m[2]}', '${m[3]}', ${m[4]}, this)" class="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 font-bold text-xs">
-              🔄 Batalkan & Pulihkan Stok
+            <button type="button" onclick="konfirmasiBatalMutasiStok(${item.rowIdx}, '${m[2]}', '${m[3]}', ${m[4]}, this)" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-bold text-xs transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 2v6h6"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 8"></path></svg> Batalkan & Pulihkan Stok
             </button>
           </div>
         </div>
