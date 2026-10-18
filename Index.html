@@ -375,10 +375,9 @@ div[id^="modal"]:not(.hidden) > div {
             <span>Input Transaksi</span>
           </button>
 
-          <!-- Laporan & Analisis -->
-          <button onclick="switchTab('laporan')" id="navLaporan" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            <span>Laporan & Analisis</span>
+          <button type="button" id="navMasterreport" onclick="switchTab('masterreport')" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white">
+  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+  Master Report (Analitik)
           </button>
 
           <!-- Laba Rugi P&L -->
@@ -403,6 +402,12 @@ div[id^="modal"]:not(.hidden) > div {
           <button onclick="switchTab('gaji')" id="navGaji" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             <span>Gaji Karyawan</span>
+          </button>
+
+          <!-- Riwayat Transaksi (Menu Baru) -->
+          <button onclick="switchTab('riwayat')" id="navRiwayat" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            <span>Riwayat Transaksi</span>
           </button>
 
           <!-- Arus Kas -->
@@ -582,6 +587,262 @@ div[id^="modal"]:not(.hidden) > div {
           </div>
         </div>
       </div>
+<div id="tabMasterreport" class="hidden space-y-5 sm:space-y-6 pb-24 animate-fade-in">
+  <!-- Header & Filter -->
+  <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-slate-700/60 pb-4 mb-4">
+      <div>
+        <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg>
+          Master Report & Analytics
+        </h2>
+        <p class="text-[11px] sm:text-xs text-slate-400 mt-1">Analisis bisnis mendalam berdasarkan rentang waktu pilihan</p>
+      </div>
+      <button type="button" onclick="cetakPdfMasterReport()" class="w-full sm:w-auto px-4 py-2 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Cetak PDF Report
+      </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <input type="date" id="mrFilterStart" class="bg-transparent text-xs font-bold text-slate-700 dark:text-white outline-none">
+        <span class="text-slate-400 text-[10px] font-bold">s/d</span>
+        <input type="date" id="mrFilterEnd" class="bg-transparent text-xs font-bold text-slate-700 dark:text-white outline-none">
+      </div>
+      <button type="button" onclick="renderMasterReportData()" class="px-4 py-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-xl text-xs transition hover:bg-slate-700 dark:hover:bg-white flex items-center gap-1.5 shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Terapkan Analisis
+      </button>
+    </div>
+  </div>
+  
+  <!-- ⭐ Proyeksi & Target -->
+  <div class="space-y-3">
+    <h3 class="font-extrabold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+      <span class="w-5 h-5 bg-amber-100 text-amber-600 dark:bg-amber-900/60 dark:text-amber-400 rounded-full flex items-center justify-center text-[10px]">⭐</span> Proyeksi & Target BEP (Bulan Berjalan)
+    </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <!-- Target BEP -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-bl-full -mr-8 -mt-8"></div>
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target BEP Bulan Ini</p>
+        <h4 id="mrValTargetBep" class="text-xl font-black text-slate-900 dark:text-white">Rp 0</h4>
+        <p class="text-xs text-amber-600 dark:text-amber-400 font-bold mt-1.5">Titik impas operasional</p>
+      </div>
+      
+      <!-- Progres BEP -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Progres Pencapaian BEP</p>
+        <div class="flex items-end gap-2">
+          <h4 id="mrValProgresBepPct" class="text-xl font-black text-emerald-600 dark:text-emerald-400">0%</h4>
+          <span class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-0.5">Tercapai</span>
+        </div>
+        <p id="mrSubSisaBep" class="text-xs text-rose-500 font-bold mt-1.5">Kurang Rp 0 lagi</p>
+        <!-- Progress bar kecil -->
+        <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden flex">
+          <div id="mrBarProgresBep" class="bg-emerald-500 h-full" style="width: 0%;"></div>
+        </div>
+      </div>
+      
+      <!-- Proyeksi Akhir Bulan -->
+      <div class="bg-gradient-to-br from-indigo-600 to-blue-700 p-4 rounded-2xl shadow-md border border-indigo-500">
+        <p class="text-[11px] font-bold text-indigo-200 uppercase tracking-wider mb-1">Proyeksi Omzet Akhir Bulan</p>
+        <h4 id="mrValProyeksiOmzet" class="text-2xl font-black text-white">Rp 0</h4>
+        <p class="text-[11px] text-indigo-100 font-medium mt-1.5">Berdasarkan rata-rata harian</p>
+      </div>
+    </div>
+  </div>
+
+<!-- --- BATAS AKHIR TAMBAHAN --- -->
+
+  <!-- 1. Executive Summary -->
+  <div class="space-y-3">
+    <h3 class="font-extrabold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+      <span class="w-5 h-5 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/60 dark:text-indigo-400 rounded-full flex items-center justify-center text-[10px]">1</span> Executive Summary
+    </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <!-- Omzet Kotor -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-bl-full -mr-8 -mt-8"></div>
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Gross Revenue (Kotor)</p>
+        <h4 id="mrValOmzetKotor" class="text-xl font-black text-slate-900 dark:text-white">Rp 0</h4>
+        <p id="mrSubTrx" class="text-xs text-blue-600 dark:text-blue-400 font-bold mt-1.5">0 Transaksi</p>
+      </div>
+      <!-- COGS -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">COGS (Modal HPP Terjual)</p>
+        <h4 id="mrValHpp" class="text-xl font-black text-slate-900 dark:text-white">Rp 0</h4>
+        <p id="mrSubHppPct" class="text-xs text-slate-500 font-bold mt-1.5">0% dari Omzet</p>
+      </div>
+      <!-- Gross Profit -->
+      <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/40 shadow-sm">
+        <p class="text-[11px] font-bold text-emerald-700/70 dark:text-emerald-500 uppercase tracking-wider mb-1">Gross Profit (Laba Kotor)</p>
+        <h4 id="mrValLabaKotor" class="text-xl font-black text-emerald-700 dark:text-emerald-400">Rp 0</h4>
+        <p id="mrSubMarginKotor" class="text-xs text-emerald-600 font-bold mt-1.5">Margin Kotor: 0%</p>
+      </div>
+      <!-- OPEX -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">OPEX (Beban Ops & Gaji)</p>
+        <h4 id="mrValOpex" class="text-xl font-black text-rose-600 dark:text-rose-400">Rp 0</h4>
+        <p id="mrSubOpexPct" class="text-xs text-slate-500 font-bold mt-1.5">0% dari Omzet</p>
+      </div>
+      <!-- Shrinkage / Inventory Loss -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Inventory Loss (Kerugian)</p>
+        <h4 id="mrValRugiStok" class="text-xl font-black text-amber-600 dark:text-amber-400">Rp 0</h4>
+        <p id="mrSubRugiPct" class="text-xs text-slate-500 font-bold mt-1.5">Shrinkage: 0% dari Omzet</p>
+      </div>
+      <!-- Net Profit -->
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 p-4 rounded-2xl shadow-md border border-slate-700">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">NET PROFIT (Laba Bersih)</p>
+        <h4 id="mrValLabaBersih" class="text-2xl font-black text-white">Rp 0</h4>
+        <p id="mrSubMarginBersih" class="text-xs text-emerald-400 font-bold mt-1.5">Margin Bersih: 0%</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <!-- 2. Sales & Marketing Efficiency -->
+    <div class="space-y-3">
+      <h3 class="font-extrabold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+        <span class="w-5 h-5 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/60 dark:text-indigo-400 rounded-full flex items-center justify-center text-[10px]">2</span> Marketing Efficiency
+      </h3>
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-3.5">
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-700/60">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Average Order Value (AOV)</p>
+            <p class="text-[10px] text-slate-400">Rata-rata belanja per orang</p>
+          </div>
+          <span id="mrValAov" class="font-black text-sm text-slate-900 dark:text-white">Rp 0</span>
+        </div>
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-700/60">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Total Biaya Iklan (Ad Spend)</p>
+          </div>
+          <span id="mrValIklan" class="font-black text-sm text-rose-600 dark:text-rose-400">Rp 0</span>
+        </div>
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-700/60">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">ROAS (Return on Ad Spend)</p>
+            <p class="text-[10px] text-slate-400">Tiap Rp 1 iklan menghasilkan omzet</p>
+          </div>
+          <span id="mrValRoas" class="font-black text-sm text-emerald-600 dark:text-emerald-400">0.0x</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Marketing Cost Ratio</p>
+          </div>
+          <span id="mrValMcr" class="font-black text-sm text-slate-900 dark:text-white">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. HR & Ops Efficiency -->
+    <div class="space-y-3">
+      <h3 class="font-extrabold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+        <span class="w-5 h-5 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/60 dark:text-indigo-400 rounded-full flex items-center justify-center text-[10px]">3</span> HR & Ops Efficiency
+      </h3>
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-3.5">
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-700/60">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Revenue per Employee</p>
+            <p id="mrSubPegawai" class="text-[10px] text-slate-400">Berdasarkan 0 staf aktif</p>
+          </div>
+          <span id="mrValRpe" class="font-black text-sm text-slate-900 dark:text-white">Rp 0</span>
+        </div>
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-700/60">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Labor Efficiency Ratio (LER)</p>
+            <p class="text-[10px] text-slate-400">Tiap Rp 1 gaji = Laba Kotor</p>
+          </div>
+          <span id="mrValLer" class="font-black text-sm text-emerald-600 dark:text-emerald-400">0.0x</span>
+        </div>
+        <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-700/60">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Biaya Indisipliner (Alpa/Telat)</p>
+            <p class="text-[10px] text-slate-400">Potongan gaji yang dieksekusi</p>
+          </div>
+          <span id="mrValIndisipliner" class="font-black text-sm text-slate-900 dark:text-white">Rp 0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Cash Flow Runway</p>
+            <p class="text-[10px] text-slate-400">Kekuatan dana kas saat ini</p>
+          </div>
+          <span id="mrValRunway" class="font-black text-sm text-teal-600 dark:text-teal-400">0 Bulan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Customer Behavior & Inventory Health -->
+  <div class="space-y-3">
+    <h3 class="font-extrabold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+      <span class="w-5 h-5 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/60 dark:text-indigo-400 rounded-full flex items-center justify-center text-[10px]">4</span> Customer Behavior & Inventory Health
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        <h4 class="text-xs font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-1.5"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Rasio Pelanggan & VIP</h4>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-[10px] font-bold mb-1">
+              <span class="text-emerald-600">Pelanggan Baru (<span id="mrPctBaru">0%</span>)</span>
+              <span class="text-blue-600">Repeat Order (<span id="mrPctLama">0%</span>)</span>
+            </div>
+            <div class="w-full bg-blue-100 h-1.5 rounded-full overflow-hidden flex">
+              <div id="mrBarPelangganBaru" class="bg-emerald-500 h-full" style="width: 0%;"></div>
+              <div id="mrBarPelangganLama" class="bg-blue-500 h-full" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60">
+            <p class="text-[10px] text-slate-400 uppercase font-bold mb-2">Top 3 VIP Buyers Periode Ini</p>
+            <ul id="mrListVip" class="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 font-semibold">
+              <li class="text-slate-400 font-normal">Data belum tersedia...</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div onclick="bukaModalDeadStock()" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-center items-center text-center cursor-pointer hover:bg-amber-50 dark:hover:bg-slate-700/70 transition group relative overflow-hidden" title="Klik untuk melihat rincian barang">
+        <!-- Efek Highlight saat di-hover -->
+        <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/20 opacity-0 group-hover:opacity-100 transition"></div>
+        
+        <svg class="w-8 h-8 text-amber-500 mb-2 relative z-10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider relative z-10">Dead Stock (Tertahan)</h4>
+        <p id="mrValDeadStockQty" class="text-lg font-black text-slate-900 dark:text-white mt-1 relative z-10 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">0 SKU Pasif</p>
+        <p class="text-[10px] text-slate-400 font-medium mt-1 relative z-10 underline decoration-dashed">Klik untuk rincian</p>
+        <p id="mrValDeadStockRp" class="text-sm font-bold text-amber-600 dark:text-amber-400 mt-1 relative z-10">Rp 0</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Top Performing Products -->
+  <div class="space-y-3">
+    <h3 class="font-extrabold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-1.5">
+      <span class="w-5 h-5 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/60 dark:text-indigo-400 rounded-full flex items-center justify-center text-[10px]">5</span> Top Performing Products (By Net Profit)
+    </h3>
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs whitespace-nowrap">
+          <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+            <tr>
+              <th class="px-4 py-3">No</th>
+              <th class="px-4 py-3">Nama Produk / Paket</th>
+              <th class="px-4 py-3 text-center">Terjual</th>
+              <th class="px-4 py-3 text-right">Omzet (Rp)</th>
+              <th class="px-4 py-3 text-right">HPP Modal (Rp)</th>
+              <th class="px-4 py-3 text-right">Laba Bersih (Rp)</th>
+              <th class="px-4 py-3 text-center">Margin</th>
+            </tr>
+          </thead>
+          <tbody id="mrTableTopProducts" class="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-300">
+            <tr><td colspan="7" class="px-4 py-6 text-center text-slate-400 font-medium">Klik "Terapkan Analisis" untuk memuat data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
       <!-- TAB 2: LAPORAN & ANALISIS TERPADU -->
       <div id="tabLaporan" class="hidden space-y-5">
         <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-3">
@@ -812,9 +1073,26 @@ div[id^="modal"]:not(.hidden) > div {
             </table>
           </div>
         </div>
+      </div> <!-- /Penutup tabLaporan -->
 
-        <!-- TABEL RINCIAN TRANSAKSI (KOMPAK) -->
-        <div id="wrapperTabelLaporan" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden"></div>
+      <!-- ==================== TAB 2C (BARU): RIWAYAT TRANSAKSI ==================== -->
+      <div id="tabRiwayat" class="hidden space-y-5">
+        <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-600 shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight">Riwayat Transaksi</h2>
+              <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">Buku besar operasional, pencarian nota, dan kelola data</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wadah Tabel Riwayat (Tadinya bernama wrapperTabelLaporan) -->
+        <div id="wrapperTabelRiwayat" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden min-h-[400px]">
+             <!-- Konten tabel, filter kategori, dan pencarian akan dirender di sini via JS -->
+        </div>
       </div>
 
 <!-- ==================== TAB 2B: LABA RUGI (PROFIT & LOSS) ==================== -->
@@ -1676,6 +1954,12 @@ div[id^="modal"]:not(.hidden) > div {
 
       <!-- Tombol Navigasi Sub-Stok -->
       <nav class="space-y-1">
+        <!-- MENU BARU: Kasir (POS) -->
+        <button type="button" onclick="switchSubStok('kasir')" id="subStokTabKasir" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span class="flex-grow">Kasir (POS)</span>
+          <span class="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-bold rounded-md shadow-xs">NEW</span>
+        </button>
         <button type="button" onclick="switchSubStok('ringkasan')" id="subStokTabRingkasan" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-bold text-xs transition bg-indigo-600 text-white shadow-xs">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
           <span>Ringkasan</span>
@@ -1960,6 +2244,106 @@ div[id^="modal"]:not(.hidden) > div {
         </div>
       </div>
     </div>
+
+<!-- Index.html | CLIENT (HTML) -->
+<!-- --- TAMBAHKAN DARI SINI: Kerangka Layar Kasir (POS) --- -->
+
+    <!-- ==================== SUB-TAB BARU: KASIR (POS) ==================== -->
+    <div id="subViewKasir" class="hidden h-full flex flex-col space-y-3">
+      <!-- Layout Grid Utama (Kiri Katalog, Kanan Keranjang) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow items-start">
+        
+        <!-- KOLOM KIRI: KATALOG PRODUK (Lebar 65%) -->
+        <div class="lg:col-span-8 flex flex-col h-[calc(100vh-100px)]">
+          <!-- Area Pencarian & Filter -->
+          <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 mb-3">
+            <input type="text" id="posSearchInput" oninput="renderKatalogPOS()" placeholder="🔍 Cari nama produk / paket..." class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+            <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs font-bold w-full sm:w-auto overflow-x-auto no-scrollbar">
+              <button type="button" onclick="posFilterAktif='Semua'; renderKatalogPOS();" id="btnPosFilter_Semua" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs transition shrink-0">Semua</button>
+              <button type="button" onclick="posFilterAktif='Satuan'; renderKatalogPOS();" id="btnPosFilter_Satuan" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 transition shrink-0">Satuan</button>
+              <button type="button" onclick="posFilterAktif='Bundling'; renderKatalogPOS();" id="btnPosFilter_Bundling" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 transition shrink-0">Bundling</button>
+            </div>
+          </div>
+          
+          <!-- Area Grid Kartu Produk (Scrollable) -->
+          <div class="flex-grow overflow-y-auto no-scrollbar pr-1 pb-20">
+            <div id="posKatalogGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <!-- Kartu produk akan di-render di sini oleh JavaScript -->
+              <div class="p-8 text-center col-span-full text-slate-400 text-xs italic font-medium">Memuat katalog produk...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KOLOM KANAN: KERANJANG BELANJA & CHECKOUT (Lebar 35%) -->
+        <div class="lg:col-span-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm flex flex-col h-[calc(100vh-100px)] sticky top-4">
+          
+          <!-- Header Keranjang & Input Pembeli -->
+          <div class="p-4 border-b border-slate-100 dark:border-slate-700 shrink-0 space-y-3">
+            <h3 class="font-black text-slate-800 dark:text-white text-sm flex items-center gap-2">
+              <span>🛒</span> Keranjang Pesanan
+            </h3>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Pembeli / Keterangan</label>
+              <input type="text" id="posInputPembeli" placeholder="Contoh: Kak Nisa / Pembeli Toko" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
+            </div>
+          </div>
+
+          <!-- Area Item Keranjang (Scrollable) -->
+          <div class="flex-grow overflow-y-auto p-3 space-y-2 bg-slate-50/50 dark:bg-slate-800/50" id="posKeranjangItems">
+            <!-- Item keranjang akan dirender di sini oleh JavaScript -->
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+              <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <span class="text-xs font-medium">Keranjang masih kosong</span>
+            </div>
+          </div>
+
+          <!-- Area Ringkasan Pembayaran & Tombol Checkout -->
+          <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-b-3xl shrink-0 space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1">Platform</label>
+                <select id="posInputPlatform" class="w-full px-2.5 py-1.5 rounded-lg border dark:bg-slate-700 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-emerald-500">
+                  <option value="Toko Offline">Toko Offline</option>
+                  <option value="WhatsApp / Chat">WhatsApp</option>
+                  <option value="Shopee">Shopee</option>
+                  <option value="Tokopedia">Tokopedia</option>
+                  <option value="TikTok Shop">TikTok Shop</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-rose-500 mb-1">Pot. Admin (Rp)</label>
+                <input type="text" inputmode="numeric" id="posInputPotongan" placeholder="0" oninput="formatNominalOtomatis(this); hitungTotalPos();" onblur="autoKoreksiRibuan(this); hitungTotalPos();" class="w-full px-2.5 py-1.5 rounded-lg border dark:bg-slate-700 dark:text-white text-rose-600 font-bold text-right outline-none focus:ring-2 focus:ring-rose-500">
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-dashed border-slate-200 dark:border-slate-700 space-y-1">
+              <div class="flex justify-between items-center text-slate-500 font-bold">
+                <span>Subtotal Bruto:</span>
+                <span id="posLabelSubtotal">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center font-black text-sm">
+                <span class="text-emerald-700 dark:text-emerald-400">Total Net (Masuk Kas):</span>
+                <span id="posLabelNet" class="text-emerald-600 dark:text-emerald-400">Rp 0</span>
+              </div>
+            </div>
+
+            <!-- Pesan Informasi Integrasi 3-in-1 -->
+            <div class="bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/50 text-[9px] text-emerald-700 dark:text-emerald-400 font-medium text-center">
+              ⚡ Checkout otomatis memotong stok & mencatat ke Arus Kas
+            </div>
+
+            <button type="button" id="btnCheckoutPos" onclick="eksekusiCheckoutPos()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <span>Bayar & Proses Pesanan</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== SUB-TAB 1: STOK BAHAN & PRODUK ==================== -->
+<!-- --- BATAS AKHIR PERUBAHAN --- -->
 
     <!-- ==================== SUB-TAB 1: STOK BAHAN & PRODUK ==================== -->
     <div id="subViewBahan" class="hidden space-y-3.5">
@@ -3316,6 +3700,144 @@ div[id^="modal"]:not(.hidden) > div {
 
   <!-- ==================== LOGIKA JAVASCRIPT SISTEM ==================== -->
   <script>
+
+// Index.html | CLIENT (JavaScript)
+// --- TAMBAHKAN DARI SINI: Logika Katalog POS ---
+
+    // Variabel Global khusus POS
+    let posFilterAktif = 'Semua';
+    let posKeranjang = [];
+
+    function renderKatalogPOS() {
+      if (!cachedData) return;
+      const dataStokGlobal = JSON.parse(cachedData.stokData || '{"stok":[], "bundling":[]}');
+      const grid = document.getElementById('posKatalogGrid');
+      const searchInput = document.getElementById('posSearchInput');
+      if (!grid || !dataStokGlobal) return;
+
+      const q = searchInput ? searchInput.value.toLowerCase() : '';
+      let itemTersedia = [];
+      // 1. Kumpulkan Item Satuan (Dari Master_Stok)
+      if (dataStokGlobal.stok && dataStokGlobal.stok.length > 1) {
+        const rows = dataStokGlobal.stok.slice(1);
+        rows.forEach(r => {
+             const stokFisik = Number(r[3]) || 0;
+             const hpp = Number(r[5]) || 0;
+             const hargaJualEstimasi = Math.round(hpp * 1.3);
+
+             // PERBAIKAN: Tampilkan SEMUA item dari Master Stok tanpa membatasi kategori yang ketat
+             itemTersedia.push({
+               tipe: 'Satuan',
+               id: String(r[0]),
+               nama: String(r[1]),
+               stok: stokFisik,
+               harga: hargaJualEstimasi > 0 ? hargaJualEstimasi : 10000,
+               dataBawaan: r
+             });
+        });
+      }
+
+
+
+      // 2. Kumpulkan Item Bundling (Dari Master_Bundling)
+      if (dataStokGlobal.bundling && dataStokGlobal.bundling.length > 1) {
+        const rowsBdl = dataStokGlobal.bundling.slice(1);
+        rowsBdl.forEach(b => {
+           itemTersedia.push({
+             tipe: 'Bundling',
+             id: String(b[0]),
+             nama: String(b[1]),
+             stok: 999, // Bundling bergantung pada stok bahan
+             harga: Number(b[3]) || 0,
+             dataBawaan: b
+           });
+        });
+      }
+
+      // 3. Terapkan Filter Button (Semua / Satuan / Bundling)
+      if (posFilterAktif !== 'Semua') {
+         itemTersedia = itemTersedia.filter(item => item.tipe === posFilterAktif);
+      }
+
+      // 4. Terapkan Filter Pencarian Teks
+      if (q) {
+         itemTersedia = itemTersedia.filter(item => item.nama.toLowerCase().includes(q) || item.id.toLowerCase().includes(q));
+      }
+
+      // 5. Render ke HTML
+      let html = '';
+      if (itemTersedia.length === 0) {
+         html = `<div class="p-8 text-center col-span-full text-slate-400 text-xs italic font-medium">Tidak ada produk ditemukan.</div>`;
+      } else {
+         itemTersedia.forEach(item => {
+           const warnaStok = item.tipe === 'Bundling' ? 'text-indigo-500' : (item.stok > 5 ? 'text-emerald-500' : 'text-rose-500');
+           const iconTipe = item.tipe === 'Bundling' 
+             ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>` 
+             : `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>`;
+           const infoStok = item.tipe === 'Bundling' ? 'Paket Resep' : `Sisa: ${item.stok}`;
+
+           // Encode string aman untuk fungsi onclick
+           const safeNama = item.nama.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+           
+           html += `
+           <div onclick="tambahKeKeranjangPOS('${item.id}', '${safeNama}', ${item.harga}, '${item.tipe}')" class="bg-white dark:bg-slate-700 p-3 rounded-xl border border-slate-200 dark:border-slate-600 hover:border-emerald-500 hover:shadow-md transition cursor-pointer flex flex-col justify-between h-24 relative overflow-hidden group">
+             <div class="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition text-slate-800 dark:text-white">
+                ${iconTipe}
+             </div>
+             <div>
+               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 flex items-center gap-1">${iconTipe} ${item.tipe}</span>
+               <h4 class="font-bold text-slate-800 dark:text-slate-100 text-xs leading-tight line-clamp-2">${item.nama}</h4>
+             </div>
+             <div class="flex justify-between items-end mt-1">
+               <span class="text-[10px] font-semibold ${warnaStok}">${infoStok}</span>
+               <span class="font-black text-emerald-600 dark:text-emerald-400 text-sm">Rp ${item.harga.toLocaleString('id-ID')}</span>
+             </div>
+           </div>
+           `;
+         });
+      }
+      
+      grid.innerHTML = html;
+    }
+
+let globalDeadStockList = []; // Array untuk menyimpan data Dead Stock sementara
+
+function bukaModalDeadStock() {
+  if (globalDeadStockList.length === 0) {
+    showToast("Hebat! Tidak ada modal tertahan pada periode ini.", "success");
+    return;
+  }
+  
+  // Update angka di header modal
+  document.getElementById('mdlDsTotalSku').innerText = `${globalDeadStockList.length} Barang`;
+  const totalRupiah = globalDeadStockList.reduce((sum, item) => sum + item.totalTertahan, 0);
+  document.getElementById('mdlDsTotalRp').innerText = formatRupiah(totalRupiah);
+
+  // Render list HTML
+  const listContainer = document.getElementById('mdlDsList');
+  listContainer.innerHTML = globalDeadStockList.map((item, idx) => `
+    <li class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-600 flex justify-between items-center">
+        <div class="flex items-start gap-3">
+            <span class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] font-bold shrink-0 border border-slate-200 dark:border-slate-700">${idx + 1}</span>
+            <div>
+                <p class="text-xs font-bold text-slate-800 dark:text-white">${item.nama}</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Sisa Fisik: <span class="font-bold text-slate-700 dark:text-slate-300">${item.stok} ${item.satuan}</span> • HPP: ${formatRupiah(item.hpp)}</p>
+            </div>
+        </div>
+        <div class="text-right shrink-0">
+            <p class="text-[10px] text-slate-400 uppercase font-bold">Tertahan</p>
+            <p class="text-sm font-black text-rose-600 dark:text-rose-400 mt-0.5">${formatRupiah(item.totalTertahan)}</p>
+        </div>
+    </li>
+  `).join('');
+
+  document.getElementById('modalDeadStock').classList.remove('hidden');
+}
+
+function tutupModalDeadStock() {
+  document.getElementById('modalDeadStock').classList.add('hidden');
+}
+
 
 // ====================================================================
 // FUNGSI MESIN INVOICE LANSKAP (KHUSUS PEMBELI BARU)
@@ -5682,12 +6204,11 @@ try {
       backdrop.classList.toggle('hidden');
     }
 
-    // ====================================================================
-// --- GANTI SELURUH TUMPUKAN switchTab LAMA DENGAN FUNGSI INI ---
-// ====================================================================
 function switchTab(tab) {
   getar(15);
-  const tabs = ['input', 'laporan', 'bep', 'simulasi', 'gaji', 'aruskas', 'pnl', 'invoice'];
+  // Tambahkan 'masterreport' ke dalam array tabs
+  const tabs = ['input', 'laporan', 'riwayat', 'bep', 'simulasi', 'gaji', 'aruskas', 'pnl', 'invoice', 'masterreport'];
+  
   tabs.forEach(t => {
     const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
     const btn = document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -5729,16 +6250,30 @@ function switchTab(tab) {
   } else if (tab === 'pnl') {
     document.getElementById('pnlBulanFilter').value = selectedMonthBulanan;
     currentTimeframe = 'bulanan';
-    
     if (!dataStokGlobal || !dataStokGlobal.stok || dataStokGlobal.stok.length === 0) {
        muatDataStok();
     }
-    
     renderLaporanPnL();
   } else if (tab === 'invoice') {
     renderTabelInvoice();
+  } else if (tab === 'masterreport') {
+    // Setel default tanggal filter ke awal bulan hingga hari ini (jika masih kosong)
+    const todayStr = getTanggalLokalWIB();
+    const startInput = document.getElementById('mrFilterStart');
+    const endInput = document.getElementById('mrFilterEnd');
+    
+    if (startInput && !startInput.value) {
+      startInput.value = todayStr.slice(0, 8) + '01'; // Tanggal 1 bulan ini
+      endInput.value = todayStr; // Hari ini
+    }
+    
+    // Panggil fungsi peracik data
+    if (typeof renderMasterReportData === 'function') {
+      renderMasterReportData();
+    }
   }
 }
+
 
     function fetchLatestData() {
       tampilkanLoading("Menyinkronkan data dengan Cloud...");
@@ -5928,12 +6463,12 @@ function switchTab(tab) {
       }
       document.getElementById('bepTotalOperasionalTeks').innerText = formatRupiah(totalOperasional);
 
-      const totalBiayaTetap = totalGaji + totalDepresiasi + totalOperasional;
-      bepConfig.biayaTetapTotal = totalBiayaTetap;
-      document.getElementById('bepSumFixedCost').innerText = formatRupiah(totalBiayaTetap);
+      const biayaTetapTotal = totalGaji + totalDepresiasi + totalOperasional;
+      bepConfig.biayaTetapTotal = biayaTetapTotal;
+      document.getElementById('bepSumFixedCost').innerText = formatRupiah(biayaTetapTotal);
 
       const marginDec = bepConfig.margin / 100;
-      const bepBulanan = marginDec > 0 ? Math.round(totalBiayaTetap / marginDec) : 0;
+      const bepBulanan = marginDec > 0 ? Math.round(biayaTetapTotal / marginDec) : 0;
       const bepHarian = bepConfig.jumlahHari > 0 ? Math.round(bepBulanan / bepConfig.jumlahHari) : 0;
 
       bepConfig.baseline = Math.round(bepBulanan + (bepBulanan * (bepConfig.baselinePct / 100)));
@@ -6836,6 +7371,7 @@ function filterBarisByTimeframe(row) {
   renderChartBebanDonut(); // <-- Ditambahkan agar donat beban toko langsung muncul
   renderAreaTabelLaporan();
   try { renderLaporanPnL(); } catch(e) { console.error("PnL error:", e); }
+  renderRiwayatTransaksi()
 }
 
     function renderChartPlatformUnified() {
@@ -8289,34 +8825,30 @@ function handleMobileMenuClick() {
 }
 
     function switchSubStok(tab) {
-      // Tambahkan 'profit' ke dalam daftar tabs
-      const tabs = ['ringkasan', 'bahan', 'bundling', 'mutasi', 'profit'];
+      // 1. Tambahkan 'kasir' ke dalam daftar array tabs
+      const tabs = ['ringkasan', 'kasir', 'bahan', 'bundling', 'profit', 'mutasi'];
       
       tabs.forEach(t => {
         const view = document.getElementById('subView' + t.charAt(0).toUpperCase() + t.slice(1));
         const btn = document.getElementById('subStokTab' + t.charAt(0).toUpperCase() + t.slice(1));
         
-        if (t === tab) {
-          if (view) view.classList.remove('hidden');
-          if (btn) btn.className = "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-bold text-xs transition bg-indigo-600 text-white shadow-xs";
-        } else {
-          if (view) view.classList.add('hidden');
-          if (btn) btn.className = "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white";
+        if (view && btn) {
+          if (t === tab) {
+            view.classList.remove('hidden');
+            // Menyalakan state aktif (warna latar) pada tombol sidebar
+            btn.classList.add('bg-indigo-600', 'text-white', 'shadow-xs');
+            btn.classList.remove('text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/60');
+            
+            // Panggil fungsi render khusus jika tab kasir dibuka
+            if(tab === 'kasir') renderKatalogPOS();
+            
+          } else {
+            view.classList.add('hidden');
+            btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-xs');
+            btn.classList.add('text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/60');
+          }
         }
       });
-
-      const sidebar = document.getElementById('sidebarMenuStok');
-      const backdrop = document.getElementById('sidebarBackdropStok');
-      if (sidebar && backdrop && !sidebar.classList.contains('-translate-x-full')) {
-        sidebar.classList.add('-translate-x-full');
-        backdrop.classList.add('hidden');
-      }
-
-      if (tab === 'ringkasan') {
-        renderDashboardStokVisual();
-      } else if (tab === 'profit') {
-        renderAnalisisProfitSKU(); // Panggil render saat tab Profit dibuka
-      }
     }
 
     function refreshSemuaTampilanStok() {
@@ -11297,6 +11829,749 @@ function renderTabelAnalisisProfit() {
   }
 }
 
+// Index.html | CLIENT (JavaScript) - KODE BARU
+// --- UBAH DARI SINI: Logika Master Report & PDF ---
+function renderMasterReportData() {
+  if (!cachedData || !dataStokGlobal) {
+    showToast("Data belum siap, harap tunggu sinkronisasi...", "info");
+    return;
+  }
+  
+  tampilkanLoading("Menganalisis metrik bisnis...");
+
+  const startTgl = document.getElementById('mrFilterStart').value;
+  const endTgl = document.getElementById('mrFilterEnd').value;
+  
+  function isMasukRentang(tglStr) {
+    if (!tglStr) return false;
+    const tgl = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(tglStr) : String(tglStr).split('T')[0];
+    if (startTgl && tgl < startTgl) return false;
+    if (endTgl && tgl > endTgl) return false;
+    return true;
+  }
+
+  setTimeout(() => {
+    // =========================================================================
+    // A. PERSIAPAN DATA (LOOKUP MAPS)
+    // =========================================================================
+    const produkMap = {};
+    (dataStokGlobal.stok || []).forEach(s => { 
+      produkMap[String(s[0]).trim()] = { nama: s[1], kategori: s[2] || '-', stok: Number(s[3]) || 0, satuan: s[4] || 'pcs', hpp: Number(s[5]) || 0 }; 
+      produkMap[String(s[1]).toLowerCase().trim()] = { nama: s[1], kategori: s[2] || '-', stok: Number(s[3]) || 0, satuan: s[4] || 'pcs', hpp: Number(s[5]) || 0 };
+    });
+    
+    const bundlingMap = {};
+    (dataStokGlobal.bundling || []).forEach(b => {
+      let resep = []; try { resep = JSON.parse(b[2]); } catch(e){}
+      let hppTot = 0;
+      resep.forEach(rs => { hppTot += (produkMap[rs.kode]?.hpp || 0) * (Number(rs.butuh) || 1); });
+      bundlingMap[String(b[1]).toLowerCase().trim()] = { nama: b[1], hpp: hppTot, jual: Number(b[3]) || 0 };
+    });
+
+    // =========================================================================
+    // B. KALKULASI EXECUTIVE SUMMARY
+    // =========================================================================
+    let grossRevenue = 0;
+    let totalTrx = 0;
+    let mapPelanggan = {};
+
+    (cachedData.pemasukan || []).forEach((r, i) => {
+      if (i > 0 && isMasukRentang(r[1])) {
+        const ket = String(r[0] || '').trim();
+        const ketLower = ket.toLowerCase();
+        if (!ketLower.includes('modal') && !ketLower.includes('setor') && !ketLower.includes('investasi')) {
+          const nom = Number(r[2]) || 0;
+          grossRevenue += nom;
+          totalTrx++;
+          if (ket && ket !== '-') {
+            if (!mapPelanggan[ket]) mapPelanggan[ket] = { belanja: 0, freq: 0 };
+            mapPelanggan[ket].belanja += nom;
+            mapPelanggan[ket].freq += 1;
+          }
+        }
+      }
+    });
+
+    let cogsHpp = 0;
+    let rugiShrinkage = 0;
+    const topProdukMap = {};
+    const produkLakuSet = new Set();
+
+    (dataStokGlobal.mutasi || []).forEach((m, i) => {
+      if (isMasukRentang(m[0])) {
+        const tipe = String(m[2] || '');
+        const namaLower = String(m[3] || '').trim().toLowerCase();
+        const qty = Number(m[4]) || 0;
+
+        let netActual = 0; let hasActualNet = false;
+        const matchNet = String(m[5] || '').match(/\[Net:\s*(-?\d+)\]/i);
+        if (matchNet) { netActual = Number(matchNet[1]); hasActualNet = true; }
+
+        if (tipe === 'Penjualan Bundling' || tipe === 'Penjualan Satuan') {
+          const isBdl = tipe === 'Penjualan Bundling';
+          const itm = isBdl ? bundlingMap[namaLower] : produkMap[namaLower];
+          const hppItem = (itm ? itm.hpp : 0) * qty;
+          cogsHpp += hppItem;
+          produkLakuSet.add(namaLower);
+
+          if (itm) {
+            if (!topProdukMap[namaLower]) topProdukMap[namaLower] = { nama: itm.nama, tipe: isBdl ? 'Bundling' : 'Satuan', qty: 0, omzet: 0, modal: 0 };
+            topProdukMap[namaLower].qty += qty;
+            topProdukMap[namaLower].modal += hppItem;
+            topProdukMap[namaLower].omzet += hasActualNet ? netActual : (qty * (isBdl ? itm.jual : Math.round(itm.hpp * 1.3)));
+          }
+        } 
+        else if (tipe.includes('Rusak') || tipe.includes('Kadaluarsa') || tipe.includes('Hilang') || tipe.includes('Kurang')) {
+          const itm = produkMap[namaLower];
+          rugiShrinkage += (itm ? itm.hpp : 0) * qty;
+        }
+      }
+    });
+
+    let opexAdSpend = 0; let opexGaji = 0; let opexLain = 0; let dendaIndisipliner = 0;
+    (cachedData.iklan || []).forEach((r, i) => { if (i > 0 && isMasukRentang(r[1])) opexAdSpend += Number(r[2]) || 0; });
+    (cachedData.pengeluaranLain || []).forEach((r, i) => {
+      if (i > 0 && isMasukRentang(r[1])) {
+        const ket = String(r[0] || '').toLowerCase();
+        const nom = Number(r[2]) || 0;
+        if (ket.includes('beban gaji') || ket.includes('gaji karyawan')) opexGaji += nom;
+        else opexLain += nom;
+      }
+    });
+    
+    let bebanDepresiasi = 0;
+    if (typeof bepConfig !== 'undefined' && bepConfig && bepConfig.depresiasi) {
+      const dStart = new Date(startTgl); const dEnd = new Date(endTgl);
+      const days = Math.max(1, Math.ceil((dEnd - dStart) / (1000 * 60 * 60 * 24)));
+      const ratioBulan = days / 30;
+      bepConfig.depresiasi.forEach(d => { bebanDepresiasi += (Number(d.depresiasiBulanan) || 0) * ratioBulan; });
+    }
+
+    const totalOpex = opexAdSpend + opexGaji + opexLain + bebanDepresiasi;
+    const grossProfit = grossRevenue - cogsHpp;
+    const netProfit = grossProfit - totalOpex - rugiShrinkage;
+
+    // =========================================================================
+    // C. KALKULASI METRIK BISNIS (KPI) & DOM RENDER
+    // =========================================================================
+    document.getElementById('mrValOmzetKotor').innerText = formatRupiah(grossRevenue);
+    document.getElementById('mrSubTrx').innerText = `${totalTrx.toLocaleString('id-ID')} Transaksi`;
+    document.getElementById('mrValHpp').innerText = formatRupiah(cogsHpp);
+    document.getElementById('mrSubHppPct').innerText = `${grossRevenue > 0 ? ((cogsHpp / grossRevenue) * 100).toFixed(1) : 0}% dari Omzet`;
+    document.getElementById('mrValLabaKotor').innerText = formatRupiah(grossProfit);
+    document.getElementById('mrSubMarginKotor').innerText = `Margin Kotor: ${grossRevenue > 0 ? ((grossProfit / grossRevenue) * 100).toFixed(1) : 0}%`;
+    document.getElementById('mrValOpex').innerText = formatRupiah(totalOpex);
+    document.getElementById('mrSubOpexPct').innerText = `${grossRevenue > 0 ? ((totalOpex / grossRevenue) * 100).toFixed(1) : 0}% dari Omzet`;
+    document.getElementById('mrValRugiStok').innerText = formatRupiah(rugiShrinkage);
+    document.getElementById('mrSubRugiPct').innerText = `Shrinkage: ${grossRevenue > 0 ? ((rugiShrinkage / grossRevenue) * 100).toFixed(2) : 0}% dari Omzet`;
+    document.getElementById('mrValLabaBersih').innerText = formatRupiah(netProfit);
+    document.getElementById('mrSubMarginBersih').innerText = `Margin Bersih: ${grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(1) : 0}%`;
+
+    document.getElementById('mrValAov').innerText = formatRupiah(totalTrx > 0 ? (grossRevenue / totalTrx) : 0);
+    document.getElementById('mrValIklan').innerText = formatRupiah(opexAdSpend);
+    document.getElementById('mrValRoas').innerText = `${opexAdSpend > 0 ? (grossRevenue / opexAdSpend).toFixed(1) : 0.0}x`;
+    document.getElementById('mrValMcr').innerText = `${grossRevenue > 0 ? ((opexAdSpend / grossRevenue) * 100).toFixed(1) : 0}%`;
+
+    const totalKaryawan = (typeof gajiConfig !== 'undefined' && gajiConfig.daftarKaryawan) ? gajiConfig.daftarKaryawan.length : 2;
+    document.getElementById('mrSubPegawai').innerText = `Berdasarkan ${totalKaryawan} staf aktif`;
+    document.getElementById('mrValRpe').innerText = formatRupiah(totalKaryawan > 0 ? (grossRevenue / totalKaryawan) : 0);
+    document.getElementById('mrValLer').innerText = `${opexGaji > 0 ? (grossProfit / opexGaji).toFixed(1) : 0.0}x`;
+    
+    let totalKas = 0;
+    (cachedData.arusKas || []).forEach((r, i) => {
+      if (i > 0) {
+        if (r[2] === 'Kas Masuk') totalKas += (Number(r[3]) || 0);
+        if (r[2] === 'Kas Keluar') totalKas -= (Number(r[3]) || 0);
+      }
+    });
+    const avgOpexBulanan = totalOpex > 0 ? (totalOpex / (Math.max(1, (new Date(endTgl) - new Date(startTgl))/(1000*60*60*24)) / 30)) : 1;
+    document.getElementById('mrValRunway').innerText = `${avgOpexBulanan > 0 ? (totalKas / avgOpexBulanan).toFixed(1) : 0} Bulan`;
+    
+    (cachedData.penyesuaianGaji || []).forEach((r, i) => { if (i > 0 && isMasukRentang(r[0]) && String(r[2]).includes('Denda')) dendaIndisipliner += (Number(r[3]) || 0); });
+    document.getElementById('mrValIndisipliner').innerText = formatRupiah(dendaIndisipliner);
+
+    let custBaru = 0; let custLama = 0; const vipArray = [];
+    Object.keys(mapPelanggan).forEach(k => {
+      if (mapPelanggan[k].freq === 1) custBaru++; else custLama++;
+      vipArray.push({ nama: k, belanja: mapPelanggan[k].belanja });
+    });
+    const totalCust = custBaru + custLama;
+    const pctBaru = totalCust > 0 ? Math.round((custBaru/totalCust)*100) : 0;
+    const pctLama = totalCust > 0 ? Math.round((custLama/totalCust)*100) : 0;
+    
+    document.getElementById('mrPctBaru').innerText = `${pctBaru}%`;
+    document.getElementById('mrPctLama').innerText = `${pctLama}%`;
+    document.getElementById('mrBarPelangganBaru').style.width = `${pctBaru}%`;
+    document.getElementById('mrBarPelangganLama').style.width = `${pctLama}%`;
+
+    const topVip = vipArray.sort((a,b) => b.belanja - a.belanja).slice(0, 3);
+    document.getElementById('mrListVip').innerHTML = topVip.length > 0 
+      ? topVip.map((v, idx) => `<li>${idx+1}. ${v.nama} <span class="text-emerald-600 font-bold">(${formatRupiah(v.belanja)})</span></li>`).join('')
+      : `<li class="text-slate-400 font-normal">Data pelanggan belum tersedia</li>`;
+
+    // Index.html | CLIENT (JavaScript)
+// --- UBAH DARI SINI: Perbaikan Logika Dead Stock ---
+    // --- PENGISIAN GLOBAL DEAD STOCK ---
+    globalDeadStockList = []; // Reset array
+    let deadStockRp = 0;
+    
+    // 1. SETUP WAKTU DEAD STOCK (Baku: 30 Hari Kebelakang dari Tanggal Akhir Filter)
+    const BATAS_HARI_DEADSTOCK = 30;
+    const endVal = document.getElementById('mrFilterEnd').value;
+    const endTglObj = endVal ? new Date(endVal) : new Date();
+    
+    const startDsObj = new Date(endTglObj);
+    startDsObj.setDate(startDsObj.getDate() - BATAS_HARI_DEADSTOCK);
+    
+    const startDsStr = startDsObj.toISOString().split('T')[0];
+    const endDsStr = endTglObj.toISOString().split('T')[0];
+
+    const produkAktifSet = new Set(); // Himpunan barang yang bergerak dalam 30 hari
+    
+    // 2. LOOP KHUSUS UNTUK MELACAK BARANG AKTIF (Mencegah Jebakan Waktu & Membedah Bundling)
+    (dataStokGlobal.mutasi || []).forEach(m => {
+       const tglMutasi = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(m[0]) : String(m[0]).split('T')[0];
+       const tipe = String(m[2] || '');
+       const namaLower = String(m[3] || '').trim().toLowerCase();
+
+       // Hanya cek mutasi dalam 30 hari terakhir
+       if (tglMutasi >= startDsStr && tglMutasi <= endDsStr) {
+           // Jika ada penjualan atau pengeluaran barang
+           if (tipe === 'Penjualan Bundling' || tipe === 'Penjualan Satuan' || tipe.includes('Keluar')) {
+               produkAktifSet.add(namaLower); // Tandai barang utama sebagai Aktif
+               
+               // JIKA BUNDLING TERJUAL, BONGKAR RESEPNYA!
+               if (tipe === 'Penjualan Bundling') {
+                   const bd = (dataStokGlobal.bundling || []).find(b => String(b[1]).trim().toLowerCase() === namaLower);
+                   if (bd && bd[2]) {
+                       try {
+                           const resep = JSON.parse(bd[2]);
+                           resep.forEach(rs => {
+                               // rs.kode adalah SKU bahan baku. Kita cari nama bahannya.
+                               const sku = String(rs.kode).trim();
+                               if (produkMap[sku]) {
+                                   // Tandai BAHAN BAKU (kardus, toples, dll) sebagai Aktif juga!
+                                   produkAktifSet.add(produkMap[sku].nama.toLowerCase().trim());
+                               }
+                           });
+                       } catch(e) { console.error("Gagal membaca resep bundling", e); }
+                   }
+               }
+           }
+       }
+    });
+
+    const arrKunciMap = Object.keys(produkMap);
+    const arrUnikProduk = [...new Set(arrKunciMap.map(k => produkMap[k].nama))];
+
+    // 3. VONIS DEAD STOCK
+    arrUnikProduk.forEach(namaAsli => {
+        const kunciLower = namaAsli.toLowerCase().trim();
+        // Cek jika produk ini TIDAK ADA di produkAktifSet (Berarti sama sekali tidak bergerak selama 30 hari)
+        if (!produkAktifSet.has(kunciLower) && produkMap[kunciLower] && produkMap[kunciLower].stok > 0) {
+            const itm = produkMap[kunciLower];
+            const nilaiTertahan = itm.stok * itm.hpp;
+            deadStockRp += nilaiTertahan;
+            globalDeadStockList.push({
+                nama: itm.nama,
+                stok: itm.stok,
+                satuan: itm.satuan,
+                hpp: itm.hpp,
+                totalTertahan: nilaiTertahan
+            });
+        }
+    });
+
+    // Urutkan Dead Stock dari nominal tertahan paling besar
+    globalDeadStockList.sort((a, b) => b.totalTertahan - a.totalTertahan);
+
+    document.getElementById('mrValDeadStockQty').innerText = `${globalDeadStockList.length} SKU Pasif`;
+    document.getElementById('mrValDeadStockRp').innerText = formatRupiah(deadStockRp);
+    // ------------------------------------
+// --- BATAS AKHIR PERUBAHAN ---
+
+    const topArray = Object.keys(topProdukMap).map(k => {
+      const itm = topProdukMap[k];
+      return { nama: itm.nama, tipe: itm.tipe, qty: itm.qty, omzet: itm.omzet, modal: itm.modal, laba: itm.omzet - itm.modal, margin: itm.omzet > 0 ? ((itm.omzet - itm.modal) / itm.omzet * 100) : 0 };
+    }).sort((a,b) => b.laba - a.laba);
+
+    const tbodyTops = document.getElementById('mrTableTopProducts');
+    if (topArray.length > 0) {
+      tbodyTops.innerHTML = topArray.map((it, idx) => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40">
+          <td class="px-4 py-3 font-bold text-slate-500">${idx+1}</td>
+          <td class="px-4 py-3 font-bold text-slate-900 dark:text-white">${it.nama}<span class="block text-[10px] text-slate-400 font-normal mt-0.5">${it.tipe}</span></td>
+          <td class="px-4 py-3 text-center font-extrabold text-slate-700 dark:text-slate-300">${it.qty.toLocaleString('id-ID')}</td>
+          <td class="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-300">${formatRupiah(it.omzet)}</td>
+          <td class="px-4 py-3 text-right font-semibold text-rose-600">${formatRupiah(it.modal)}</td>
+          <td class="px-4 py-3 text-right font-black text-emerald-600 dark:text-emerald-400">${formatRupiah(it.laba)}</td>
+          <td class="px-4 py-3 text-center font-bold text-slate-800 dark:text-slate-200">${it.margin.toFixed(1)}%</td>
+        </tr>
+      `).join('');
+    } else {
+      tbodyTops.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400 font-medium">Tidak ada transaksi pada periode ini.</td></tr>`;
+    }
+   
+    // Index.html | CLIENT (JavaScript)
+// --- UBAH DARI SINI: Timpa semua dari Blok D sampai Blok E ---
+
+    // =========================================================================
+    // D. KALKULASI PROYEKSI & TARGET BEP
+    // =========================================================================
+    
+    // 1. Ambil Target BEP (Multi-Source Lookup)
+    let targetBep = 0;
+    
+    // 1. Ambil Target BEP (Langsung tembak ke cachedData utama)
+    let sumberBep = null;
+    if (typeof cachedData !== 'undefined' && cachedData && cachedData.bepConfig) {
+        sumberBep = cachedData.bepConfig; // Sumber valid saat pertama kali buka web
+    } else if (typeof bepConfig !== 'undefined' && bepConfig) {
+        sumberBep = bepConfig; // Sumber valid setelah klik tombol simpan
+    }
+
+    // 2. Ekstrak Angka Target dari sumber yang valid
+    if (sumberBep) {
+        if (Number(sumberBep.targetRupiah) > 0) {
+            targetBep = Number(sumberBep.targetRupiah);
+        } else if (Number(sumberBep.targetBep) > 0) {
+            targetBep = Number(sumberBep.targetBep);
+        } else if (Number(sumberBep.biayaTetapTotal) > 0 && Number(sumberBep.margin) > 0) {
+            // Kalkulasi manual berdasarkan kosa kata asli dari Code.gs
+            targetBep = Number(sumberBep.biayaTetapTotal) / (Number(sumberBep.margin) / 100);
+        }
+    }
+    
+    // Fallback elemen DOM (jaga-jaga jika data belum termuat tapi layar BEP sudah render)
+    if (targetBep === 0) {
+        const domBep = document.getElementById('bepTargetRupiah') || document.getElementById('valTargetBep');
+        if (domBep && domBep.innerText) {
+            const angkaBersih = Number(domBep.innerText.replace(/[^0-9]/g, ''));
+            if (angkaBersih > 0) targetBep = angkaBersih;
+        }
+    }
+    
+    // 2. Hitung Progres Pencapaian BEP
+    let progresBepPct = 0;
+    let sisaKejarBep = targetBep;
+    let teksSisaBep = "Target BEP belum disetel.";
+    let warnaTeksSisa = "text-slate-400"; 
+    
+    if (targetBep > 0) {
+        // PERBAIKAN: Menggunakan grossRevenue (Omzet) sebagai pembanding, bukan grossProfit
+        progresBepPct = (grossRevenue / targetBep) * 100;
+        sisaKejarBep = targetBep - grossRevenue;
+        
+        if (sisaKejarBep > 0) {
+            teksSisaBep = `Kurang ${formatRupiah(sisaKejarBep)} lagi`;
+            warnaTeksSisa = "text-rose-500"; 
+        } else {
+             teksSisaBep = `Surplus ${formatRupiah(Math.abs(sisaKejarBep))}! (PROFIT 🎉)`;
+             warnaTeksSisa = "text-emerald-500"; 
+             progresBepPct = 100; 
+        }
+    }
+    
+    // 3. Proyeksi Omzet Akhir Bulan
+    let proyeksiOmzet = 0;
+    
+    if (startTgl && endTgl) {
+        const tglMulai = new Date(startTgl);
+        const tglSelesai = new Date(endTgl);
+        
+        const tahunLaporan = tglSelesai.getFullYear();
+        const bulanLaporan = tglSelesai.getMonth();
+        const totalHariSebulan = new Date(tahunLaporan, bulanLaporan + 1, 0).getDate();
+        
+        // Memastikan perhitungan hari inklusif (tanggal 1 s/d 15 = 15 hari, bukan 14 hari)
+        const selisihHari = Math.max(1, Math.ceil((tglSelesai - tglMulai) / (1000 * 60 * 60 * 24)) + 1);
+        
+        const rataOmzetHarian = grossRevenue / selisihHari;
+        proyeksiOmzet = rataOmzetHarian * totalHariSebulan;
+    }
+
+    // =========================================================================
+    // E. RENDER PROYEKSI & BEP KE DOM
+    // =========================================================================
+    
+    if(document.getElementById('mrValTargetBep')) document.getElementById('mrValTargetBep').innerText = targetBep > 0 ? formatRupiah(targetBep) : "Belum Setel BEP";
+    if(document.getElementById('mrValProgresBepPct')) document.getElementById('mrValProgresBepPct').innerText = `${progresBepPct.toFixed(1)}%`;
+    
+    const mrSubSisaBepEl = document.getElementById('mrSubSisaBep');
+    if (mrSubSisaBepEl) {
+        mrSubSisaBepEl.innerText = teksSisaBep;
+        mrSubSisaBepEl.className = `text-xs font-bold mt-1.5 ${warnaTeksSisa}`;
+    }
+    
+    if(document.getElementById('mrBarProgresBep')) document.getElementById('mrBarProgresBep').style.width = `${Math.min(progresBepPct, 100)}%`;
+    if(document.getElementById('mrValProyeksiOmzet')) document.getElementById('mrValProyeksiOmzet').innerText = formatRupiah(proyeksiOmzet);
+
+// --- BATAS AKHIR PERUBAHAN ---
+
+    sembunyikanLoading();
+  }, 100);
+}
+
+// Index.html | CLIENT (JavaScript)
+// --- TAMBAHKAN DARI SINI: Logika Engine Riwayat Transaksi ---
+
+    // Variabel state khusus untuk Tab Riwayat
+    let kategoriRiwayatAktif = 'Semua';
+    let searchRiwayatQuery = '';
+    let riwayatTglMulai = ''; // State tanggal mulai
+    let riwayatTglAkhir = ''; // State tanggal akhir
+    let currentPageRiwayat = 1;
+    const itemsPerPageRiwayat = 20;
+
+    function renderRiwayatTransaksi() {
+      if (!cachedData) return;
+      const wrapper = document.getElementById('wrapperTabelRiwayat');
+      if (!wrapper) return;
+
+      let semuaTransaksi = [];
+      const kategoriList = [
+        { key: 'pemasukan', nama: 'Pemasukan' },
+        { key: 'shopee', nama: 'Pembelian Shopee' },
+        { key: 'agen', nama: 'Pembelian Agen' },
+        { key: 'pengeluaranLain', nama: 'Pengeluaran Lain' },
+        { key: 'iklan', nama: 'Iklan' }
+      ];
+
+      // 1. Ambil dan gabungkan data
+      kategoriList.forEach(kat => {
+        if (cachedData[kat.key] && cachedData[kat.key].length > 1) {
+           const rows = cachedData[kat.key].slice(1);
+           rows.forEach(r => {
+             semuaTransaksi.push({
+               kategori: kat.nama,
+               nama: String(r[0]||''),
+               tanggal: String(r[1]||'').split('T')[0],
+               nominal: Number(r[2])||0,
+               toko: String(r[3]||'-'),
+               jam: String(r[4]||'').replace(/'/g, ''),
+               rowIdx: r[5] // Indeks baris asli
+             });
+           });
+        }
+      });
+
+      // 2. Filter Tanggal (Mandiri khusus tab ini)
+      if (riwayatTglMulai && riwayatTglAkhir) {
+        semuaTransaksi = semuaTransaksi.filter(t => t.tanggal >= riwayatTglMulai && t.tanggal <= riwayatTglAkhir);
+      } else if (riwayatTglMulai) {
+        semuaTransaksi = semuaTransaksi.filter(t => t.tanggal >= riwayatTglMulai);
+      } else if (riwayatTglAkhir) {
+        semuaTransaksi = semuaTransaksi.filter(t => t.tanggal <= riwayatTglAkhir);
+      }
+
+      // 3. Filter Kategori
+      if (kategoriRiwayatAktif !== 'Semua') {
+        semuaTransaksi = semuaTransaksi.filter(t => t.kategori === kategoriRiwayatAktif);
+      }
+
+      // 4. Filter Search
+      if (searchRiwayatQuery) {
+        const q = searchRiwayatQuery.toLowerCase();
+        semuaTransaksi = semuaTransaksi.filter(t => 
+           t.nama.toLowerCase().includes(q) || 
+           t.toko.toLowerCase().includes(q) ||
+           t.kategori.toLowerCase().includes(q)
+        );
+      }
+
+      // 5. Urutkan (Terbaru di atas)
+      semuaTransaksi.sort((a, b) => {
+        if (a.tanggal !== b.tanggal) return a.tanggal > b.tanggal ? -1 : 1;
+        return a.jam > b.jam ? -1 : 1;
+      });
+
+      // =========================================================
+      // BUILDER UI HTML: Header Filter & Search
+      // =========================================================
+      let html = `<div class="p-4 border-b border-slate-100 dark:border-slate-700 space-y-3">
+          <!-- Baris 1: Filter Tanggal & Pencarian -->
+          <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+            <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-700/80 p-1.5 rounded-xl border border-slate-200 dark:border-slate-600 text-xs font-semibold w-full sm:w-auto">
+              <input type="date" value="${riwayatTglMulai}" onchange="riwayatTglMulai=this.value; currentPageRiwayat=1; renderRiwayatTransaksi();" class="px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 outline-none dark:text-white cursor-pointer w-full sm:w-auto">
+              <span class="text-slate-400">s/d</span>
+              <input type="date" value="${riwayatTglAkhir}" onchange="riwayatTglAkhir=this.value; currentPageRiwayat=1; renderRiwayatTransaksi();" class="px-2 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 outline-none dark:text-white cursor-pointer w-full sm:w-auto">
+              <button onclick="riwayatTglMulai=''; riwayatTglAkhir=''; currentPageRiwayat=1; renderRiwayatTransaksi();" class="px-2.5 py-1.5 bg-slate-200 dark:bg-slate-600 hover:bg-emerald-600 hover:text-white text-slate-700 dark:text-slate-200 rounded-lg font-bold transition">Semua</button>
+            </div>
+            <input type="text" value="${searchRiwayatQuery}" oninput="searchRiwayatQuery=this.value; currentPageRiwayat=1; renderRiwayatTransaksi();" placeholder="🔍 Cari nota / toko / barang..." class="w-full sm:w-64 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner">
+          </div>
+
+          <!-- Baris 2: Kategori Tabs -->
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs font-bold">`;
+      
+      const filterBtns = ['Semua', 'Pemasukan', 'Pengeluaran Lain', 'Pembelian Agen', 'Pembelian Shopee', 'Iklan'];
+      filterBtns.forEach(btn => {
+         const activeClass = (kategoriRiwayatAktif === btn) ? 'bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900';
+         html += `<button onclick="kategoriRiwayatAktif='${btn}'; currentPageRiwayat=1; renderRiwayatTransaksi();" class="px-3 py-1.5 rounded-lg transition ${activeClass}">${btn}</button>`;
+      });
+
+      html += `</div></div>`;
+
+      // =========================================================
+      // BUILDER UI HTML: Tabel Transaksi
+      // =========================================================
+      html += `<div class="overflow-x-auto"><table class="w-full text-left text-xs whitespace-nowrap">
+            <thead class="bg-slate-50 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 uppercase font-bold">
+              <tr>
+                <th class="px-4 py-3">Tanggal & Jam</th>
+                <th class="px-4 py-3">Kategori</th>
+                <th class="px-4 py-3">Deskripsi Item</th>
+                <th class="px-4 py-3">Platform/Toko</th>
+                <th class="px-4 py-3 text-right">Nominal (Rp)</th>
+                <th class="px-4 py-3 text-center">Aksi</th>
+              </tr>
+            </thead><tbody class="divide-y divide-slate-100 dark:divide-slate-700">`;
+
+      if (semuaTransaksi.length === 0) {
+        html += `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium italic">Tidak ada transaksi ditemukan</td></tr>`;
+      } else {
+        const startIndex = (currentPageRiwayat - 1) * itemsPerPageRiwayat;
+        const pagedData = semuaTransaksi.slice(startIndex, startIndex + itemsPerPageRiwayat);
+
+        pagedData.forEach(t => {
+          const isPemasukan = t.kategori === 'Pemasukan';
+          const warnaNominal = isPemasukan ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+          const tandaNominal = isPemasukan ? '+' : '-';
+          const tglFormat = t.tanggal.split('-').reverse().join('/'); 
+          
+          const safeKategori = t.kategori.replace(/'/g, "\\'");
+          const safeNama = t.nama.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const safeToko = t.toko.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          
+          const strPayload = `{"kategori":"${safeKategori}","nama":"${safeNama}","tanggal":"${t.tanggal}","nominal":${t.nominal},"toko":"${safeToko}","jam":"${t.jam}","rowIndex":${t.rowIdx}}`;
+          const encodedPayload = encodeURIComponent(strPayload);
+
+          html += `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+              <td class="px-4 py-2.5">
+                <span class="font-bold text-slate-700 dark:text-slate-200">${tglFormat}</span>
+                <span class="text-[10px] text-slate-400 ml-1">${t.jam}</span>
+              </td>
+              <td class="px-4 py-2.5"><span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded text-[10px] font-bold shadow-xs">${t.kategori}</span></td>
+              <td class="px-4 py-2.5 font-bold text-slate-800 dark:text-slate-100">${t.nama}</td>
+              <td class="px-4 py-2.5 text-slate-500">${t.toko}</td>
+              <td class="px-4 py-2.5 text-right font-black ${warnaNominal}">${tandaNominal} Rp ${t.nominal.toLocaleString('id-ID')}</td>
+              <td class="px-4 py-2.5 text-center">
+                <button onclick="bukaModalEdit('${encodedPayload}')" class="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="Edit Transaksi">✏️</button>
+                <button onclick="hapusTransaksiLaporan('${safeKategori}', ${t.rowIdx})" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition" title="Hapus Transaksi">🗑️</button>
+              </td>
+            </tr>`;
+        });
+      }
+      html += `</tbody></table></div>`;
+
+      // =========================================================
+      // BUILDER UI HTML: Tombol Halaman (Pagination)
+      // =========================================================
+      const totalPages = Math.ceil(semuaTransaksi.length / itemsPerPageRiwayat);
+      if (totalPages > 1) {
+         html += `<div class="p-3 border-t border-slate-100 dark:border-slate-700 flex justify-center items-center gap-3 text-xs font-bold">`;
+         if (currentPageRiwayat > 1) html += `<button onclick="currentPageRiwayat--; renderRiwayatTransaksi();" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-600 dark:text-slate-300 transition shadow-xs">« Sebelumnya</button>`;
+         html += `<span class="text-slate-500">Halaman ${currentPageRiwayat} dari ${totalPages}</span>`;
+         if (currentPageRiwayat < totalPages) html += `<button onclick="currentPageRiwayat++; renderRiwayatTransaksi();" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-600 dark:text-slate-300 transition shadow-xs">Berikutnya »</button>`;
+         html += `</div>`;
+      }
+      
+      wrapper.innerHTML = html;
+    }
+
+// ==============================================================================
+// FUNGSI PDF MASTER REPORT DENGAN DEAD STOCK
+// ==============================================================================
+function cetakPdfMasterReport() {
+  if (!window.jspdf) {
+    alert("Library PDF belum termuat sempurna. Pastikan koneksi internet aktif.");
+    return;
+  }
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const getTxt = (id) => document.getElementById(id) ? document.getElementById(id).innerText : '-';
+
+  const start = document.getElementById('mrFilterStart').value || '-';
+  const end = document.getElementById('mrFilterEnd').value || '-';
+  const rentangWaktu = `${start} s/d ${end}`;
+
+  doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.setTextColor(79, 70, 229);
+  doc.text("MASTER REPORT & BUSINESS ANALYTICS", 14, 20);
+  doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 116, 139);
+  doc.text(`Our Fav Snack  |  Periode Laporan: ${rentangWaktu}`, 14, 26);
+
+  let currentY = 32;
+
+  // ⭐ Tabel Proyeksi & Target BEP
+  doc.autoTable({
+    startY: currentY,
+    head: [[{ content: '⭐ PROYEKSI & TARGET BEP (Bulan Berjalan)', colSpan: 3, styles: { fillColor: [254, 243, 199], textColor: [180, 83, 9] } }]], // Warna setema Amber
+    body: [
+      [
+        `Target BEP:\n${getTxt('mrValTargetBep')}`,
+        `Progres Pencapaian:\n${getTxt('mrValProgresBepPct')} (${getTxt('mrSubSisaBep')})`,
+        `Proyeksi Omzet Akhir Bulan:\n${getTxt('mrValProyeksiOmzet')}`
+      ]
+    ],
+    theme: 'grid',
+    styles: { font: "helvetica", fontSize: 9, cellPadding: 4, halign: 'center' },
+    headStyles: { halign: 'left', fontStyle: 'bold' }
+  });
+  currentY = doc.lastAutoTable.finalY + 6;
+
+  // 1. Exec Summary
+  doc.autoTable({
+    startY: currentY,
+    head: [[{ content: '1. EXECUTIVE SUMMARY (Rangkuman Keuangan)', colSpan: 2, styles: { fillColor: [238, 242, 255], textColor: [67, 56, 202] } }]],
+    body: [
+      ['Gross Revenue (Pendapatan Kotor)', getTxt('mrValOmzetKotor')],
+      ['COGS (HPP / Modal Terjual)', getTxt('mrValHpp')],
+      [{ content: 'Gross Profit (Laba Kotor)', styles: { fontStyle: 'bold' } }, { content: getTxt('mrValLabaKotor'), styles: { fontStyle: 'bold', textColor: [5, 150, 105] } }],
+      ['OPEX (Beban Operasional & Gaji)', getTxt('mrValOpex')],
+      ['Inventory Loss (Kerugian Stok / Shrinkage)', getTxt('mrValRugiStok')],
+      [{ content: 'NET PROFIT (Laba Bersih)', styles: { fontStyle: 'bold' } }, { content: getTxt('mrValLabaBersih'), styles: { fontStyle: 'bold', textColor: [5, 150, 105] } }]
+    ],
+    theme: 'grid', styles: { font: "helvetica", fontSize: 9, cellPadding: 4 }, columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } }
+  });
+  currentY = doc.lastAutoTable.finalY + 6;
+
+  // 2 & 3. Efficiency
+  doc.autoTable({
+    startY: currentY,
+    head: [[
+      { content: '2. SALES & MARKETING EFFICIENCY', colSpan: 2, styles: { fillColor: [248, 250, 252], textColor: [51, 65, 85] } },
+      { content: '3. HR & OPERATIONAL EFFICIENCY', colSpan: 2, styles: { fillColor: [248, 250, 252], textColor: [51, 65, 85] } }
+    ]],
+    body: [
+      ['Average Order Value (AOV)', getTxt('mrValAov'), 'Revenue per Employee', getTxt('mrValRpe')],
+      ['Total Biaya Iklan (Ad Spend)', getTxt('mrValIklan'), 'Labor Efficiency Ratio (LER)', getTxt('mrValLer')],
+      ['Return on Ad Spend (ROAS)', getTxt('mrValRoas'), 'Biaya Indisipliner (Denda)', getTxt('mrValIndisipliner')],
+      ['Marketing Cost Ratio', getTxt('mrValMcr'), 'Cash Flow Runway (Daya Tahan)', getTxt('mrValRunway')]
+    ],
+    theme: 'grid', styles: { font: "helvetica", fontSize: 9, cellPadding: 3.5 },
+    columnStyles: { 1: { halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] }, 3: { halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] } }
+  });
+  currentY = doc.lastAutoTable.finalY + 6;
+
+  // 4. Cust & Inv Health
+  doc.autoTable({
+    startY: currentY,
+    head: [[{ content: '4. CUSTOMER BEHAVIOR & INVENTORY HEALTH', colSpan: 2, styles: { fillColor: [248, 250, 252], textColor: [51, 65, 85] } }]],
+    body: [
+      ['Rasio Pembeli (Baru vs Repeat Order)', `Baru: ${getTxt('mrPctBaru')} | Repeat: ${getTxt('mrPctLama')}`],
+      ['Dead Stock (Modal Tertahan di Gudang)', `${getTxt('mrValDeadStockQty')} (Nilai: ${getTxt('mrValDeadStockRp')})`]
+    ],
+    theme: 'grid', styles: { font: "helvetica", fontSize: 9, cellPadding: 3.5 }, columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } }
+  });
+  currentY = doc.lastAutoTable.finalY + 8;
+
+  // 5. Tabel Top Products
+  const topRows = [];
+  const tableRows = document.querySelectorAll('#mrTableTopProducts tr');
+  tableRows.forEach(tr => {
+    const tds = tr.querySelectorAll('td');
+    if (tds.length === 7 && !tds[0].hasAttribute('colspan')) {
+      const namaBersih = tds[1].innerText.replace(/\n/g, ' - ');
+      topRows.push([ tds[0].innerText, namaBersih, tds[2].innerText, tds[3].innerText, tds[4].innerText, tds[5].innerText, tds[6].innerText ]);
+    }
+  });
+
+  if (topRows.length > 0) {
+    // Index.html | CLIENT (JavaScript)
+// --- UBAH DARI SINI: Perbaikan Layout autoTable Top Products ---
+
+    doc.autoTable({
+        head: [['No', '5. Top Performing Products', 'Terjual', 'Omzet (Rp)', 'HPP Modal', 'Laba Bersih', 'Margin']],
+        body: topRows, // Ubah dengan nama variabel array data Anda
+        theme: 'grid',
+        headStyles: { 
+            fillColor: [67, 56, 202], // Warna Indigo yang elegan
+            textColor: 255, 
+            fontStyle: 'bold', 
+            halign: 'center',
+            valign: 'middle'
+        },
+        columnStyles: {
+            0: { cellWidth: 10, halign: 'center' }, // Kolom No: Lebar dikunci
+            1: { cellWidth: 'auto' },               // Kolom Produk: Bebas mengisi sisa ruang
+            2: { cellWidth: 18, halign: 'center' }, // Kolom Terjual
+            3: { cellWidth: 26, halign: 'right' },  // Kolom Omzet
+            4: { cellWidth: 26, halign: 'right' },  // Kolom HPP Modal
+            5: { cellWidth: 26, halign: 'right', textColor: [5, 150, 105], fontStyle: 'bold' }, // Kolom Laba: Ditebalkan & Hijau
+            6: { cellWidth: 18, halign: 'center', fontStyle: 'bold' } // Kolom Margin
+        },
+        styles: { 
+            fontSize: 9, // Ukuran font diturunkan sedikit agar lebih lega
+            cellPadding: 3,
+            valign: 'middle',
+            overflow: 'linebreak'
+        },
+        margin: { left: 14, right: 14, bottom: 20 },
+        rowPageBreak: 'avoid', // MENCEGAH tabel terbelah aneh di batas halaman
+        showHead: 'everyPage'  // Mengulang header tabel di halaman berikutnya
+    });
+    currentY = doc.lastAutoTable.finalY + 8;
+  }
+
+  // 6. TABEL DEAD STOCK (DI BAWAH)
+  if (globalDeadStockList && globalDeadStockList.length > 0) {
+      // Cek apakah muat di halaman yang sama, jika sisa kurang dari 30 margin bawah, buat halaman baru
+      if (currentY > 260) {
+          doc.addPage();
+          currentY = 20;
+      }
+
+      const dsRows = globalDeadStockList.map((item, idx) => [
+          idx + 1,
+          item.nama,
+          `${item.stok} ${item.satuan}`,
+          formatRupiah(item.hpp),
+          formatRupiah(item.totalTertahan)
+      ]);
+      
+      const totalDsRp = globalDeadStockList.reduce((sum, item) => sum + item.totalTertahan, 0);
+      dsRows.push([{ content: 'TOTAL MODAL TERTAHAN PADA PERIODE INI:', colSpan: 4, styles: { halign: 'right', fontStyle: 'bold' } }, { content: formatRupiah(totalDsRp), styles: { fontStyle: 'bold', textColor: [225, 29, 72] } }]);
+
+
+    doc.autoTable({
+        // PENTING: Biarkan variabel startY dan body mengambil dari kode asli Anda
+        startY: currentY, // Ubah posisiY ini dengan nama variabel Y Anda (misal: doc.lastAutoTable.finalY + 10)
+        head: [['No', '6. Rincian Dead Stock (Barang Pasif)', 'Sisa Fisik', 'HPP Satuan', 'Modal Tertahan']],
+        body: dsRows, // Ubah dengan nama variabel array data Dead Stock Anda
+        theme: 'grid',
+        headStyles: { 
+            fillColor: [245, 158, 11], // Warna Amber/Orange (sesuai gambar)
+            textColor: 255, 
+            fontStyle: 'bold', 
+            halign: 'center',
+            valign: 'middle'
+        },
+        columnStyles: {
+            0: { cellWidth: 10, halign: 'center' }, // Kolom No: Lebar dikunci agar tidak terpotong
+            1: { cellWidth: 'auto' },               // Kolom Produk: Bebas mengisi sisa ruang
+            2: { cellWidth: 25, halign: 'center' }, // Kolom Sisa Fisik
+            3: { cellWidth: 30, halign: 'right' },  // Kolom HPP Satuan
+            4: { cellWidth: 35, halign: 'right', textColor: [225, 29, 72], fontStyle: 'bold' } // Kolom Modal Tertahan: Ditebalkan & Merah/Rose
+        },
+        styles: { 
+            fontSize: 9, 
+            cellPadding: 3,
+            valign: 'middle',
+            overflow: 'linebreak'
+        },
+        margin: { left: 14, right: 14, bottom: 20 },
+        rowPageBreak: 'avoid', // Mencegah tabel terbelah aneh
+        showHead: 'everyPage'
+    });
+  }
+
+  const namaFile = `Master_Report_OFS_${start}_sd_${end}.pdf`;
+  doc.save(namaFile);
+  showToast("PDF Master Report berhasil diunduh! ✨");
+}
+// --- BATAS AKHIR TAMBAHAN ---
+
 // ==================== LOGIKA MASTER PROFIT & LOSS (P&L) ====================
 function renderLaporanPnL() {
   if (!cachedData || !dataStokGlobal) return;
@@ -11548,6 +12823,50 @@ window.addEventListener('click', function(e) {
       </div>
     </div>
   </div>
+
+  <!-- Index.html | CLIENT (HTML) -->
+<!-- --- TAMBAHKAN DARI SINI: Modal Popup Rincian Dead Stock --- -->
+<div id="modalDeadStock" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+  <!-- Backdrop (Klik untuk tutup) -->
+  <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="tutupModalDeadStock()"></div>
+  
+  <div class="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-5 sm:p-6 mx-4 max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+    <!-- Header Modal -->
+    <div class="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-700/60">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-800/50 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        </div>
+        <div>
+          <h3 class="font-black text-slate-900 dark:text-white text-base">Rincian Dead Stock</h3>
+          <p class="text-[11px] text-slate-400">Modal tertahan pada periode ini</p>
+        </div>
+      </div>
+      <button type="button" onclick="tutupModalDeadStock()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-rose-100 hover:text-rose-600 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    
+    <!-- Summary Header di dalam Modal -->
+    <div class="py-3 flex justify-between items-center px-4 bg-amber-50/50 dark:bg-amber-900/20 rounded-xl my-4 border border-amber-100 dark:border-amber-800/30">
+        <div>
+            <p class="text-[10px] font-bold text-amber-700/70 dark:text-amber-500 uppercase">Total SKU Pasif</p>
+            <p id="mdlDsTotalSku" class="text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5">0 Barang</p>
+        </div>
+        <div class="text-right">
+            <p class="text-[10px] font-bold text-amber-700/70 dark:text-amber-500 uppercase">Total Rupiah Tertahan</p>
+            <p id="mdlDsTotalRp" class="text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5">Rp 0</p>
+        </div>
+    </div>
+
+    <!-- Daftar List Barang (Bisa di-scroll) -->
+    <div class="flex-grow overflow-y-auto no-scrollbar pb-2">
+      <ul id="mdlDsList" class="space-y-2.5">
+        <!-- List item akan dimasukkan via JavaScript -->
+      </ul>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
