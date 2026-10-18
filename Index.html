@@ -2257,14 +2257,23 @@ div[id^="modal"]:not(.hidden) > div {
         <div class="lg:col-span-8 flex flex-col h-[calc(100vh-100px)]">
           <!-- Area Pencarian & Filter -->
           <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 mb-3">
-            <input type="text" id="posSearchInput" oninput="renderKatalogPOS()" placeholder="🔍 Cari nama produk / paket..." class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+            
+            <!-- Implementasi Input Pencarian dengan SVG Icon Terintegrasi -->
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+              <input type="text" id="posSearchInput" oninput="renderKatalogPOS()" placeholder="Cari nama produk / paket..." class="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+            </div>
+
+            <!-- Tombol Filter Dinamis -->
             <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs font-bold w-full sm:w-auto overflow-x-auto no-scrollbar">
-              <button type="button" onclick="posFilterAktif='Semua'; renderKatalogPOS();" id="btnPosFilter_Semua" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs transition shrink-0">Semua</button>
-              <button type="button" onclick="posFilterAktif='Satuan'; renderKatalogPOS();" id="btnPosFilter_Satuan" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 transition shrink-0">Satuan</button>
-              <button type="button" onclick="posFilterAktif='Bundling'; renderKatalogPOS();" id="btnPosFilter_Bundling" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 transition shrink-0">Bundling</button>
+              <button type="button" onclick="gantiFilterPOS('Semua');" id="btnPosFilter_Semua" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs font-bold transition shrink-0">Semua</button>
+              <button type="button" onclick="gantiFilterPOS('Satuan');" id="btnPosFilter_Satuan" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0">Satuan</button>
+              <button type="button" onclick="gantiFilterPOS('Bundling');" id="btnPosFilter_Bundling" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0">Bundling</button>
             </div>
           </div>
-          
+
           <!-- Area Grid Kartu Produk (Scrollable) -->
           <div class="flex-grow overflow-y-auto no-scrollbar pr-1 pb-20">
             <div id="posKatalogGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -2280,7 +2289,10 @@ div[id^="modal"]:not(.hidden) > div {
           <!-- Header Keranjang & Input Pembeli -->
           <div class="p-4 border-b border-slate-100 dark:border-slate-700 shrink-0 space-y-3">
             <h3 class="font-black text-slate-800 dark:text-white text-sm flex items-center gap-2">
-              <span>🛒</span> Keranjang Pesanan
+              <span class="text-emerald-600 dark:text-emerald-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              </span> 
+              Keranjang Pesanan
             </h3>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Pembeli / Keterangan</label>
@@ -3701,31 +3713,55 @@ div[id^="modal"]:not(.hidden) > div {
   <!-- ==================== LOGIKA JAVASCRIPT SISTEM ==================== -->
   <script>
 
-// Index.html | CLIENT (JavaScript)
-// --- TAMBAHKAN DARI SINI: Logika Katalog POS ---
-
     // Variabel Global khusus POS
     let posFilterAktif = 'Semua';
     let posKeranjang = [];
 
+    // FUNGSI BARU: Untuk mengubah warna tombol filter secara dinamis
+    function gantiFilterPOS(kategori) {
+        posFilterAktif = kategori;
+        
+        const btnSemua = document.getElementById('btnPosFilter_Semua');
+        const btnSatuan = document.getElementById('btnPosFilter_Satuan');
+        const btnBundling = document.getElementById('btnPosFilter_Bundling');
+
+        const classPasif = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0";
+        const classAktif = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs font-bold transition shrink-0";
+
+        if (btnSemua) btnSemua.className = (kategori === 'Semua') ? classAktif : classPasif;
+        if (btnSatuan) btnSatuan.className = (kategori === 'Satuan') ? classAktif : classPasif;
+        if (btnBundling) btnBundling.className = (kategori === 'Bundling') ? classAktif : classPasif;
+
+        renderKatalogPOS();
+    }
+
     function renderKatalogPOS() {
-      if (!cachedData) return;
-      const dataStokGlobal = JSON.parse(cachedData.stokData || '{"stok":[], "bundling":[]}');
       const grid = document.getElementById('posKatalogGrid');
       const searchInput = document.getElementById('posSearchInput');
-      if (!grid || !dataStokGlobal) return;
+      if (!grid) return;
+
+      let sumberDataStok = { stok: [], bundling: [] };
+
+      if (typeof dataStokGlobal !== 'undefined' && dataStokGlobal && Object.keys(dataStokGlobal).length > 0) {
+          sumberDataStok = dataStokGlobal;
+      } else if (typeof cachedData !== 'undefined' && cachedData && cachedData.stokData) {
+          if (typeof cachedData.stokData === 'string') {
+              try { sumberDataStok = JSON.parse(cachedData.stokData); } catch(e) {}
+          } else {
+              sumberDataStok = cachedData.stokData;
+          }
+      }
 
       const q = searchInput ? searchInput.value.toLowerCase() : '';
       let itemTersedia = [];
-      // 1. Kumpulkan Item Satuan (Dari Master_Stok)
-      if (dataStokGlobal.stok && dataStokGlobal.stok.length > 1) {
-        const rows = dataStokGlobal.stok.slice(1);
+
+      if (sumberDataStok.stok && sumberDataStok.stok.length > 1) {
+        const rows = sumberDataStok.stok.slice(1);
         rows.forEach(r => {
              const stokFisik = Number(r[3]) || 0;
              const hpp = Number(r[5]) || 0;
              const hargaJualEstimasi = Math.round(hpp * 1.3);
 
-             // PERBAIKAN: Tampilkan SEMUA item dari Master Stok tanpa membatasi kategori yang ketat
              itemTersedia.push({
                tipe: 'Satuan',
                id: String(r[0]),
@@ -3737,55 +3773,49 @@ div[id^="modal"]:not(.hidden) > div {
         });
       }
 
-
-
-      // 2. Kumpulkan Item Bundling (Dari Master_Bundling)
-      if (dataStokGlobal.bundling && dataStokGlobal.bundling.length > 1) {
-        const rowsBdl = dataStokGlobal.bundling.slice(1);
+      if (sumberDataStok.bundling && sumberDataStok.bundling.length > 1) {
+        const rowsBdl = sumberDataStok.bundling.slice(1);
         rowsBdl.forEach(b => {
            itemTersedia.push({
              tipe: 'Bundling',
              id: String(b[0]),
              nama: String(b[1]),
-             stok: 999, // Bundling bergantung pada stok bahan
+             stok: 999,
              harga: Number(b[3]) || 0,
              dataBawaan: b
            });
         });
       }
 
-      // 3. Terapkan Filter Button (Semua / Satuan / Bundling)
       if (posFilterAktif !== 'Semua') {
          itemTersedia = itemTersedia.filter(item => item.tipe === posFilterAktif);
       }
 
-      // 4. Terapkan Filter Pencarian Teks
       if (q) {
          itemTersedia = itemTersedia.filter(item => item.nama.toLowerCase().includes(q) || item.id.toLowerCase().includes(q));
       }
 
-      // 5. Render ke HTML
       let html = '';
       if (itemTersedia.length === 0) {
-         html = `<div class="p-8 text-center col-span-full text-slate-400 text-xs italic font-medium">Tidak ada produk ditemukan.</div>`;
+         html = `<div class="p-8 text-center col-span-full text-slate-400 text-xs italic font-medium">Tidak ada produk ditemukan. Pastikan data stok gudang sudah disinkronkan.</div>`;
       } else {
          itemTersedia.forEach(item => {
            const warnaStok = item.tipe === 'Bundling' ? 'text-indigo-500' : (item.stok > 5 ? 'text-emerald-500' : 'text-rose-500');
-           const iconTipe = item.tipe === 'Bundling' 
-             ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>` 
-             : `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>`;
+           
+           const iconBundling = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`;
+           const iconSatuan = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>`;
+           
+           const iconToUse = item.tipe === 'Bundling' ? iconBundling : iconSatuan;
            const infoStok = item.tipe === 'Bundling' ? 'Paket Resep' : `Sisa: ${item.stok}`;
-
-           // Encode string aman untuk fungsi onclick
            const safeNama = item.nama.replace(/'/g, "\\'").replace(/"/g, '&quot;');
            
            html += `
            <div onclick="tambahKeKeranjangPOS('${item.id}', '${safeNama}', ${item.harga}, '${item.tipe}')" class="bg-white dark:bg-slate-700 p-3 rounded-xl border border-slate-200 dark:border-slate-600 hover:border-emerald-500 hover:shadow-md transition cursor-pointer flex flex-col justify-between h-24 relative overflow-hidden group">
              <div class="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition text-slate-800 dark:text-white">
-                ${iconTipe}
+                ${iconToUse}
              </div>
              <div>
-               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 flex items-center gap-1">${iconTipe} ${item.tipe}</span>
+               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 flex items-center gap-1">${iconToUse} ${item.tipe}</span>
                <h4 class="font-bold text-slate-800 dark:text-slate-100 text-xs leading-tight line-clamp-2">${item.nama}</h4>
              </div>
              <div class="flex justify-between items-end mt-1">
@@ -3796,8 +3826,199 @@ div[id^="modal"]:not(.hidden) > div {
            `;
          });
       }
-      
       grid.innerHTML = html;
+    }
+
+    // Fungsi 1: Memasukkan item dari katalog ke array keranjang
+    function tambahKeKeranjangPOS(id, nama, harga, tipe) {
+        // Cek apakah barang sudah ada di keranjang
+        const indexKetemu = posKeranjang.findIndex(item => item.id === id);
+        
+        if (indexKetemu !== -1) {
+            // Jika ada, tambah qty +1
+            posKeranjang[indexKetemu].qty += 1;
+        } else {
+            // Jika belum ada, masukkan sebagai item baru
+            posKeranjang.push({
+                id: id,
+                nama: nama,
+                harga: Number(harga),
+                tipe: tipe,
+                qty: 1
+            });
+        }
+        renderKeranjangPOS();
+    }
+
+    // Fungsi 2: Mengubah jumlah barang (+ / -)
+    function ubahQtyPOS(index, delta) {
+        if (!posKeranjang[index]) return;
+        posKeranjang[index].qty += delta;
+        
+        // Mencegah qty minus, minimal 1. Jika ingin hapus, gunakan tombol tempat sampah
+        if (posKeranjang[index].qty < 1) posKeranjang[index].qty = 1;
+        
+        renderKeranjangPOS();
+    }
+
+    // Fungsi 3: Menghapus item dari keranjang
+    function hapusDariKeranjangPOS(index) {
+        posKeranjang.splice(index, 1);
+        renderKeranjangPOS();
+    }
+
+    // Fungsi 4: Kalkulasi Total Harga & Potongan Admin
+    function hitungTotalPos() {
+        let subtotal = 0;
+        posKeranjang.forEach(item => {
+            subtotal += (item.harga * item.qty);
+        });
+
+        const elSubtotal = document.getElementById('posLabelSubtotal');
+        if (elSubtotal) elSubtotal.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+
+        // Ambil potongan admin jika ada (dari input yang diketik user)
+        const elPotongan = document.getElementById('posInputPotongan');
+        const potonganAdmin = elPotongan ? (Number(elPotongan.value.replace(/\D/g, '')) || 0) : 0;
+
+        const netMasukKas = Math.max(0, subtotal - potonganAdmin);
+        const elNet = document.getElementById('posLabelNet');
+        if (elNet) elNet.innerText = 'Rp ' + netMasukKas.toLocaleString('id-ID');
+        
+        return { subtotal, potonganAdmin, netMasukKas };
+    }
+
+    // Fungsi 5: Me-render ulang tampilan UI keranjang di sebelah kanan
+    function renderKeranjangPOS() {
+        const wadah = document.getElementById('posKeranjangItems');
+        if (!wadah) return;
+
+        let html = '';
+        if (posKeranjang.length === 0) {
+            html = `
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+              <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <span class="text-xs font-medium">Keranjang masih kosong</span>
+            </div>`;
+        } else {
+            posKeranjang.forEach((item, index) => {
+                const subtotalItem = item.harga * item.qty;
+                const iconTag = item.tipe === 'Bundling' 
+                    ? `<span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded text-[9px] font-bold uppercase mr-1">Bdl</span>`
+                    : `<span class="px-1.5 py-0.5 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 rounded text-[9px] font-bold uppercase mr-1">Pcs</span>`;
+
+                html += `
+                <div class="bg-white dark:bg-slate-700 p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm flex flex-col gap-2">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-grow pr-2">
+                            <h5 class="text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">${iconTag}${item.nama}</h5>
+                            <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Rp ${item.harga.toLocaleString('id-ID')}</p>
+                        </div>
+                        <button type="button" onclick="hapusDariKeranjangPOS(${index})" class="text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/30 dark:hover:bg-rose-900/60 p-1.5 rounded-lg transition" title="Hapus Item">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-600/50">
+                        <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-0.5">
+                            <button type="button" onclick="ubahQtyPOS(${index}, -1)" class="w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300 shadow-xs hover:bg-slate-100 dark:hover:bg-slate-600 transition">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/></svg>
+                            </button>
+                            <span class="text-xs font-black text-slate-800 dark:text-white w-4 text-center">${item.qty}</span>
+                            <button type="button" onclick="ubahQtyPOS(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300 shadow-xs hover:bg-slate-100 dark:hover:bg-slate-600 transition">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            </button>
+                        </div>
+                        <span class="text-sm font-black text-slate-800 dark:text-white">Rp ${subtotalItem.toLocaleString('id-ID')}</span>
+                    </div>
+                </div>`;
+            });
+        }
+        
+        wadah.innerHTML = html;
+        hitungTotalPos();
+    }
+
+    // Index_2.html | CLIENT (JavaScript)
+// --- TAMBAHKAN DARI SINI: Logika Checkout POS (Client-Side) ---
+
+    function eksekusiCheckoutPos() {
+        // 1. Validasi keranjang kosong
+        if (posKeranjang.length === 0) {
+            alert('⚠️ Peringatan: Keranjang masih kosong!');
+            return;
+        }
+
+        const btnCheckout = document.getElementById('btnCheckoutPos');
+        const originalText = btnCheckout.innerHTML;
+        
+        // 2. Kunci tombol dan tampilkan animasi loading SVG (Mencegah double-click)
+        btnCheckout.disabled = true;
+        btnCheckout.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> <span>Memproses Transaksi...</span>`;
+
+        // 3. Kumpulkan data dari antarmuka
+        const pembeli = document.getElementById('posInputPembeli').value || 'Pembeli (POS)';
+        const platform = document.getElementById('posInputPlatform').value;
+        const elPotongan = document.getElementById('posInputPotongan');
+        const potonganAdmin = elPotongan ? (Number(elPotongan.value.replace(/\D/g, '')) || 0) : 0;
+        
+        const calc = hitungTotalPos();
+
+        // 4. Dapatkan format tanggal hari ini (YYYY-MM-DD) secara aman
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const tanggalStr = `${yyyy}-${mm}-${dd}`;
+
+        // 5. Rakit Payload untuk dikirim ke Backend
+        const payload = {
+            keranjang: posKeranjang,
+            pembeli: pembeli,
+            platform: platform,
+            potonganAdmin: potonganAdmin,
+            subtotalBruto: calc.subtotal,
+            totalBersihCair: calc.netMasukKas,
+            tanggal: tanggalStr,
+            user: (typeof userSessionInfo !== 'undefined' && userSessionInfo.nama) ? userSessionInfo.nama : "Kasir"
+        };
+
+        // 6. Kirim ke Backend menggunakan API native GAS
+        google.script.run
+            .withSuccessHandler(function(res) {
+                const response = JSON.parse(res);
+                if (response.success) {
+                    alert('✅ Transaksi POS berhasil diproses! Stok dan Arus Kas telah diperbarui secara Real-time.');
+                    
+                    // Update cache data lokal agar tampilan tidak perlu direfresh
+                    if (response.bukuData) cachedData = response.bukuData;
+                    if (response.stokData) {
+                        cachedData.stokData = JSON.stringify(response.stokData);
+                        if (typeof dataStokGlobal !== 'undefined') dataStokGlobal = response.stokData;
+                    }
+                    
+                    // Bersihkan keranjang & Form
+                    posKeranjang = [];
+                    document.getElementById('posInputPembeli').value = '';
+                    if (elPotongan) elPotongan.value = '';
+                    
+                    // Render ulang tampilan dengan stok terbaru
+                    renderKeranjangPOS();
+                    renderKatalogPOS();
+                } else {
+                    alert('❌ Gagal memproses transaksi: ' + response.message);
+                }
+                
+                // Kembalikan tombol ke state semula
+                btnCheckout.disabled = false;
+                btnCheckout.innerHTML = originalText;
+            })
+            .withFailureHandler(function(error) {
+                alert('❌ Terjadi kesalahan sistem internal: ' + error.message);
+                btnCheckout.disabled = false;
+                btnCheckout.innerHTML = originalText;
+            })
+            .prosesCheckoutPOS(payload); // <-- Memanggil fungsi di Code.gs
     }
 
 let globalDeadStockList = []; // Array untuk menyimpan data Dead Stock sementara
