@@ -3740,6 +3740,7 @@ div[id^="modal"]:not(.hidden) > div {
       const searchInput = document.getElementById('posSearchInput');
       if (!grid) return;
 
+      // PERBAIKAN: Ambil data secara aman agar tidak terjadi error (Crash)
       let sumberDataStok = { stok: [], bundling: [] };
 
       if (typeof dataStokGlobal !== 'undefined' && dataStokGlobal && Object.keys(dataStokGlobal).length > 0) {
@@ -3755,6 +3756,7 @@ div[id^="modal"]:not(.hidden) > div {
       const q = searchInput ? searchInput.value.toLowerCase() : '';
       let itemTersedia = [];
 
+      // 1. Kumpulkan Item Satuan
       if (sumberDataStok.stok && sumberDataStok.stok.length > 1) {
         const rows = sumberDataStok.stok.slice(1);
         rows.forEach(r => {
@@ -3773,6 +3775,7 @@ div[id^="modal"]:not(.hidden) > div {
         });
       }
 
+      // 2. Kumpulkan Item Bundling
       if (sumberDataStok.bundling && sumberDataStok.bundling.length > 1) {
         const rowsBdl = sumberDataStok.bundling.slice(1);
         rowsBdl.forEach(b => {
@@ -3787,14 +3790,17 @@ div[id^="modal"]:not(.hidden) > div {
         });
       }
 
+      // 3. Terapkan Filter
       if (posFilterAktif !== 'Semua') {
          itemTersedia = itemTersedia.filter(item => item.tipe === posFilterAktif);
       }
 
+      // 4. Terapkan Pencarian
       if (q) {
          itemTersedia = itemTersedia.filter(item => item.nama.toLowerCase().includes(q) || item.id.toLowerCase().includes(q));
       }
 
+      // 5. Render ke HTML dengan Ikon SVG murni (Tanpa 3D/Emoji)
       let html = '';
       if (itemTersedia.length === 0) {
          html = `<div class="p-8 text-center col-span-full text-slate-400 text-xs italic font-medium">Tidak ada produk ditemukan. Pastikan data stok gudang sudah disinkronkan.</div>`;
@@ -3802,6 +3808,7 @@ div[id^="modal"]:not(.hidden) > div {
          itemTersedia.forEach(item => {
            const warnaStok = item.tipe === 'Bundling' ? 'text-indigo-500' : (item.stok > 5 ? 'text-emerald-500' : 'text-rose-500');
            
+           // Penggunaan SVG Flat UI sesuai aturan
            const iconBundling = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`;
            const iconSatuan = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>`;
            
@@ -3895,12 +3902,14 @@ div[id^="modal"]:not(.hidden) > div {
 
         let html = '';
         if (posKeranjang.length === 0) {
+            // Tampilan Keranjang Kosong (SVG Murni)
             html = `
             <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
               <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               <span class="text-xs font-medium">Keranjang masih kosong</span>
             </div>`;
         } else {
+            // Tampilan Daftar Item (SVG Murni untuk Tombol)
             posKeranjang.forEach((item, index) => {
                 const subtotalItem = item.harga * item.qty;
                 const iconTag = item.tipe === 'Bundling' 
@@ -3936,90 +3945,10 @@ div[id^="modal"]:not(.hidden) > div {
         }
         
         wadah.innerHTML = html;
-        hitungTotalPos();
+        hitungTotalPos(); // Selalu hitung dan perbarui angka total saat keranjang di-render
     }
 
-    // Index_2.html | CLIENT (JavaScript)
-// --- TAMBAHKAN DARI SINI: Logika Checkout POS (Client-Side) ---
-
-    function eksekusiCheckoutPos() {
-        // 1. Validasi keranjang kosong
-        if (posKeranjang.length === 0) {
-            alert('⚠️ Peringatan: Keranjang masih kosong!');
-            return;
-        }
-
-        const btnCheckout = document.getElementById('btnCheckoutPos');
-        const originalText = btnCheckout.innerHTML;
-        
-        // 2. Kunci tombol dan tampilkan animasi loading SVG (Mencegah double-click)
-        btnCheckout.disabled = true;
-        btnCheckout.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> <span>Memproses Transaksi...</span>`;
-
-        // 3. Kumpulkan data dari antarmuka
-        const pembeli = document.getElementById('posInputPembeli').value || 'Pembeli (POS)';
-        const platform = document.getElementById('posInputPlatform').value;
-        const elPotongan = document.getElementById('posInputPotongan');
-        const potonganAdmin = elPotongan ? (Number(elPotongan.value.replace(/\D/g, '')) || 0) : 0;
-        
-        const calc = hitungTotalPos();
-
-        // 4. Dapatkan format tanggal hari ini (YYYY-MM-DD) secara aman
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        const tanggalStr = `${yyyy}-${mm}-${dd}`;
-
-        // 5. Rakit Payload untuk dikirim ke Backend
-        const payload = {
-            keranjang: posKeranjang,
-            pembeli: pembeli,
-            platform: platform,
-            potonganAdmin: potonganAdmin,
-            subtotalBruto: calc.subtotal,
-            totalBersihCair: calc.netMasukKas,
-            tanggal: tanggalStr,
-            user: (typeof userSessionInfo !== 'undefined' && userSessionInfo.nama) ? userSessionInfo.nama : "Kasir"
-        };
-
-        // 6. Kirim ke Backend menggunakan API native GAS
-        google.script.run
-            .withSuccessHandler(function(res) {
-                const response = JSON.parse(res);
-                if (response.success) {
-                    alert('✅ Transaksi POS berhasil diproses! Stok dan Arus Kas telah diperbarui secara Real-time.');
-                    
-                    // Update cache data lokal agar tampilan tidak perlu direfresh
-                    if (response.bukuData) cachedData = response.bukuData;
-                    if (response.stokData) {
-                        cachedData.stokData = JSON.stringify(response.stokData);
-                        if (typeof dataStokGlobal !== 'undefined') dataStokGlobal = response.stokData;
-                    }
-                    
-                    // Bersihkan keranjang & Form
-                    posKeranjang = [];
-                    document.getElementById('posInputPembeli').value = '';
-                    if (elPotongan) elPotongan.value = '';
-                    
-                    // Render ulang tampilan dengan stok terbaru
-                    renderKeranjangPOS();
-                    renderKatalogPOS();
-                } else {
-                    alert('❌ Gagal memproses transaksi: ' + response.message);
-                }
-                
-                // Kembalikan tombol ke state semula
-                btnCheckout.disabled = false;
-                btnCheckout.innerHTML = originalText;
-            })
-            .withFailureHandler(function(error) {
-                alert('❌ Terjadi kesalahan sistem internal: ' + error.message);
-                btnCheckout.disabled = false;
-                btnCheckout.innerHTML = originalText;
-            })
-            .prosesCheckoutPOS(payload); // <-- Memanggil fungsi di Code.gs
-    }
+    
 
 let globalDeadStockList = []; // Array untuk menyimpan data Dead Stock sementara
 
