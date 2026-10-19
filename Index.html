@@ -1958,7 +1958,6 @@ div[id^="modal"]:not(.hidden) > div {
         <button type="button" onclick="switchSubStok('kasir')" id="subStokTabKasir" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
           <span class="flex-grow">Kasir (POS)</span>
-          <span class="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-bold rounded-md shadow-xs">NEW</span>
         </button>
         <button type="button" onclick="switchSubStok('ringkasan')" id="subStokTabRingkasan" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-bold text-xs transition bg-indigo-600 text-white shadow-xs">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
@@ -1972,9 +1971,9 @@ div[id^="modal"]:not(.hidden) > div {
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V4m0 4h7m-7 0H5m14 0a3 3 0 01-3 3H8a3 3 0 01-3-3m14 0a3 3 0 00-3-3H8a3 3 0 00-3 3"/></svg>
           <span>Bundling</span>
         </button>
-        <button type="button" onclick="switchSubStok('profit')" id="subStokTabProfit" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
-          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-          <span>Profit & Margin</span>
+        <button type="button" onclick="switchSubStok('rincianPenjualan')" id="subStokTabRincianPenjualan" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Rincian Penjualan</span>
         </button>
         <button type="button" onclick="switchSubStok('mutasi')" id="subStokTabMutasi" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
@@ -2256,10 +2255,10 @@ div[id^="modal"]:not(.hidden) > div {
         <!-- KOLOM KIRI: KATALOG PRODUK (Lebar 65%) -->
         <div class="lg:col-span-8 flex flex-col h-[calc(100vh-100px)]">
           <!-- Area Pencarian & Filter -->
-          <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 mb-3">
+          <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 shrink-0 mb-3">
             
             <!-- Implementasi Input Pencarian dengan SVG Icon Terintegrasi -->
-            <div class="relative w-full">
+            <div class="relative w-full min-w-0 flex-grow">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
               </div>
@@ -2267,10 +2266,10 @@ div[id^="modal"]:not(.hidden) > div {
             </div>
 
             <!-- Tombol Filter Dinamis -->
-            <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs font-bold w-full sm:w-auto overflow-x-auto no-scrollbar">
-              <button type="button" onclick="gantiFilterPOS('Semua');" id="btnPosFilter_Semua" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs font-bold transition shrink-0">Semua</button>
-              <button type="button" onclick="gantiFilterPOS('Satuan');" id="btnPosFilter_Satuan" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0">Satuan</button>
-              <button type="button" onclick="gantiFilterPOS('Bundling');" id="btnPosFilter_Bundling" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0">Bundling</button>
+            <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs font-bold w-full lg:w-auto overflow-x-auto no-scrollbar shrink-0">
+              <button type="button" onclick="gantiFilterPOS('Semua');" id="btnPosFilter_Semua" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs font-bold transition shrink-0 whitespace-nowrap">Semua</button>
+              <button type="button" onclick="gantiFilterPOS('Satuan');" id="btnPosFilter_Satuan" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0 whitespace-nowrap">Satuan</button>
+              <button type="button" onclick="gantiFilterPOS('Bundling');" id="btnPosFilter_Bundling" class="px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0 whitespace-nowrap">Bundling</button>
             </div>
           </div>
 
@@ -2323,7 +2322,8 @@ div[id^="modal"]:not(.hidden) > div {
                 <select id="posInputPlatform" class="w-full px-2.5 py-1.5 rounded-lg border dark:bg-slate-700 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-emerald-500">
                   <option value="Toko Offline">Toko Offline</option>
                   <option value="WhatsApp / Chat">WhatsApp</option>
-                  <option value="Shopee">Shopee</option>
+                  <option value="Shopee">Shopee Our Fav Snack</option>
+                  <option value="Shopee">Shopee OF Snack</option>
                   <option value="Tokopedia">Tokopedia</option>
                   <option value="TikTok Shop">TikTok Shop</option>
                 </select>
@@ -2479,6 +2479,79 @@ div[id^="modal"]:not(.hidden) > div {
         <!-- FITUR BARU: Wadah Tombol Tampilkan Lebih Banyak -->
         <div id="paginationMutasiContainer" class="p-3 border-t border-slate-100 dark:border-slate-700 text-center"></div>
       </div>
+    </div>
+
+    <div id="subViewRincianPenjualan" class="hidden space-y-4">
+      
+      <!-- Header & Filter Tanggal Bebas -->
+      <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800/40 shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight">Rincian Pemasukan Penjualan</h2>
+            <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">Buku nota detail transaksi POS. Default menampilkan 30 Hari Terakhir.</p>
+          </div>
+        </div>
+        
+        <!-- Filter Range Tanggal & Tombol Terapkan -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
+           <div class="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-semibold">
+              <input type="date" id="filterRincianStart" class="bg-transparent border-none outline-none dark:text-white cursor-pointer w-full sm:w-auto">
+              <span class="text-slate-400 shrink-0">s/d</span>
+              <input type="date" id="filterRincianEnd" class="bg-transparent border-none outline-none dark:text-white cursor-pointer w-full sm:w-auto">
+           </div>
+           
+           <div class="grid grid-cols-2 sm:flex gap-2">
+             <button type="button" onclick="renderTabelRincianPenjualan(1)" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5">
+               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+               <span class="hidden sm:inline">Terapkan Filter</span>
+               <span class="sm:hidden">Terapkan</span>
+             </button>
+             
+             <!-- FITUR BARU: Tombol Cetak PDF -->
+             <button type="button" onclick="unduhPdfRincianPenjualan()" class="w-full sm:w-auto px-4 py-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 dark:border-blue-900 font-bold rounded-xl text-xs transition shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5">
+               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 15h6M9 11h3"/></svg>
+               <span>Unduh PDF</span>
+             </button>
+           </div>
+        </div>
+      </div>
+
+      <!-- Tabel Rincian Data -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs overflow-hidden flex flex-col min-h-[400px]">
+        <div class="overflow-x-auto flex-grow">
+          <table class="w-full text-left text-xs whitespace-nowrap">
+            <thead class="bg-slate-100/70 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 uppercase font-bold sticky top-0">
+              <tr>
+                <th class="px-4 py-3 border-b dark:border-slate-600">Tgl Pesanan</th>
+                <th class="px-4 py-3 border-b dark:border-slate-600">Nama Pembeli</th>
+                <th class="px-4 py-3 border-b dark:border-slate-600">Produk (Qty x Nama)</th>
+                <th class="px-4 py-3 border-b dark:border-slate-600 text-right">Pendapatan Kotor</th>
+                <th class="px-4 py-3 border-b dark:border-slate-600 text-right text-rose-500">Admin</th>
+                <th class="px-4 py-3 border-b dark:border-slate-600 text-right text-emerald-600">Pendapatan Bersih</th>
+                <th class="px-4 py-3 border-b dark:border-slate-600 text-center">Margin %</th>
+                <th class="px-4 py-3 border-b dark:border-slate-600 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableRincianPenjualanBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-slate-700 dark:text-slate-200">
+                <!-- Baris data dinamis (JS) -->
+                <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">Klik tombol tab untuk memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Wadah Pagination Khusus Tab Rincian -->
+        <div id="paginationRincianContainer" class="p-3 border-t border-slate-100 dark:border-slate-700 text-center bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center text-xs font-semibold text-slate-500">
+            <span>Halaman 1 dari 1</span>
+            <div class="flex gap-1">
+                <button disabled class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed">Sebelumnya</button>
+                <button disabled class="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed">Selanjutnya</button>
+            </div>
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -3713,8 +3786,6 @@ div[id^="modal"]:not(.hidden) > div {
     </div>
   </div>
 
-  <!-- ==================== LOGIKA JAVASCRIPT SISTEM ==================== -->
-  <script>
 
 <!-- ==================== LOGIKA JAVASCRIPT SISTEM ==================== -->
   <script>
@@ -3737,8 +3808,9 @@ div[id^="modal"]:not(.hidden) > div {
         var btnSatuan = document.getElementById('btnPosFilter_Satuan');
         var btnBundling = document.getElementById('btnPosFilter_Bundling');
 
-        var classPasif = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0";
-        var classAktif = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs font-bold transition shrink-0";
+        // PERBAIKAN: Menambahkan 'whitespace-nowrap' agar teks tombol tidak terpotong atau turun
+        var classPasif = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 transition shrink-0 whitespace-nowrap";
+        var classAktif = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-600 text-emerald-600 dark:text-white shadow-xs font-bold transition shrink-0 whitespace-nowrap";
 
         if (btnSemua) btnSemua.className = (kategori === 'Semua') ? classAktif : classPasif;
         if (btnSatuan) btnSatuan.className = (kategori === 'Satuan') ? classAktif : classPasif;
@@ -3996,6 +4068,9 @@ div[id^="modal"]:not(.hidden) > div {
         hitungTotalPos();
     }
 
+    // Index.html | CLIENT (JavaScript)
+// --- TIMPA FUNGSI eksekusiCheckoutPos DENGAN VERSI INI ---
+
     function eksekusiCheckoutPos() {
         var btnCheckout = document.getElementById('btnCheckoutPos');
         var defaultBtnHtml = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg><span>Bayar & Proses Pesanan</span>';
@@ -4048,6 +4123,8 @@ div[id^="modal"]:not(.hidden) > div {
                     try {
                         var response = (typeof res === 'string') ? JSON.parse(res) : res;
                         if (response && response.success) {
+                            
+                            // Perbarui Data Memori Lokal
                             if (response.stokData && typeof dataStokGlobal !== 'undefined') {
                                 dataStokGlobal = response.stokData;
                             }
@@ -4055,20 +4132,24 @@ div[id^="modal"]:not(.hidden) > div {
                                 dataBuku = response.bukuData;
                             }
 
+                            // Bersihkan Form Keranjang
                             posKeranjang = [];
                             if (elPembeli) elPembeli.value = '';
                             if (elPotongan) elPotongan.value = '';
 
+                            // RENDER ULANG SELURUH UI AGAR TERLIHAT BERUBAH SECARA LIVE
                             renderKeranjangPOS();
                             renderKatalogPOS();
-
-                            if (typeof renderSemuaStok === 'function') renderSemuaStok();
-                            if (typeof renderSemuaData === 'function') renderSemuaData();
+                            
+                            // Eksekusi fungsi update tabel bawaan aplikasi Anda
+                            try { if (typeof renderTabelMasterStok === 'function') renderTabelMasterStok(); } catch(e){}
+                            try { if (typeof renderTabelMutasiStok === 'function') renderTabelMutasiStok(); } catch(e){}
+                            try { if (typeof renderArusKas === 'function') renderArusKas(); } catch(e){}
 
                             if (typeof showToast === 'function') {
-                                showToast('Transaksi POS berhasil diproses dan dicatat.', 'success');
+                                showToast('Transaksi berhasil. Stok dan Arus Kas telah disinkronkan.', 'success');
                             } else {
-                                alert('Transaksi POS berhasil diproses! Stok dan Arus Kas telah diperbarui.');
+                                alert('Transaksi berhasil! Stok barang & Arus kas langsung diperbarui.');
                             }
                         } else {
                             alert('Gagal memproses transaksi: ' + (response ? response.message : 'Respons server kosong'));
@@ -4099,8 +4180,7 @@ div[id^="modal"]:not(.hidden) > div {
             }
         }
     }
-
-// --- BATAS AKHIR KODE BARU ---
+// --- BATAS AKHIR KODE ---
 
 let globalDeadStockList = []; // Array untuk menyimpan data Dead Stock sementara
 
@@ -13101,6 +13181,354 @@ window.addEventListener('click', function(e) {
   refreshIcons();
   renderDropdownKaryawan();
   hitungGajiRealtime();
+
+  // Index.html | CLIENT (JavaScript)
+// --- TAMBAHKAN DARI SINI: Logika Render Rincian Penjualan ---
+
+    var currentPageRincian = 1;
+    var limitRincian = 20;
+
+    function renderTabelRincianPenjualan(page) {
+        if (page) currentPageRincian = page;
+
+        var tbody = document.getElementById('tableRincianPenjualanBody');
+        var pagination = document.getElementById('paginationRincianContainer');
+        if (!tbody) return;
+
+        // Ambil data detail penjualan dari cache
+        var dataRincian = (typeof cachedData !== 'undefined' && cachedData.detailPenjualan) ? cachedData.detailPenjualan : [];
+
+        // Hapus baris pertama (Header Google Sheets)
+        var rows = dataRincian.length > 1 ? dataRincian.slice(1) : [];
+
+        // Ambil nilai filter kalender
+        var startDate = document.getElementById('filterRincianStart').value;
+        var endDate = document.getElementById('filterRincianEnd').value;
+
+        // FITUR ANTI-LEMOT: Default tampilkan 30 Hari Terakhir jika kalender kosong
+        if (!startDate && !endDate) {
+            var d = new Date();
+            d.setDate(d.getDate() - 30); // Mundur 30 hari
+            var tzoffset = d.getTimezoneOffset() * 60000;
+            startDate = (new Date(d.getTime() - tzoffset)).toISOString().slice(0, 10);
+            document.getElementById('filterRincianStart').value = startDate;
+
+            var today = new Date();
+            endDate = (new Date(today.getTime() - tzoffset)).toISOString().slice(0, 10);
+            document.getElementById('filterRincianEnd').value = endDate;
+        }
+
+        // Terapkan Filter Tanggal
+        if (startDate || endDate) {
+            rows = rows.filter(function(row) {
+                var tglRow = String(row[0]).split('T')[0];
+                if (startDate && tglRow < startDate) return false;
+                if (endDate && tglRow > endDate) return false;
+                return true;
+            });
+        }
+
+        // Urutkan dari transaksi yang Paling Baru (Reverse array)
+        rows.reverse();
+
+        // Logika Pagination Otomatis
+        var totalRows = rows.length;
+        var totalPages = Math.ceil(totalRows / limitRincian) || 1;
+        if (currentPageRincian > totalPages) currentPageRincian = totalPages;
+
+        var startIndex = (currentPageRincian - 1) * limitRincian;
+        var endIndex = startIndex + limitRincian;
+        var paginatedRows = rows.slice(startIndex, endIndex);
+
+        // Eksekusi Render ke HTML
+        var html = '';
+        if (paginatedRows.length === 0) {
+            html = '<tr><td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">Tidak ada data penjualan pada periode ini.</td></tr>';
+        } else {
+            paginatedRows.forEach(function(row, index) {
+                var tgl = String(row[0]).split('T')[0];
+                var jam = String(row[1]).replace(/'/g, '');
+                var pembeli = String(row[2]);
+                var produk = String(row[3]).replace(/\n/g, '<br>'); 
+                var bruto = Number(row[4]) || 0;
+                var admin = Number(row[5]) || 0;
+                var net = Number(row[6]) || 0;
+                var margin = Number(row[8]) || 0;
+
+                // Index asli di Google Sheets (Data dimulai dari baris ke-2, baris 1 adalah Header)
+                var realRowIndex = dataRincian.length - 1 - (startIndex + index) + 1; 
+
+                var marginColor = margin > 20 ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40' : (margin > 0 ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/40' : 'text-rose-600 bg-rose-50 dark:bg-rose-950/40');
+                var netColor = net < 0 ? 'text-rose-600' : 'text-emerald-600 dark:text-emerald-400';
+
+                html += '<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700">' +
+                     '<span class="block font-bold text-slate-800 dark:text-white">' + tgl + '</span>' +
+                     '<span class="block text-[10px] text-slate-400">' + jam + '</span>' +
+                  '</td>' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 font-semibold">' + pembeli + '</td>' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 text-[11px] leading-relaxed">' + produk + '</td>' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 text-right font-bold">Rp ' + bruto.toLocaleString('id-ID') + '</td>' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 text-right font-bold text-rose-500">-Rp ' + admin.toLocaleString('id-ID') + '</td>' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 text-right font-black ' + netColor + '">Rp ' + net.toLocaleString('id-ID') + '</td>' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 text-center">' +
+                     '<span class="px-2 py-1 rounded-lg text-[10px] font-bold ' + marginColor + '">' + margin + '%</span>' +
+                  '</td>' +
+                  '<td class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 text-center">' +
+                     // Tombol Hapus Berantai
+                     '<button type="button" onclick="konfirmasiHapusPenjualan(' + realRowIndex + ', \'' + tgl + '\', \'' + jam + '\', \'' + pembeli.replace(/'/g, "\\'") + '\')" class="p-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-400 hover:text-rose-600 rounded-lg transition" title="Batalkan Transaksi ini secara menyeluruh">' +
+                       '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+                     '</button>' +
+                  '</td>' +
+                '</tr>';
+            });
+        }
+        tbody.innerHTML = html;
+
+        // Render Tombol Pagination
+        if (pagination) {
+            var btnPrev = '<button onclick="renderTabelRincianPenjualan(' + (currentPageRincian - 1) + ')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition shadow-sm font-bold">Sebelumnya</button>';
+            if (currentPageRincian <= 1) btnPrev = '<button disabled class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed">Sebelumnya</button>';
+
+            var btnNext = '<button onclick="renderTabelRincianPenjualan(' + (currentPageRincian + 1) + ')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition shadow-sm font-bold">Selanjutnya</button>';
+            if (currentPageRincian >= totalPages) btnNext = '<button disabled class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed">Selanjutnya</button>';
+
+            pagination.innerHTML = '<span>Halaman ' + currentPageRincian + ' dari ' + totalPages + ' (' + totalRows + ' Nota)</span>' +
+                                   '<div class="flex gap-1.5">' + btnPrev + btnNext + '</div>';
+        }
+    }
+
+    // Index.html | CLIENT (JavaScript)
+// --- TAMBAHKAN DARI SINI: Patch Navigasi Tab Rincian Penjualan ---
+
+    // Menyempurnakan fungsi navigasi lama agar mengenali tab baru dan me-render datanya otomatis
+    switchSubStok = function(tabName) {
+        // 1. Daftar semua tab yang ada di modul Inventori (termasuk yang baru)
+        var daftarTabStok = ['kasir', 'ringkasan', 'bahan', 'bundling', 'profit', 'mutasi', 'rincianPenjualan'];
+        
+        // 2. Sembunyikan semua konten tab dan reset warna tombol sidebar ke pasif
+        daftarTabStok.forEach(function(t) {
+            var idHurufBesar = t.charAt(0).toUpperCase() + t.slice(1);
+            
+            var el = document.getElementById('subView' + idHurufBesar);
+            if (el) el.classList.add('hidden');
+            
+            var btn = document.getElementById('subStokTab' + idHurufBesar);
+            if (btn) {
+                btn.className = "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-semibold text-xs transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white";
+            }
+        });
+
+        // 3. Tampilkan tab yang sedang diklik
+        var targetHurufBesar = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+        var targetDiv = document.getElementById('subView' + targetHurufBesar);
+        if (targetDiv) targetDiv.classList.remove('hidden');
+
+        // 4. Nyalakan warna tombol yang diklik menjadi aktif (Warna Indigo)
+        var targetBtn = document.getElementById('subStokTab' + targetHurufBesar);
+        if (targetBtn) {
+            targetBtn.className = "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-bold text-xs transition bg-indigo-600 text-white shadow-xs";
+        }
+
+        // 5. TRIGGER OTOMATIS: Muat tabel jika tab Rincian Penjualan dibuka
+        if (tabName === 'rincianPenjualan' && typeof renderTabelRincianPenjualan === 'function') {
+            renderTabelRincianPenjualan(1);
+        } else if (tabName === 'kasir' && typeof renderKatalogPOS === 'function') {
+            // Render ulang Kasir POS jika kembali ke tab Kasir
+            renderKatalogPOS();
+            renderKeranjangPOS();
+        }
+
+        // 6. Tutup otomatis sidebar jika dibuka via HP
+        if (typeof toggleSidebarStok === 'function') {
+            var backdrop = document.getElementById('sidebarBackdropStok');
+            if (backdrop && !backdrop.classList.contains('hidden')) {
+                toggleSidebarStok();
+            }
+        }
+    };
+
+// --- BATAS AKHIR KODE ---
+
+// Index.html | CLIENT (JavaScript)
+// --- TAMBAHKAN DARI SINI: Fungsi Tombol Hapus Berantai ---
+
+    function konfirmasiHapusPenjualan(rowIndex, tgl, jam, pembeli) {
+        // 1. Munculkan peringatan konfirmasi kepada user
+        var yakin = confirm("⚠️ PERINGATAN!\n\nApakah Anda yakin ingin membatalkan dan menghapus transaksi atas nama: " + pembeli + " (" + jam + ")?\n\nTindakan ini akan menghapus data dari Rincian Penjualan, Arus Kas, dan Pemasukan secara permanen.");
+        
+        if (!yakin) return; // Batalkan jika user memilih "Cancel"
+
+        // 2. Tampilkan indikator loading global
+        var indikator = document.getElementById('globalLoadingIndicator');
+        var teksIndikator = document.getElementById('globalLoadingText');
+        if (indikator && teksIndikator) {
+            teksIndikator.innerText = "Menghapus transaksi berantai...";
+            indikator.classList.remove('hidden');
+        }
+
+        // 3. Kirim "KTP" Transaksi ke Server untuk dihapus
+        google.script.run
+            .withSuccessHandler(function(res) {
+                if (indikator) indikator.classList.add('hidden');
+                
+                try {
+                    var response = JSON.parse(res);
+                    if (response.success) {
+                        // Perbarui data cache lokal dengan data terbaru dari server
+                        if (response.bukuData && typeof cachedData !== 'undefined') {
+                            cachedData = response.bukuData;
+                        }
+                        
+                        // Refresh otomatis tabel di layar
+                        renderTabelRincianPenjualan(currentPageRincian);
+                        try { if (typeof renderArusKas === 'function') renderArusKas(); } catch(e){}
+                        
+                        alert("✅ Transaksi berhasil dihapus sepenuhnya dari sistem!");
+                    } else {
+                        alert("❌ Gagal menghapus transaksi: " + response.message);
+                    }
+                } catch (err) {
+                    alert("Terjadi kesalahan sistem internal saat membaca respons.");
+                }
+            })
+            .withFailureHandler(function(error) {
+                if (indikator) indikator.classList.add('hidden');
+                alert("❌ Terjadi kesalahan server: " + error.message);
+            })
+            .hapusTransaksiPOSBerantai(rowIndex, tgl, jam, pembeli);
+    }
+
+    // Index.html | CLIENT (JavaScript)
+// --- TAMBAHKAN DARI SINI: Logika Unduh PDF Rincian Penjualan ---
+
+    function unduhPdfRincianPenjualan() {
+        if (!window.jspdf) {
+            alert("Library PDF belum siap. Pastikan koneksi internet Anda stabil.");
+            return;
+        }
+
+        // Ambil data asli dari memori lokal
+        var dataRincian = (typeof cachedData !== 'undefined' && cachedData.detailPenjualan) ? cachedData.detailPenjualan : [];
+        if (dataRincian.length <= 1) {
+            alert("Belum ada data riwayat penjualan di sistem.");
+            return;
+        }
+
+        var startDate = document.getElementById('filterRincianStart').value;
+        var endDate = document.getElementById('filterRincianEnd').value;
+        var rows = dataRincian.slice(1); // Potong baris header
+
+        // Filter data sesuai kalender yang sedang aktif
+        if (startDate || endDate) {
+            rows = rows.filter(function(row) {
+                var tglRow = String(row[0]).split('T')[0];
+                if (startDate && tglRow < startDate) return false;
+                if (endDate && tglRow > endDate) return false;
+                return true;
+            });
+        }
+
+        if (rows.length === 0) {
+            alert("Peringatan: Tidak ada data pada rentang tanggal filter saat ini.");
+            return;
+        }
+
+        // Urutkan dari nota terbaru
+        rows.reverse();
+
+        // Mulai bentuk dokumen PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' }); // 'l' untuk Landscape
+
+        // Kop Laporan
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(15, 23, 42); // Warna gelap Slate 900
+        doc.text("OUR FAV SNACK", 14, 15);
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Laporan Rincian Penjualan POS", 14, 21);
+
+        var periodeTeks = "Periode: " + (startDate ? startDate : "Awal") + " s/d " + (endDate ? endDate : "Akhir");
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139); // Warna abu-abu Slate 500
+        doc.text(periodeTeks, 14, 26);
+
+        var tableBody = [];
+        var sumBruto = 0;
+        var sumAdmin = 0;
+        var sumNet = 0;
+
+        // Susun baris demi baris
+        rows.forEach(function(row) {
+            var tgl = String(row[0]).split('T')[0];
+            var jam = String(row[1]).replace(/'/g, '');
+            var pembeli = String(row[2]);
+            var produk = String(row[3]); // Tetap gunakan \n agar otomatis turun baris di PDF
+            var bruto = Number(row[4]) || 0;
+            var admin = Number(row[5]) || 0;
+            var net = Number(row[6]) || 0;
+            var margin = Number(row[8]) || 0;
+
+            // Kalkulasi Total
+            sumBruto += bruto;
+            sumAdmin += admin;
+            sumNet += net;
+
+            tableBody.push([
+                tgl + "\n" + jam,
+                pembeli,
+                produk,
+                "Rp " + bruto.toLocaleString('id-ID'),
+                "-Rp " + admin.toLocaleString('id-ID'),
+                "Rp " + net.toLocaleString('id-ID'),
+                margin + "%"
+            ]);
+        });
+
+        // Tambahkan baris Total di paling bawah
+        tableBody.push([
+            { content: 'TOTAL KESELURUHAN', colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [241, 245, 249] } },
+            { content: "Rp " + sumBruto.toLocaleString('id-ID'), styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } },
+            { content: "-Rp " + sumAdmin.toLocaleString('id-ID'), styles: { fontStyle: 'bold', textColor: [225, 29, 72], fillColor: [241, 245, 249] } }, // Merah (Rose 600)
+            { content: "Rp " + sumNet.toLocaleString('id-ID'), styles: { fontStyle: 'bold', textColor: [5, 150, 105], fillColor: [241, 245, 249] } },  // Hijau (Emerald 600)
+            { content: "", styles: { fillColor: [241, 245, 249] } }
+        ]);
+
+        // Cetak Tabel ke PDF
+        doc.autoTable({
+            startY: 32,
+            head: [['Waktu', 'Pembeli', 'Rincian Produk', 'Pendapatan Kotor', 'Pot. Admin', 'Laba Bersih', 'Margin']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] }, // Header Gelap
+            styles: { fontSize: 8, cellPadding: 3, valign: 'middle' },
+            columnStyles: {
+                0: { cellWidth: 25 },
+                1: { cellWidth: 35 },
+                2: { cellWidth: 80 }, // Kolom produk dibuat lebar
+                3: { cellWidth: 35, halign: 'right' },
+                4: { cellWidth: 30, halign: 'right' },
+                5: { cellWidth: 35, halign: 'right' },
+                6: { cellWidth: 20, halign: 'center' }
+            }
+        });
+
+        // Teks Tanggal Cetak di bawah tabel
+        var finalY = doc.lastAutoTable.finalY || 32;
+        doc.setFontSize(7);
+        doc.setTextColor(148, 163, 184);
+        doc.text("Dokumen ini dicetak secara otomatis pada: " + new Date().toLocaleString('id-ID'), 14, finalY + 10);
+
+        // Eksekusi Unduh File
+        var tzoffset = (new Date()).getTimezoneOffset() * 60000;
+        var todayLocal = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
+        var filename = "Rincian_Penjualan_" + (startDate || todayLocal) + ".pdf";
+        
+        doc.save(filename);
+    }
 
   </script>
 

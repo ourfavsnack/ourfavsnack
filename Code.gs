@@ -216,6 +216,7 @@ function ambilSemuaData(modeFull) {
     gajiKaryawan: getSheetDataOptimized("Gaji Karyawan", 0),
     penyesuaianGaji: getSheetDataOptimized("Penyesuaian Gaji", 0),
     invoice: getSheetDataOptimized("Riwayat_Invoice", 0),
+    detailPenjualan: getSheetDataOptimized("Detail_Penjualan", 0),
     bepConfig: ambilDataBEP(),
     gajiConfig: configKaryawan
   };
@@ -2264,3 +2265,429 @@ function hapusDataMasterStok(kode, user) {
   SpreadsheetApp.flush();
   return ambilDataStokLengkap(); // Kembalikan data segar ke UI
 }
+
+// Code.gs | SERVER (Google Apps Script)
+// --- TAMBAHKAN DARI SINI: Mesin Backend Kasir POS (Support Edit Harga, Tanggal & Minus) ---
+
+/**
+ * Memproses transaksi checkout dari Kasir POS secara batch:
+ * - Mendukung perubahan harga satuan & qty manual dari keranjang
+ * - Mendukung hasil penjualan bersih (Net) bernilai minus/negatif
+ * - Mencatat tanggal pesanan sesuai pilihan kasir ke Mutasi_Stok, Pemasukan, dan Arus Kas
+ */
+// Code.gs | SERVER (Google Apps Script)
+// --- PERBAIKAN: Sinkronisasi Pemotongan Stok & Riwayat Mutasi POS ---
+
+// Code.gs | SERVER (Google Apps Script)
+// --- TIMPA FUNGSI prosesCheckoutPOS DENGAN VERSI INI ---
+
+/**
+ * Memproses transaksi checkout dari Kasir POS secara batch:
+ * - Memotong stok & mencatat mutasi
+ * - Mencatat Arus Kas & Pemasukan
+ * - OTOMATIS membuat & mencatat riwayat ke sheet "Detail_Penjualan" beserta hitungan Margin %
+ */
+function prosesCheckoutPOS(payload) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
+  try {
+    if (!payload || !payload.keranjang || payload.keranjang.length === 0) {
+      throw new Error("Keranjang pesanan kosong atau tidak valid.");
+    }
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var tz = Session.getScriptTimeZone() || "GMT+7";
+
+    var sheetStok = ss.getSheetByName("Master_Stok");
+    if (!sheetStok) {
+      siapkanSheetStok();
+      sheetStok = ss.getSheetByName("Master_Stok");
+    }
+
+    var dataStok = sheetStok.getDataRange().getValues();
+    var sheetBdl = ss.getSheetByName("Master_Bundling");
+    var dataBdl = sheetBdl ? sheetBdl.getDataRange().getValues() : [];
+
+    var tglPilihan = (payload.tanggal && String(payload.tanggal).trim() !== "")
+      ? String(payload.tanggal).trim()
+      : Utilities.formatDate(new Date(), tz, "yyyy-MM-dd");
+    var jamSekarang = Utilities.formatDate(new Date(), tz, "HH:mm");
+    var jamTeks = "'" + jamSekarang;
+
+    var userAktif = payload.user || "Kasir";
+    var pembeli = (payload.pembeli && String(payload.pembeli).trim() !== "")
+      ? String(payload.pembeli).trim()
+      : "Pembeli (POS)";
+    var platform = (payload.platform && String(payload.platform).trim() !== "")
+      ? String(payload.platform).trim()
+      : "Toko Offline";
+
+    var keranjang = payload.keranjang;
+    var potonganAdmin = Number(payload.potonganAdmin) || 0;
+
+    var hitungBrutoKeranjang = 0;
+    for (var i = 0; i < keranjang.length; i++) {
+      var qItem = Math.max(1, Number(keranjang[i].qty) || 1);
+      var hItem = Number(keranjang[i].harga) || 0;
+      hitungBrutoKeranjang += (qItem * hItem);
+    }
+
+    var subtotalBruto = !isNaN(Number(payload.subtotalBruto))
+      ? Number(payload.subtotalBruto)
+      : hitungBrutoKeranjang;
+
+    var totalBersih = !isNaN(Number(payload.totalBersihCair))
+      ? Number(payload.totalBersihCair)
+      : (subtotalBruto - potonganAdmin);
+
+    var mutasiBatch = [];
+    var ringkasanBarang = [];
+    var totalHppTransaksi = 0; // Variabel baru untuk menampung total HPP (Modal) transaksi ini
+
+    // Proses Pemotongan Stok Fisik & Hitung HPP
+    for (var k = 0; k < keranjang.length; k++) {
+      var item = keranjang[k];
+      var qtyJual = Math.max(1, Number(item.qty) || 1);
+      var hargaJualItem = Number(item.harga) || 0;
+      var subItem = qtyJual * hargaJualItem;
+
+      var proporsi = (subtotalBruto > 0) ? (subItem / subtotalBruto) : (1 / keranjang.length);
+      var netItem = Math.round(totalBersih * proporsi);
+
+      ringkasanBarang.push(qtyJual + "x " + item.nama);
+
+      if (item.tipe === "Bundling") {
+        var resep = [];
+        for (var b = 1; b < dataBdl.length; b++) {
+          if (String(dataBdl[b][0]).trim() === String(item.id).trim() ||
+              String(dataBdl[b][1]).trim().toLowerCase() === String(item.nama).trim().toLowerCase()) {
+            try { resep = JSON.parse(dataBdl[b][2]); } catch (errJson) {}
+            break;
+          }
+        }
+
+        var hppBundlingIni = 0;
+        for (var r = 0; r < resep.length; r++) {
+          var butuhTotal = (Number(resep[r].butuh) || 1) * qtyJual;
+          for (var s = 1; s < dataStok.length; s++) {
+            if (String(dataStok[s][0]).trim() === String(resep[r].kode).trim()) {
+              var stokAsalBdl = Number(dataStok[s][3]) || 0;
+              dataStok[s][3] = Math.max(0, stokAsalBdl - butuhTotal);
+              
+              // Tambahkan HPP dari bahan baku penyusunnya
+              hppBundlingIni += (Number(dataStok[s][5]) || 0) * butuhTotal;
+
+              var ketBahan = "Komponen " + qtyJual + "x " + item.nama + " (" + platform + ") - Pembeli: " + pembeli;
+              mutasiBatch.push([tglPilihan, jamTeks, "Bahan Bundling Terpakai", dataStok[s][1], butuhTotal, ketBahan]);
+              break;
+            }
+          }
+        }
+        totalHppTransaksi += hppBundlingIni;
+
+        var ketPaket = "Penjualan via " + platform + " - Pembeli: " + pembeli + " [Net: " + netItem + "]";
+        mutasiBatch.push([tglPilihan, jamTeks, "Penjualan Bundling", item.nama, qtyJual, ketPaket]);
+
+      } else {
+        var hppSatuanIni = 0;
+        for (var st = 1; st < dataStok.length; st++) {
+          if (String(dataStok[st][0]).trim() === String(item.id).trim() ||
+              String(dataStok[st][1]).trim().toLowerCase() === String(item.nama).trim().toLowerCase()) {
+            var stokAsalSat = Number(dataStok[st][3]) || 0;
+            dataStok[st][3] = Math.max(0, stokAsalSat - qtyJual);
+            
+            // Tambahkan HPP barang satuan
+            hppSatuanIni = (Number(dataStok[st][5]) || 0) * qtyJual;
+            break;
+          }
+        }
+        totalHppTransaksi += hppSatuanIni;
+
+        var ketSatuan = "Terjual " + qtyJual + " pcs (" + platform + ") - Pembeli: " + pembeli + " [Net: " + netItem + "] [Oleh: " + userAktif + "]";
+        mutasiBatch.push([tglPilihan, jamTeks, "Penjualan Satuan", item.nama, qtyJual, ketSatuan]);
+      }
+    }
+
+    // Tulis pembaruan stok ke spreadsheet (OFS Inventori)
+    if (dataStok.length > 1) {
+      sheetStok.getRange(1, 1, dataStok.length, dataStok[0].length).setValues(dataStok);
+    }
+
+    if (mutasiBatch.length > 0) {
+      var sheetMutasi = ss.getSheetByName("Mutasi_Stok") || pastikanSheetAda(ss, "Mutasi_Stok", ["Tanggal", "Jam", "Tipe", "Nama Barang", "Jumlah", "Keterangan"]);
+      sheetMutasi.getRange(sheetMutasi.getLastRow() + 1, 1, mutasiBatch.length, 6).setValues(mutasiBatch);
+    }
+
+    var ringkasStr = ringkasanBarang.join(", ");
+    var namaTransaksi = pembeli + " - " + ringkasStr;
+    var ketPemasukan = namaTransaksi;
+
+    if (potonganAdmin > 0) {
+      ketPemasukan += " [Net] (Bruto: Rp " + subtotalBruto.toLocaleString('id-ID') + " - Potongan: Rp " + potonganAdmin.toLocaleString('id-ID') + ")";
+    }
+
+    var sheetPemasukan = ss.getSheetByName("Pemasukan") || pastikanSheetAda(ss, "Pemasukan", ["Nama", "Tanggal", "Nominal", "Toko", "Jam"]);
+    sheetPemasukan.appendRow([ketPemasukan, tglPilihan, totalBersih, platform, jamTeks]);
+
+    var sheetAK = ss.getSheetByName("Arus Kas") || pastikanSheetAda(ss, "Arus Kas", ["Tanggal", "Keterangan", "Tipe", "Nominal", "Jam"]);
+    if (totalBersih >= 0) {
+        sheetAK.appendRow([tglPilihan, "[Pemasukan] " + namaTransaksi, "Kas Masuk", totalBersih, jamTeks]);
+    } else {
+        sheetAK.appendRow([tglPilihan, "[Potongan Admin POS] " + namaTransaksi, "Kas Keluar", Math.abs(totalBersih), jamTeks]);
+    }
+
+    // ---- FITUR BARU: CATAT KE TABEL DETAIL PENJUALAN OTOMATIS ----
+    // Pastikan sheet ada. Jika belum, fungsi pastikanSheetAda akan OTOMATIS membuatnya dengan Header!
+    var sheetDetail = ss.getSheetByName("Detail_Penjualan") || pastikanSheetAda(ss, "Detail_Penjualan", [
+      "Tanggal", "Jam", "Nama Pembeli", "Produk", "Pendapatan Kotor", "Admin", "Pendapatan Bersih", "Total HPP", "Margin (%)"
+    ]);
+
+    // Hitung margin persentase dari Total Bersih vs Total HPP
+    var marginPersen = 0;
+    if (totalBersih > 0) {
+      marginPersen = ((totalBersih - totalHppTransaksi) / totalBersih) * 100;
+    } else if (totalBersih < 0) {
+      // Jika minus, margin dipastikan sangat negatif
+      marginPersen = ((totalBersih - totalHppTransaksi) / Math.abs(totalBersih)) * 100;
+    }
+    
+    // Simpan data bersih ke sheet Detail_Penjualan
+    sheetDetail.appendRow([
+      tglPilihan, 
+      jamTeks, 
+      pembeli, 
+      ringkasanBarang.join("\n"), // Menggunakan baris baru agar rapi jika item lebih dari 1
+      subtotalBruto, 
+      potonganAdmin, 
+      totalBersih, 
+      totalHppTransaksi, 
+      Math.round(marginPersen)
+    ]);
+    // ---------------------------------------------------------------
+
+    catatAuditLog("KASIR POS", "Penjualan & Gudang", "-", namaTransaksi + " (Net: Rp " + totalBersih.toLocaleString('id-ID') + " pada " + tglPilihan + ")", userAktif);
+
+    SpreadsheetApp.flush();
+
+    return JSON.stringify({
+      success: true,
+      stokData: JSON.parse(ambilDataStokLengkap()),
+      bukuData: ambilSemuaData(false)
+    });
+
+  } catch (e) {
+    Logger.log("Error prosesCheckoutPOS: " + e.message);
+    return JSON.stringify({ success: false, message: e.message });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function test_prosesCheckoutPOS() {
+  try {
+    var payloadUji = {
+      keranjang: [
+        { id: "SKU-TEST", nama: "Produk Simulasi POS", harga: 15000, tipe: "Satuan", qty: 2 }
+      ],
+      pembeli: "Uji Detail Penjualan",
+      platform: "Shopee",
+      potonganAdmin: 5000, 
+      subtotalBruto: 30000,
+      totalBersihCair: 25000,
+      tanggal: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"),
+      user: "Admin"
+    };
+
+    var hasilJson = prosesCheckoutPOS(payloadUji);
+    Logger.log("Status: " + JSON.parse(hasilJson).success);
+  } catch (e) {
+    Logger.log(e.message);
+  }
+}
+// --- BATAS AKHIR KODE ---
+
+/**
+ * Fungsi testing mandiri untuk menguji prosesCheckoutPOS langsung dari Editor Apps Script
+ * (Termasuk simulasi perubahan harga, tanggal pesanan, dan potongan admin yang menyebabkan minus)
+ */
+function test_prosesCheckoutPOS() {
+  try {
+    var payloadUji = {
+      keranjang: [
+        { id: "SKU-UJI-01", nama: "Produk Simulasi POS", harga: 12000, tipe: "Satuan", qty: 2 }
+      ],
+      pembeli: "Pelanggan Uji POS",
+      platform: "Shopee",
+      potonganAdmin: 26000, // Simulasi potongan lebih besar sehingga hasil Net minus (-2.000)
+      subtotalBruto: 24000,
+      totalBersihCair: -2000,
+      tanggal: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"),
+      user: "Owner"
+    };
+
+    var hasilJson = prosesCheckoutPOS(payloadUji);
+    var parsed = JSON.parse(hasilJson);
+    Logger.log("Status Eksekusi test_prosesCheckoutPOS: " + parsed.success);
+  } catch (e) {
+    Logger.log(e.message);
+  }
+}
+
+// Code.gs | SERVER (Google Apps Script)
+// --- TIMPA FUNGSI hapusTransaksiPOSBerantai DENGAN VERSI INI ---
+
+/**
+ * Fungsi untuk mencari dan menghapus transaksi POS secara berantai
+ * FITUR BARU: Mengembalikan stok ke Master_Stok dan menghapus riwayat di Mutasi_Stok
+ */
+function hapusTransaksiPOSBerantai(rowIndex, tgl, jam, pembeli) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var adaYangDihapus = false;
+
+    // ====================================================================
+    // 1. KEMBALIKAN STOK FISIK & HAPUS RIWAYAT MUTASI
+    // ====================================================================
+    var sheetMutasi = ss.getSheetByName("Mutasi_Stok");
+    var itemDikembalikan = {}; // Obyek penyimpan data stok yang harus di-refund
+
+    if (sheetMutasi) {
+      var dataMutasi = sheetMutasi.getDataRange().getValues();
+      
+      // Lakukan pencarian dari bawah ke atas agar index aman saat dihapus
+      for (var m = dataMutasi.length - 1; m >= 1; m--) {
+        var mTanggal = String(dataMutasi[m][0]).split('T')[0];
+        var mJam = String(dataMutasi[m][1]).replace(/'/g, ''); // Kolom Jam
+        var mTipe = String(dataMutasi[m][2]);
+        var mNamaBarang = String(dataMutasi[m][3]);
+        var mQty = Number(dataMutasi[m][4]) || 0;
+        var mKet = String(dataMutasi[m][5]);
+
+        // Jika Tanggal, Jam, dan Nama Pembeli cocok
+        if (mTanggal === tgl && mJam === jam && mKet.indexOf(pembeli) !== -1) {
+          
+          // Catat jumlah barang untuk dikembalikan ke gudang (Hanya tipe pemotongan fisik)
+          if (mTipe === "Penjualan Satuan" || mTipe === "Bahan Bundling Terpakai") {
+             if (!itemDikembalikan[mNamaBarang]) itemDikembalikan[mNamaBarang] = 0;
+             itemDikembalikan[mNamaBarang] += mQty;
+          }
+          
+          // Hapus baris riwayat mutasi ini
+          sheetMutasi.deleteRow(m + 1);
+          adaYangDihapus = true;
+        }
+      }
+    }
+
+    // Jika ada barang yang harus dikembalikan, eksekusi pengembalian ke Master_Stok
+    if (Object.keys(itemDikembalikan).length > 0) {
+      var sheetStok = ss.getSheetByName("Master_Stok");
+      if (sheetStok) {
+        var dataStok = sheetStok.getDataRange().getValues();
+        var stokBerubah = false;
+
+        for (var s = 1; s < dataStok.length; s++) {
+          var namaDiStok = String(dataStok[s][1]).trim();
+          if (itemDikembalikan[namaDiStok]) {
+             // Kembalikan jumlah stok lama + jumlah yang dibatalkan
+             dataStok[s][3] = (Number(dataStok[s][3]) || 0) + itemDikembalikan[namaDiStok];
+             stokBerubah = true;
+          }
+        }
+        
+        // Tulis ulang ke spreadsheet dalam 1 kali proses (Batch)
+        if (stokBerubah) {
+           sheetStok.getRange(1, 1, dataStok.length, dataStok[0].length).setValues(dataStok);
+        }
+      }
+    }
+
+
+    // ====================================================================
+    // 2. HAPUS DARI DETAIL PENJUALAN (RINCIAN NOTA)
+    // ====================================================================
+    var sheetDetail = ss.getSheetByName("Detail_Penjualan");
+    if (sheetDetail) {
+      // rowIndex adalah index array (mulai dari 0). Ditambah 2 karena ada Header di baris 1
+      var targetRow = rowIndex + 2; 
+      sheetDetail.deleteRow(targetRow);
+      adaYangDihapus = true;
+    }
+
+
+    // ====================================================================
+    // 3. HAPUS DARI PEMASUKAN
+    // ====================================================================
+    var sheetPem = ss.getSheetByName("Pemasukan");
+    if (sheetPem) {
+      var dataPem = sheetPem.getDataRange().getValues();
+      for (var i = dataPem.length - 1; i >= 1; i--) {
+        var rowTgl = String(dataPem[i][1]).split('T')[0];
+        var rowJam = String(dataPem[i][4]).replace(/'/g, ''); 
+        var rowKet = String(dataPem[i][0]);
+        
+        if (rowTgl === tgl && rowJam === jam && rowKet.indexOf(pembeli) !== -1) {
+          sheetPem.deleteRow(i + 1);
+          adaYangDihapus = true;
+          break; // Hentikan pencarian setelah ketemu nota yang dimaksud
+        }
+      }
+    }
+
+
+    // ====================================================================
+    // 4. HAPUS DARI ARUS KAS
+    // ====================================================================
+    var sheetAK = ss.getSheetByName("Arus Kas");
+    if (sheetAK) {
+      var dataAK = sheetAK.getDataRange().getValues();
+      for (var j = dataAK.length - 1; j >= 1; j--) {
+        var akTgl = String(dataAK[j][0]).split('T')[0];
+        var akJam = String(dataAK[j][4]).replace(/'/g, ''); 
+        var akKet = String(dataAK[j][1]);
+        
+        if (akTgl === tgl && akJam === jam && akKet.indexOf(pembeli) !== -1) {
+          sheetAK.deleteRow(j + 1);
+          adaYangDihapus = true;
+          break;
+        }
+      }
+    }
+
+    if (!adaYangDihapus) {
+      throw new Error("Data transaksi tidak ditemukan di database.");
+    }
+
+    // 5. Catat ke Audit Log
+    catatAuditLog("KASIR POS", "Hapus & Restore Stok", "-", "Membatalkan & memulihkan stok transaksi a.n " + pembeli + " (" + tgl + " " + jam + ")", "Admin");
+
+    SpreadsheetApp.flush();
+
+    // Kembalikan data terbaru ke Client agar layar langsung ter-update
+    return JSON.stringify({
+      success: true,
+      bukuData: ambilSemuaData(false)
+    });
+
+  } catch (e) {
+    Logger.log("Error hapusTransaksiPOSBerantai: " + e.message);
+    return JSON.stringify({ success: false, message: e.message });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function test_hapusTransaksiPOSBerantai() {
+  try {
+    var hasil = hapusTransaksiPOSBerantai(0, "2026-10-19", "12:00", "Testing Pembeli");
+    Logger.log(hasil);
+  } catch(e) {
+    Logger.log(e.message);
+  }
+}
+// --- BATAS AKHIR KODE ---
+
