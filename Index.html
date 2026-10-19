@@ -2253,7 +2253,7 @@ div[id^="modal"]:not(.hidden) > div {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow items-start">
         
         <!-- KOLOM KIRI: KATALOG PRODUK (Lebar 65%) -->
-        <div class="lg:col-span-8 flex flex-col h-[calc(100vh-100px)]">
+        <div class="lg:col-span-8 flex flex-col h-[calc(100vh-100px)] lg:h-[calc(100vh-100px)]">
           <!-- Area Pencarian & Filter -->
           <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 shrink-0 mb-3">
             
@@ -2283,7 +2283,7 @@ div[id^="modal"]:not(.hidden) > div {
         </div>
 
         <!-- KOLOM KANAN: KERANJANG BELANJA & CHECKOUT (Lebar 35%) -->
-        <div class="lg:col-span-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm flex flex-col h-[calc(100vh-100px)] sticky top-4">
+        <div class="lg:col-span-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm flex flex-col h-auto min-h-[72vh] lg:min-h-0 lg:h-[calc(100vh-100px)] lg:sticky lg:top-4">
           
           <div class="p-4 border-b border-slate-100 dark:border-slate-700 shrink-0 space-y-3">
             <h3 class="font-black text-slate-800 dark:text-white text-sm flex items-center gap-2">
@@ -2306,7 +2306,7 @@ div[id^="modal"]:not(.hidden) > div {
 <!-- --- BATAS AKHIR KODE BARU --- -->
 
           <!-- Area Item Keranjang (Scrollable) -->
-          <div class="flex-grow overflow-y-auto p-3 space-y-2 bg-slate-50/50 dark:bg-slate-800/50" id="posKeranjangItems">
+          <div class="flex-grow min-h-[220px] max-h-[48vh] lg:min-h-0 lg:max-h-none overflow-y-auto overscroll-contain p-3 sm:p-3.5 space-y-3 sm:space-y-2 bg-slate-50/50 dark:bg-slate-800/50" id="posKeranjangItems">
             <!-- Item keranjang akan dirender di sini oleh JavaScript -->
             <div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
               <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -3907,31 +3907,60 @@ div[id^="modal"]:not(.hidden) > div {
         return null;
     }
 
-    // Helper 1: Membaca daftar stok barang satuan
+    // Helper 1: Membaca daftar stok satuan sesuai struktur data Master_Stok.
+    // Struktur baris Master_Stok: [SKU, Nama, Kategori, Stok, Satuan, HPP, MinStok, Pack/Dus, Pcs/Pack].
     function ambilMasterBahanPOS() {
         var raw = ambilSumberStokAplikasiPOS();
         if (!raw) return [];
+
         var sumber = raw.bahan || raw.stok || raw.masterStok || raw.items || (Array.isArray(raw) ? raw : []);
+        var sumberMasterStok = Array.isArray(raw.stok) && sumber === raw.stok;
         var hasil = [];
 
         for (var i = 0; i < sumber.length; i++) {
             var item = sumber[i];
+
             if (Array.isArray(item)) {
-                if (i === 0 && String(item[0]).toLowerCase().indexOf('kode') !== -1) continue;
-                hasil.push({
-                    id: String(item[0] || '').trim(),
-                    nama: String(item[1] || '').trim(),
-                    satuan: String(item[2] || 'Pcs').trim(),
-                    stok: Math.max(0, Number(item[3]) || 0),
-                    harga: Number(item[4]) || 0
-                });
+                if (i === 0 && String(item[0] || '').toLowerCase().indexOf('kode') !== -1) continue;
+
+                if (sumberMasterStok) {
+                    // Master_Stok menyimpan HPP di kolom ke-6 (index 5), bukan index 4.
+                    // Belum ada kolom harga jual satuan, jadi gunakan saran harga jual +30% HPP,
+                    // sama seperti saran harga pada form Keluar Barang/Invoice.
+                    var hppMaster = Number(item[5]) || 0;
+                    hasil.push({
+                        id: String(item[0] || '').trim(),
+                        nama: String(item[1] || '').trim(),
+                        satuan: String(item[4] || 'Pcs').trim(),
+                        stok: Math.max(0, Number(item[3]) || 0),
+                        harga: Math.round(hppMaster * 1.3),
+                        hpp: hppMaster
+                    });
+                } else {
+                    // Format alternatif yang sudah ada di modul lain: [ID, nama, satuan, stok, harga].
+                    hasil.push({
+                        id: String(item[0] || '').trim(),
+                        nama: String(item[1] || '').trim(),
+                        satuan: String(item[2] || 'Pcs').trim(),
+                        stok: Math.max(0, Number(item[3]) || 0),
+                        harga: Number(item[4]) || 0
+                    });
+                }
             } else if (item && typeof item === 'object') {
+                var hppObj = Number(item.hpp !== undefined ? item.hpp : item.hargaModal) || 0;
+                var punyaHargaJual = item.hargaJual !== undefined && item.hargaJual !== null && item.hargaJual !== '';
+                var punyaHarga = item.harga !== undefined && item.harga !== null && item.harga !== '';
+                var hargaObj = punyaHargaJual
+                    ? Number(item.hargaJual) || 0
+                    : (punyaHarga ? Number(item.harga) || 0 : Math.round(hppObj * 1.3));
+
                 hasil.push({
                     id: String(item.kode || item.id || '').trim(),
                     nama: String(item.nama || item.namaBarang || '').trim(),
-                    satuan: String(item.satuan || item.kategori || 'Pcs').trim(),
+                    satuan: String(item.satuan || 'Pcs').trim(),
                     stok: Math.max(0, Number(item.stok !== undefined ? item.stok : item.jumlah) || 0),
-                    harga: Number(item.hargaJual !== undefined ? item.hargaJual : (item.harga !== undefined ? item.harga : item.hpp)) || 0
+                    harga: hargaObj,
+                    hpp: hppObj
                 });
             }
         }
@@ -4048,6 +4077,16 @@ div[id^="modal"]:not(.hidden) > div {
         return { aman: true, pesan: '' };
     }
 
+    // Amankan nama produk saat dimasukkan ke HTML agar tanda kutip/karakter khusus tidak merusak tampilan.
+    function escapeHTMLPOS(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // 1. Render Katalog Produk POS (Dilengkapi Auto-Fetch jika data belum masuk)
     var sedangTarikStokPOS = false;
     function renderKatalogPOS() {
@@ -4118,9 +4157,6 @@ div[id^="modal"]:not(.hidden) > div {
         for (var k = 0; k < katalog.length; k++) {
             var prod = katalog[k];
             var stokHabis = prod.stok <= 0;
-            var safeId = String(prod.id).replace(/'/g, "\\'");
-            var safeNama = String(prod.nama).replace(/'/g, "\\'");
-
             var badgeTipe = prod.tipe === 'Bundling'
                 ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">BDL</span>'
                 : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">PCS</span>';
@@ -4133,16 +4169,11 @@ div[id^="modal"]:not(.hidden) > div {
                 ? 'bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-3.5 opacity-60 cursor-not-allowed flex flex-col justify-between'
                 : 'bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-2xl p-3.5 shadow-xs hover:shadow-md transition cursor-pointer flex flex-col justify-between group';
 
-            // --- UBAH DARI SINI ---
-            var aksiKlik = stokHabis
-                ? 'alert(\'Stok produk "' + safeNama + '" sudah habis (0 pcs) dan tidak dapat ditambahkan!\');'
-                : 'if(typeof tambahKeKeranjangPOS === "function") { tambahKeKeranjangPOS(\'' + safeId + '\', \'' + safeNama + '\', ' + prod.harga + ', \'' + prod.tipe + '\', ' + prod.stok + '); }';
-// --- BATAS AKHIR KODE ---
-
-            html += '<div onclick="' + aksiKlik + '" class="' + cardClass + '">' +
+            // Jangan merangkai JavaScript ke atribut onclick; gunakan indeks data dan event listener.
+            html += '<div data-pos-index="' + k + '" class="' + cardClass + '">' +
                 '<div>' +
                     '<div class="flex items-center justify-between gap-1 mb-2">' + badgeTipe + badgeStok + '</div>' +
-                    '<h4 class="font-bold text-xs text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition line-clamp-2 leading-snug">' + prod.nama + '</h4>' +
+                    '<h4 class="font-bold text-xs text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition line-clamp-2 leading-snug">' + escapeHTMLPOS(prod.nama) + '</h4>' +
                 '</div>' +
                 '<div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">' +
                     '<span class="font-extrabold text-xs text-emerald-600 dark:text-emerald-400">Rp ' + prod.harga.toLocaleString('id-ID') + '</span>' +
@@ -4154,6 +4185,28 @@ div[id^="modal"]:not(.hidden) > div {
         }
 
         grid.innerHTML = html;
+
+        // Pasang aksi klik setelah kartu dibuat. Cara ini aman untuk nama/SKU yang memiliki tanda kutip.
+        grid.querySelectorAll('[data-pos-index]').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var idxProduk = Number(this.getAttribute('data-pos-index'));
+                var produk = katalog[idxProduk];
+                if (!produk) return;
+
+                if (Number(produk.stok) <= 0) {
+                    alert('Stok produk "' + produk.nama + '" sudah habis (0 pcs) dan tidak dapat ditambahkan!');
+                    return;
+                }
+
+                tambahKeKeranjangPOS(
+                    produk.id,
+                    produk.nama,
+                    Number(produk.harga) || 0,
+                    produk.tipe,
+                    Number(produk.stok) || 0
+                );
+            });
+        });
     }
 
     // 2. Tambah Produk ke Keranjang
@@ -4302,10 +4355,14 @@ div[id^="modal"]:not(.hidden) > div {
         var potongan = elPot ? (Number(String(elPot.value).replace(/[^0-9]/g, '')) || 0) : 0;
         var netMasukKas = subtotal - potongan;
 
-        var elSub = document.getElementById('posSubtotalBruto') || document.getElementById('posTextSubtotal');
+        var elSub = document.getElementById('posLabelSubtotal') ||
+                    document.getElementById('posSubtotalBruto') ||
+                    document.getElementById('posTextSubtotal');
         if (elSub) elSub.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
 
-        var elNet = document.getElementById('posTotalNet') || document.getElementById('posTextTotalNet');
+        var elNet = document.getElementById('posLabelNet') ||
+                    document.getElementById('posTotalNet') ||
+                    document.getElementById('posTextTotalNet');
         if (elNet) elNet.innerText = 'Rp ' + netMasukKas.toLocaleString('id-ID');
 
         return { subtotal: subtotal, potongan: potongan, netMasukKas: netMasukKas };
@@ -4313,7 +4370,9 @@ div[id^="modal"]:not(.hidden) > div {
 
     // 7. Render Daftar Keranjang Belanja POS
     function renderKeranjangPOS() {
-        var container = document.getElementById('posCartItemsContainer') || document.getElementById('posKeranjangContainer');
+        var container = document.getElementById('posKeranjangItems') ||
+                        document.getElementById('posCartItemsContainer') ||
+                        document.getElementById('posKeranjangContainer');
         var badgeCount = document.getElementById('posCartCountBadge');
         if (!container) return;
 
@@ -4337,29 +4396,29 @@ div[id^="modal"]:not(.hidden) > div {
             var subtotalItem = qty * harga;
             var stokMaks = Number(item.stokMaks) || qty;
 
-            html += '<div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/70 dark:border-slate-700 flex flex-col gap-2">' +
+            html += '<div class="p-3.5 sm:p-3 rounded-2xl sm:rounded-xl bg-white dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 shadow-sm flex flex-col gap-3 sm:gap-2">' +
                 '<div class="flex items-start justify-between gap-2">' +
                     '<div class="min-w-0 flex-grow">' +
                         '<div class="flex items-center gap-1.5">' +
-                            '<span class="font-bold text-xs text-slate-800 dark:text-white truncate">' + item.nama + '</span>' +
-                            '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 shrink-0">Maks: ' + stokMaks + '</span>' +
+                            '<span class="font-bold text-sm sm:text-xs text-slate-800 dark:text-white whitespace-normal break-words leading-snug">' + escapeHTMLPOS(item.nama) + '</span>' +
+                            '<span class="px-2 py-1 sm:px-1.5 sm:py-0.5 rounded-md text-[10px] sm:text-[9px] font-bold bg-slate-100 dark:bg-slate-600 text-slate-600 dark:text-slate-300 shrink-0">Maks: ' + stokMaks + '</span>' +
                         '</div>' +
-                        '<div class="flex items-center gap-1 mt-1">' +
-                            '<span class="text-[10px] text-slate-400 font-semibold">Rp</span>' +
-                            '<input type="number" value="' + harga + '" onchange="ubahHargaManualPOS(' + i + ', this.value)" class="w-24 px-2 py-0.5 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500">' +
+                        '<div class="flex items-center gap-1.5 mt-2 sm:mt-1">' +
+                            '<span class="text-xs sm:text-[10px] text-slate-500 dark:text-slate-300 font-bold">Harga Rp</span>' +
+                            '<input type="number" inputmode="numeric" value="' + harga + '" onchange="ubahHargaManualPOS(' + i + ', this.value)" class="w-32 sm:w-24 px-3 py-2 sm:px-2 sm:py-0.5 text-sm sm:text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl sm:rounded-lg text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500">' +
                         '</div>' +
                     '</div>' +
-                    '<button type="button" onclick="hapusItemKeranjangPOS(' + i + ')" class="p-1 text-slate-400 hover:text-rose-500 transition shrink-0">' +
-                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>' +
+                    '<button type="button" onclick="hapusItemKeranjangPOS(' + i + ')" aria-label="Hapus item" class="p-2 sm:p-1.5 rounded-xl text-slate-500 bg-rose-50 dark:bg-rose-950/40 hover:text-rose-600 transition shrink-0">' +
+                        '<svg class="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>' +
                     '</button>' +
                 '</div>' +
-                '<div class="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">' +
-                    '<div class="flex items-center gap-1">' +
-                        '<button type="button" onclick="ubahQtyPOS(' + i + ', -1)" class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 font-bold text-xs flex items-center justify-center transition">-</button>' +
-                        '<input type="number" min="1" max="' + stokMaks + '" value="' + qty + '" onchange="ubahQtyManualPOS(' + i + ', this.value)" onblur="koreksiQtySaatBlurPOS(' + i + ', this)" class="w-12 text-center text-xs font-extrabold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg py-0.5 text-slate-800 dark:text-white outline-none focus:ring-1 focus:ring-emerald-500">' +
-                        '<button type="button" onclick="ubahQtyPOS(' + i + ', 1)" class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 font-bold text-xs flex items-center justify-center transition">+</button>' +
+                '<div class="flex items-center justify-between gap-2 pt-3 sm:pt-1 border-t border-slate-200/60 dark:border-slate-700/60">' +
+                    '<div class="flex items-center gap-2 sm:gap-1">' +
+                        '<button type="button" aria-label="Kurangi jumlah" onclick="ubahQtyPOS(' + i + ', -1)" class="w-9 h-9 sm:w-6 sm:h-6 rounded-xl sm:rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 font-bold text-lg sm:text-xs flex items-center justify-center transition">−</button>' +
+                        '<input type="number" inputmode="numeric" min="1" max="' + stokMaks + '" value="' + qty + '" onchange="ubahQtyManualPOS(' + i + ', this.value)" onblur="koreksiQtySaatBlurPOS(' + i + ', this)" class="w-14 sm:w-12 h-9 sm:h-auto text-center text-sm sm:text-xs font-extrabold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl sm:rounded-lg py-1.5 sm:py-0.5 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">' +
+                        '<button type="button" aria-label="Tambah jumlah" onclick="ubahQtyPOS(' + i + ', 1)" class="w-9 h-9 sm:w-6 sm:h-6 rounded-xl sm:rounded-lg bg-emerald-600 sm:bg-white sm:dark:bg-slate-800 border border-emerald-600 sm:border-slate-200 sm:dark:border-slate-600 text-white sm:text-slate-600 sm:dark:text-slate-300 hover:bg-emerald-700 sm:hover:bg-slate-100 font-bold text-lg sm:text-xs flex items-center justify-center transition">+</button>' +
                     '</div>' +
-                    '<span class="font-extrabold text-xs text-slate-800 dark:text-white">Rp ' + subtotalItem.toLocaleString('id-ID') + '</span>' +
+                    '<span class="font-black text-sm sm:text-xs text-emerald-700 dark:text-emerald-300 text-right">Subtotal<br class="sm:hidden"><span class="text-base sm:text-xs">Rp ' + subtotalItem.toLocaleString('id-ID') + '</span></span>' +
                 '</div>' +
             '</div>';
         }
@@ -4444,9 +4503,13 @@ div[id^="modal"]:not(.hidden) > div {
                             if (elPembeli) elPembeli.value = '';
                             if (elPotongan) elPotongan.value = '';
 
-                            // RENDER ULANG SELURUH UI AGAR TERLIHAT BERUBAH SECARA LIVE
+                            // RENDER ULANG UI KASIR DAN AMBIL DATA PENJUALAN TERBARU DARI SERVER
                             renderKeranjangPOS();
                             renderKatalogPOS();
+                            // POS menyimpan Detail_Penjualan di server; perbarui cache agar tab rincian tidak stale.
+                            if (typeof muatRincianPenjualanTerbaru === 'function') {
+                                muatRincianPenjualanTerbaru();
+                            }
                             
                             // Eksekusi fungsi update tabel bawaan aplikasi Anda
                             try { if (typeof renderTabelMasterStok === 'function') renderTabelMasterStok(); } catch(e){}
@@ -13605,6 +13668,41 @@ window.addEventListener('click', function(e) {
         }
     }
 
+    // Ambil ulang cache dari server agar rincian penjualan selalu memakai data terbaru.
+    function muatRincianPenjualanTerbaru() {
+        if (typeof google === 'undefined' || !google.script || !google.script.run) {
+            renderTabelRincianPenjualan(1);
+            return;
+        }
+
+        google.script.run
+            .withSuccessHandler(function(jsonStr) {
+                try {
+                    var parsed = (typeof jsonStr === 'string') ? JSON.parse(jsonStr) : jsonStr;
+                    if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+
+                    if (parsed && typeof parsed === 'object') {
+                        // Pertahankan properti cache lama, lalu timpa dengan data terbaru dari server.
+                        cachedData = Object.assign({}, cachedData || {}, parsed);
+                        try {
+                            localStorage.setItem('backup_data_buku', JSON.stringify(cachedData));
+                        } catch (storageErr) {
+                            console.warn('Cache lokal rincian penjualan tidak dapat disimpan:', storageErr);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Gagal membaca data terbaru rincian penjualan:', err);
+                }
+                renderTabelRincianPenjualan(1);
+            })
+            .withFailureHandler(function(error) {
+                console.error('Gagal mengambil rincian penjualan terbaru:', error);
+                // Tetap tampilkan cache terakhir bila koneksi server gagal.
+                renderTabelRincianPenjualan(1);
+            })
+            .ambilDataTerbaruJson();
+    }
+
     // Index.html | CLIENT (JavaScript)
 // --- TAMBAHKAN DARI SINI: Patch Navigasi Tab Rincian Penjualan ---
 
@@ -13637,9 +13735,9 @@ window.addEventListener('click', function(e) {
             targetBtn.className = "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left font-bold text-xs transition bg-indigo-600 text-white shadow-xs";
         }
 
-        // 5. TRIGGER OTOMATIS: Muat tabel jika tab Rincian Penjualan dibuka
-        if (tabName === 'rincianPenjualan' && typeof renderTabelRincianPenjualan === 'function') {
-            renderTabelRincianPenjualan(1);
+        // 5. TRIGGER OTOMATIS: Ambil ulang data server ketika tab Rincian Penjualan dibuka
+        if (tabName === 'rincianPenjualan' && typeof muatRincianPenjualanTerbaru === 'function') {
+            muatRincianPenjualanTerbaru();
         } else if (tabName === 'kasir' && typeof renderKatalogPOS === 'function') {
             // Render ulang Kasir POS jika kembali ke tab Kasir
             renderKatalogPOS();

@@ -2266,28 +2266,6 @@ function hapusDataMasterStok(kode, user) {
   return ambilDataStokLengkap(); // Kembalikan data segar ke UI
 }
 
-// Code.gs | SERVER (Google Apps Script)
-// --- TAMBAHKAN DARI SINI: Mesin Backend Kasir POS (Support Edit Harga, Tanggal & Minus) ---
-
-/**
- * Memproses transaksi checkout dari Kasir POS secara batch:
- * - Mendukung perubahan harga satuan & qty manual dari keranjang
- * - Mendukung hasil penjualan bersih (Net) bernilai minus/negatif
- * - Mencatat tanggal pesanan sesuai pilihan kasir ke Mutasi_Stok, Pemasukan, dan Arus Kas
- */
-// Code.gs | SERVER (Google Apps Script)
-// --- PERBAIKAN: Sinkronisasi Pemotongan Stok & Riwayat Mutasi POS ---
-
-/**
- * Memproses transaksi checkout dari Kasir POS secara batch:
- * - Memotong stok & mencatat mutasi
- * - Mencatat Arus Kas & Pemasukan
- * - OTOMATIS membuat & mencatat riwayat ke sheet "Detail_Penjualan" beserta hitungan Margin %
- */
-
-// Code.gs | SERVER (Google Apps Script)
-// --- TIMPA FUNGSI prosesCheckoutPOS DENGAN VERSI INI ---
-
 /**
  * Memproses transaksi checkout dari Kasir POS secara batch:
  * - Memvalidasi stok fisik sebelum diproses (LAPIS 3)
@@ -2748,5 +2726,5 @@ function test_hapusTransaksiPOSBerantai() {
     Logger.log(e.message);
   }
 }
-// --- BATAS AKHIR KODE ---
+
 
