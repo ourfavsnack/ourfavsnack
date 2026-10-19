@@ -2278,14 +2278,21 @@ function hapusDataMasterStok(kode, user) {
 // Code.gs | SERVER (Google Apps Script)
 // --- PERBAIKAN: Sinkronisasi Pemotongan Stok & Riwayat Mutasi POS ---
 
-// Code.gs | SERVER (Google Apps Script)
-// --- TIMPA FUNGSI prosesCheckoutPOS DENGAN VERSI INI ---
-
 /**
  * Memproses transaksi checkout dari Kasir POS secara batch:
  * - Memotong stok & mencatat mutasi
  * - Mencatat Arus Kas & Pemasukan
  * - OTOMATIS membuat & mencatat riwayat ke sheet "Detail_Penjualan" beserta hitungan Margin %
+ */
+
+// Code.gs | SERVER (Google Apps Script)
+// --- TIMPA FUNGSI prosesCheckoutPOS DENGAN VERSI INI ---
+
+/**
+ * Memproses transaksi checkout dari Kasir POS secara batch:
+ * - Memvalidasi stok fisik sebelum diproses (LAPIS 3)
+ * - Memotong stok & mencatat mutasi
+ * - Mencatat Arus Kas, Pemasukan, dan Detail_Penjualan
  */
 function prosesCheckoutPOS(payload) {
   var lock = LockService.getScriptLock();
@@ -2309,6 +2316,53 @@ function prosesCheckoutPOS(payload) {
     var sheetBdl = ss.getSheetByName("Master_Bundling");
     var dataBdl = sheetBdl ? sheetBdl.getDataRange().getValues() : [];
 
+    // ====================================================================
+    // --- LAPIS 3: VALIDASI STOK SERVER (Mencegah Stok Minus) ---
+    // ====================================================================
+    var kebutuhanStok = {}; // Menyimpan total kebutuhan tiap kode barang
+
+    // 1. Kumpulkan semua kebutuhan riil dari keranjang
+    for (var v = 0; v < payload.keranjang.length; v++) {
+      var itemVal = payload.keranjang[v];
+      var qtyVal = Math.max(1, Number(itemVal.qty) || 1);
+
+      if (itemVal.tipe === "Bundling") {
+        var resepVal = [];
+        for (var b = 1; b < dataBdl.length; b++) {
+          if (String(dataBdl[b][0]).trim() === String(itemVal.id).trim() ||
+              String(dataBdl[b][1]).trim().toLowerCase() === String(itemVal.nama).trim().toLowerCase()) {
+            try { resepVal = JSON.parse(dataBdl[b][2]); } catch (e) {}
+            break;
+          }
+        }
+        // Urai bahan baku resepnya
+        for (var r = 0; r < resepVal.length; r++) {
+          var kodeBahan = String(resepVal[r].kode).trim();
+          var butuhTotal = (Number(resepVal[r].butuh) || 1) * qtyVal;
+          kebutuhanStok[kodeBahan] = (kebutuhanStok[kodeBahan] || 0) + butuhTotal;
+        }
+      } else {
+        var idSatuan = String(itemVal.id).trim();
+        kebutuhanStok[idSatuan] = (kebutuhanStok[idSatuan] || 0) + qtyVal;
+      }
+    }
+
+    // 2. Cocokkan dengan stok aktual di Master_Stok saat ini
+    for (var s = 1; s < dataStok.length; s++) {
+      var idGudang = String(dataStok[s][0]).trim();
+      var namaGudang = String(dataStok[s][1]).trim();
+      var stokGudang = Number(dataStok[s][3]) || 0;
+
+      if (kebutuhanStok[idGudang] !== undefined) {
+        if (kebutuhanStok[idGudang] > stokGudang) {
+          // CEGAT DAN BATALKAN JIKA STOK KURANG!
+          throw new Error("TRANSAKSI DITOLAK: Stok [" + namaGudang + "] tidak mencukupi! Dibutuhkan " + kebutuhanStok[idGudang] + " pcs, namun sisa di gudang saat ini hanya " + stokGudang + " pcs.");
+        }
+      }
+    }
+    // ====================================================================
+
+    // Jika lolos validasi, lanjutkan proses seperti biasa
     var tglPilihan = (payload.tanggal && String(payload.tanggal).trim() !== "")
       ? String(payload.tanggal).trim()
       : Utilities.formatDate(new Date(), tz, "yyyy-MM-dd");
@@ -2343,9 +2397,9 @@ function prosesCheckoutPOS(payload) {
 
     var mutasiBatch = [];
     var ringkasanBarang = [];
-    var totalHppTransaksi = 0; // Variabel baru untuk menampung total HPP (Modal) transaksi ini
+    var totalHppTransaksi = 0; 
 
-    // Proses Pemotongan Stok Fisik & Hitung HPP
+    // Proses Pemotongan Stok Fisik (Pasti Aman karena sudah divalidasi di atas)
     for (var k = 0; k < keranjang.length; k++) {
       var item = keranjang[k];
       var qtyJual = Math.max(1, Number(item.qty) || 1);
@@ -2359,27 +2413,25 @@ function prosesCheckoutPOS(payload) {
 
       if (item.tipe === "Bundling") {
         var resep = [];
-        for (var b = 1; b < dataBdl.length; b++) {
-          if (String(dataBdl[b][0]).trim() === String(item.id).trim() ||
-              String(dataBdl[b][1]).trim().toLowerCase() === String(item.nama).trim().toLowerCase()) {
-            try { resep = JSON.parse(dataBdl[b][2]); } catch (errJson) {}
+        for (var bl = 1; bl < dataBdl.length; bl++) {
+          if (String(dataBdl[bl][0]).trim() === String(item.id).trim() ||
+              String(dataBdl[bl][1]).trim().toLowerCase() === String(item.nama).trim().toLowerCase()) {
+            try { resep = JSON.parse(dataBdl[bl][2]); } catch (errJson) {}
             break;
           }
         }
 
         var hppBundlingIni = 0;
-        for (var r = 0; r < resep.length; r++) {
-          var butuhTotal = (Number(resep[r].butuh) || 1) * qtyJual;
-          for (var s = 1; s < dataStok.length; s++) {
-            if (String(dataStok[s][0]).trim() === String(resep[r].kode).trim()) {
-              var stokAsalBdl = Number(dataStok[s][3]) || 0;
-              dataStok[s][3] = Math.max(0, stokAsalBdl - butuhTotal);
-              
-              // Tambahkan HPP dari bahan baku penyusunnya
-              hppBundlingIni += (Number(dataStok[s][5]) || 0) * butuhTotal;
+        for (var r2 = 0; r2 < resep.length; r2++) {
+          var butuhTotal2 = (Number(resep[r2].butuh) || 1) * qtyJual;
+          for (var s2 = 1; s2 < dataStok.length; s2++) {
+            if (String(dataStok[s2][0]).trim() === String(resep[r2].kode).trim()) {
+              var stokAsalBdl = Number(dataStok[s2][3]) || 0;
+              dataStok[s2][3] = Math.max(0, stokAsalBdl - butuhTotal2); // Aman dipotong
+              hppBundlingIni += (Number(dataStok[s2][5]) || 0) * butuhTotal2;
 
               var ketBahan = "Komponen " + qtyJual + "x " + item.nama + " (" + platform + ") - Pembeli: " + pembeli;
-              mutasiBatch.push([tglPilihan, jamTeks, "Bahan Bundling Terpakai", dataStok[s][1], butuhTotal, ketBahan]);
+              mutasiBatch.push([tglPilihan, jamTeks, "Bahan Bundling Terpakai", dataStok[s2][1], butuhTotal2, ketBahan]);
               break;
             }
           }
@@ -2395,9 +2447,7 @@ function prosesCheckoutPOS(payload) {
           if (String(dataStok[st][0]).trim() === String(item.id).trim() ||
               String(dataStok[st][1]).trim().toLowerCase() === String(item.nama).trim().toLowerCase()) {
             var stokAsalSat = Number(dataStok[st][3]) || 0;
-            dataStok[st][3] = Math.max(0, stokAsalSat - qtyJual);
-            
-            // Tambahkan HPP barang satuan
+            dataStok[st][3] = Math.max(0, stokAsalSat - qtyJual); // Aman dipotong
             hppSatuanIni = (Number(dataStok[st][5]) || 0) * qtyJual;
             break;
           }
@@ -2409,11 +2459,10 @@ function prosesCheckoutPOS(payload) {
       }
     }
 
-    // Tulis pembaruan stok ke spreadsheet (OFS Inventori)
+    // Eksekusi Simpan Data ke Berbagai Sheet
     if (dataStok.length > 1) {
       sheetStok.getRange(1, 1, dataStok.length, dataStok[0].length).setValues(dataStok);
     }
-
     if (mutasiBatch.length > 0) {
       var sheetMutasi = ss.getSheetByName("Mutasi_Stok") || pastikanSheetAda(ss, "Mutasi_Stok", ["Tanggal", "Jam", "Tipe", "Nama Barang", "Jumlah", "Keterangan"]);
       sheetMutasi.getRange(sheetMutasi.getLastRow() + 1, 1, mutasiBatch.length, 6).setValues(mutasiBatch);
@@ -2437,34 +2486,20 @@ function prosesCheckoutPOS(payload) {
         sheetAK.appendRow([tglPilihan, "[Potongan Admin POS] " + namaTransaksi, "Kas Keluar", Math.abs(totalBersih), jamTeks]);
     }
 
-    // ---- FITUR BARU: CATAT KE TABEL DETAIL PENJUALAN OTOMATIS ----
-    // Pastikan sheet ada. Jika belum, fungsi pastikanSheetAda akan OTOMATIS membuatnya dengan Header!
     var sheetDetail = ss.getSheetByName("Detail_Penjualan") || pastikanSheetAda(ss, "Detail_Penjualan", [
       "Tanggal", "Jam", "Nama Pembeli", "Produk", "Pendapatan Kotor", "Admin", "Pendapatan Bersih", "Total HPP", "Margin (%)"
     ]);
 
-    // Hitung margin persentase dari Total Bersih vs Total HPP
     var marginPersen = 0;
     if (totalBersih > 0) {
       marginPersen = ((totalBersih - totalHppTransaksi) / totalBersih) * 100;
     } else if (totalBersih < 0) {
-      // Jika minus, margin dipastikan sangat negatif
       marginPersen = ((totalBersih - totalHppTransaksi) / Math.abs(totalBersih)) * 100;
     }
     
-    // Simpan data bersih ke sheet Detail_Penjualan
     sheetDetail.appendRow([
-      tglPilihan, 
-      jamTeks, 
-      pembeli, 
-      ringkasanBarang.join("\n"), // Menggunakan baris baru agar rapi jika item lebih dari 1
-      subtotalBruto, 
-      potonganAdmin, 
-      totalBersih, 
-      totalHppTransaksi, 
-      Math.round(marginPersen)
+      tglPilihan, jamTeks, pembeli, ringkasanBarang.join("\n"), subtotalBruto, potonganAdmin, totalBersih, totalHppTransaksi, Math.round(marginPersen)
     ]);
-    // ---------------------------------------------------------------
 
     catatAuditLog("KASIR POS", "Penjualan & Gudang", "-", namaTransaksi + " (Net: Rp " + totalBersih.toLocaleString('id-ID') + " pada " + tglPilihan + ")", userAktif);
 
@@ -2478,11 +2513,35 @@ function prosesCheckoutPOS(payload) {
 
   } catch (e) {
     Logger.log("Error prosesCheckoutPOS: " + e.message);
+    // Mengembalikan pesan error langsung ke UI
     return JSON.stringify({ success: false, message: e.message });
   } finally {
     lock.releaseLock();
   }
 }
+
+// Fungsi Testing Mandiri untuk Uji Coba Lapis 3
+function test_prosesCheckoutPOS_StokKurang() {
+  try {
+    // HARAP GANTI "SKU-XXX" dengan ID Barang di Gudang Anda yang stoknya kurang dari 100
+    var payloadUji = {
+      keranjang: [ { id: "SKU-XXX", nama: "Produk Test Stok", harga: 15000, tipe: "Satuan", qty: 100 } ],
+      pembeli: "Uji Coba Lapis 3",
+      platform: "Toko Offline",
+      potonganAdmin: 0, 
+      subtotalBruto: 1500000,
+      totalBersihCair: 1500000,
+      tanggal: "2026-10-19",
+      user: "Admin"
+    };
+
+    var hasilJson = prosesCheckoutPOS(payloadUji);
+    Logger.log("Hasil Pengujian Lapis 3: " + hasilJson);
+  } catch (e) {
+    Logger.log("Error Script: " + e.message);
+  }
+}
+// --- BATAS AKHIR KODE ---
 
 function test_prosesCheckoutPOS() {
   try {

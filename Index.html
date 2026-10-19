@@ -3819,154 +3819,9 @@ div[id^="modal"]:not(.hidden) > div {
         renderKatalogPOS();
     }
 
-    function renderKatalogPOS() {
-      var grid = document.getElementById('posKatalogGrid');
-      var searchInput = document.getElementById('posSearchInput');
-      if (!grid) return;
+   
 
-      // Pastikan tanggal pesanan otomatis terisi hari ini jika masih kosong
-      var elTgl = document.getElementById('posInputTanggal');
-      if (elTgl && !elTgl.value) {
-          elTgl.value = getTanggalHariIniPOS();
-      }
-
-      var sumberDataStok = { stok: [], bundling: [] };
-
-      if (typeof dataStokGlobal !== 'undefined' && dataStokGlobal && Object.keys(dataStokGlobal).length > 0) {
-          sumberDataStok = dataStokGlobal;
-      } else if (typeof cachedData !== 'undefined' && cachedData && cachedData.stokData) {
-          if (typeof cachedData.stokData === 'string') {
-              try { sumberDataStok = JSON.parse(cachedData.stokData); } catch(e) {}
-          } else {
-              sumberDataStok = cachedData.stokData;
-          }
-      }
-
-      var q = searchInput ? searchInput.value.toLowerCase() : '';
-      var itemTersedia = [];
-
-      // 1. Kumpulkan Item Satuan (Tanpa memotong baris pertama jika bukan header)
-      if (sumberDataStok.stok && sumberDataStok.stok.length > 0) {
-        var rows = (sumberDataStok.stok[0] && String(sumberDataStok.stok[0][0]) === 'Kode / SKU')
-          ? sumberDataStok.stok.slice(1)
-          : sumberDataStok.stok;
-
-        rows.forEach(function(r) {
-             var stokFisik = Number(r[3]) || 0;
-             var hpp = Number(r[5]) || 0;
-             var hargaJualEstimasi = Math.round(hpp * 1.3);
-
-             itemTersedia.push({
-               tipe: 'Satuan',
-               id: String(r[0]),
-               nama: String(r[1]),
-               stok: stokFisik,
-               harga: hargaJualEstimasi > 0 ? hargaJualEstimasi : 10000,
-               dataBawaan: r
-             });
-        });
-      }
-
-      // 2. Kumpulkan Item Bundling
-      if (sumberDataStok.bundling && sumberDataStok.bundling.length > 0) {
-        var rowsBdl = (sumberDataStok.bundling[0] && String(sumberDataStok.bundling[0][0]) === 'ID Bundling')
-          ? sumberDataStok.bundling.slice(1)
-          : sumberDataStok.bundling;
-
-        rowsBdl.forEach(function(b) {
-           itemTersedia.push({
-             tipe: 'Bundling',
-             id: String(b[0]),
-             nama: String(b[1]),
-             stok: 999,
-             harga: Number(b[3]) || 0,
-             dataBawaan: b
-           });
-        });
-      }
-
-      if (posFilterAktif !== 'Semua') {
-         itemTersedia = itemTersedia.filter(function(item) { return item.tipe === posFilterAktif; });
-      }
-
-      if (q) {
-         itemTersedia = itemTersedia.filter(function(item) {
-           return item.nama.toLowerCase().includes(q) || item.id.toLowerCase().includes(q);
-         });
-      }
-
-      var html = '';
-      if (itemTersedia.length === 0) {
-         html = '<div class="p-8 text-center col-span-full text-slate-400 text-xs italic font-medium">Tidak ada produk ditemukan. Pastikan data stok gudang sudah disinkronkan.</div>';
-      } else {
-         itemTersedia.forEach(function(item) {
-           var warnaStok = item.tipe === 'Bundling' ? 'text-indigo-500' : (item.stok > 5 ? 'text-emerald-500' : 'text-rose-500');
-           var iconBundling = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>';
-           var iconSatuan = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>';
-           var iconToUse = item.tipe === 'Bundling' ? iconBundling : iconSatuan;
-           var infoStok = item.tipe === 'Bundling' ? 'Paket Resep' : ('Sisa: ' + item.stok);
-           var safeNama = item.nama.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-           
-           html += '<div onclick="tambahKeKeranjangPOS(\'' + item.id + '\', \'' + safeNama + '\', ' + item.harga + ', \'' + item.tipe + '\')" class="bg-white dark:bg-slate-700 p-3 rounded-xl border border-slate-200 dark:border-slate-600 hover:border-emerald-500 hover:shadow-md transition cursor-pointer flex flex-col justify-between h-24 relative overflow-hidden group">' +
-             '<div class="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition text-slate-800 dark:text-white">' + iconToUse + '</div>' +
-             '<div>' +
-               '<span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 flex items-center gap-1">' + iconToUse + ' ' + item.tipe + '</span>' +
-               '<h4 class="font-bold text-slate-800 dark:text-slate-100 text-xs leading-tight line-clamp-2">' + item.nama + '</h4>' +
-             '</div>' +
-             '<div class="flex justify-between items-end mt-1">' +
-               '<span class="text-[10px] font-semibold ' + warnaStok + '">' + infoStok + '</span>' +
-               '<span class="font-black text-emerald-600 dark:text-emerald-400 text-sm">Rp ' + item.harga.toLocaleString('id-ID') + '</span>' +
-             '</div>' +
-           '</div>';
-         });
-      }
-      grid.innerHTML = html;
-    }
-
-    function tambahKeKeranjangPOS(id, nama, harga, tipe) {
-        var indexKetemu = posKeranjang.findIndex(function(item) { return item.id === id; });
-        if (indexKetemu !== -1) {
-            posKeranjang[indexKetemu].qty += 1;
-        } else {
-            posKeranjang.push({
-                id: id,
-                nama: nama,
-                harga: Number(harga) || 0,
-                tipe: tipe,
-                qty: 1
-            });
-        }
-        renderKeranjangPOS();
-    }
-
-    function ubahQtyPOS(index, delta) {
-        if (!posKeranjang[index]) return;
-        posKeranjang[index].qty = (Number(posKeranjang[index].qty) || 1) + delta;
-        if (posKeranjang[index].qty < 1) posKeranjang[index].qty = 1;
-        renderKeranjangPOS();
-    }
-
-    function ubahQtyManualPOS(index, val) {
-        if (!posKeranjang[index]) return;
-        var parsed = parseInt(String(val).replace(/[^0-9]/g, ''), 10);
-        if (!isNaN(parsed) && parsed >= 1) {
-            posKeranjang[index].qty = parsed;
-        } else {
-            posKeranjang[index].qty = 1;
-        }
-        hitungTotalPos();
-    }
-
-    function koreksiQtySaatBlurPOS(index, inputEl) {
-        if (!posKeranjang[index]) return;
-        var parsed = parseInt(String(inputEl.value).replace(/[^0-9]/g, ''), 10);
-        if (isNaN(parsed) || parsed < 1) {
-            parsed = 1;
-        }
-        posKeranjang[index].qty = parsed;
-        inputEl.value = parsed;
-        hitungTotalPos();
-    }
+   
 
     function ubahHargaPOS(index, inputEl) {
         if (!posKeranjang[index]) return;
@@ -4013,60 +3868,512 @@ div[id^="modal"]:not(.hidden) > div {
         return { subtotal: subtotal, potonganAdmin: potonganAdmin, netMasukKas: netMasukKas };
     }
 
-    function renderKeranjangPOS() {
-        var wadah = document.getElementById('posKeranjangItems');
-        if (!wadah) return;
+    // <!-- Index.html --> | CLIENT (HTML/JavaScript)
+// --- GANTI BLOK KATALOG & KERANJANG POS SEBELUMNYA DENGAN KODE UTUH INI ---
 
+    var posCatalogGridRef = null;
+
+    // Pencari otomatis wadah HTML Katalog POS (Anti-Gagal meski beda nama ID)
+    function temukanGridKatalogPOS() {
+        if (posCatalogGridRef && document.body.contains(posCatalogGridRef)) {
+            return posCatalogGridRef;
+        }
+        var daftarId = ['posCatalogGrid', 'posKatalogGrid', 'katalogPosGrid', 'posProductGrid', 'posCatalogContainer', 'katalogPOS'];
+        for (var i = 0; i < daftarId.length; i++) {
+            var el = document.getElementById(daftarId[i]);
+            if (el) {
+                posCatalogGridRef = el;
+                return el;
+            }
+        }
+        // Cari berdasarkan teks "Memuat katalog produk..." di dalam subViewKasir
+        var subKasir = document.getElementById('subViewKasir') || document.body;
+        var semuaDiv = subKasir.querySelectorAll('div, p, span');
+        for (var j = 0; j < semuaDiv.length; j++) {
+            if (semuaDiv[j].textContent && semuaDiv[j].textContent.trim() === 'Memuat katalog produk...') {
+                posCatalogGridRef = semuaDiv[j].parentElement || semuaDiv[j];
+                return posCatalogGridRef;
+            }
+        }
+        return null;
+    }
+
+    // Pencari otomatis sumber variabel stok di memori aplikasi
+    function ambilSumberStokAplikasiPOS() {
+        if (typeof dataStokGlobal !== 'undefined' && dataStokGlobal) return dataStokGlobal;
+        if (typeof cachedStok !== 'undefined' && cachedStok) return cachedStok;
+        if (typeof stokDataGlobal !== 'undefined' && stokDataGlobal) return stokDataGlobal;
+        if (typeof dataStok !== 'undefined' && dataStok) return dataStok;
+        return null;
+    }
+
+    // Helper 1: Membaca daftar stok barang satuan
+    function ambilMasterBahanPOS() {
+        var raw = ambilSumberStokAplikasiPOS();
+        if (!raw) return [];
+        var sumber = raw.bahan || raw.stok || raw.masterStok || raw.items || (Array.isArray(raw) ? raw : []);
+        var hasil = [];
+
+        for (var i = 0; i < sumber.length; i++) {
+            var item = sumber[i];
+            if (Array.isArray(item)) {
+                if (i === 0 && String(item[0]).toLowerCase().indexOf('kode') !== -1) continue;
+                hasil.push({
+                    id: String(item[0] || '').trim(),
+                    nama: String(item[1] || '').trim(),
+                    satuan: String(item[2] || 'Pcs').trim(),
+                    stok: Math.max(0, Number(item[3]) || 0),
+                    harga: Number(item[4]) || 0
+                });
+            } else if (item && typeof item === 'object') {
+                hasil.push({
+                    id: String(item.kode || item.id || '').trim(),
+                    nama: String(item.nama || item.namaBarang || '').trim(),
+                    satuan: String(item.satuan || item.kategori || 'Pcs').trim(),
+                    stok: Math.max(0, Number(item.stok !== undefined ? item.stok : item.jumlah) || 0),
+                    harga: Number(item.hargaJual !== undefined ? item.hargaJual : (item.harga !== undefined ? item.harga : item.hpp)) || 0
+                });
+            }
+        }
+        return hasil;
+    }
+
+    // Helper 2: Membaca paket bundling & menghitung stok dari sisa komponen resep
+    function ambilMasterBundlingPOS() {
+        var raw = ambilSumberStokAplikasiPOS();
+        if (!raw) return [];
+        var sumber = raw.bundling || raw.masterBundling || raw.paket || [];
+        var daftarBahan = ambilMasterBahanPOS();
+        var hasil = [];
+
+        for (var i = 0; i < sumber.length; i++) {
+            var b = sumber[i];
+            var id = '', nama = '', harga = 0, resepRaw = [];
+
+            if (Array.isArray(b)) {
+                if (i === 0 && String(b[0]).toLowerCase().indexOf('id') !== -1) continue;
+                id = String(b[0] || '').trim();
+                nama = String(b[1] || '').trim();
+                try { resepRaw = typeof b[2] === 'string' ? JSON.parse(b[2]) : (b[2] || []); } catch (e) { resepRaw = []; }
+                harga = Number(b[3]) || 0;
+            } else if (b && typeof b === 'object') {
+                id = String(b.id || b.kode || '').trim();
+                nama = String(b.nama || b.namaPaket || '').trim();
+                try { resepRaw = typeof b.resep === 'string' ? JSON.parse(b.resep) : (b.resep || b.komponen || []); } catch (e) { resepRaw = []; }
+                harga = Number(b.hargaJual !== undefined ? b.hargaJual : b.harga) || 0;
+            }
+
+            var stokPaket = 0;
+            if (Array.isArray(resepRaw) && resepRaw.length > 0) {
+                var batasRakitan = [];
+                for (var r = 0; r < resepRaw.length; r++) {
+                    var komp = resepRaw[r];
+                    var butuh = Math.max(1, Number(komp.butuh || komp.qty || 1));
+                    var stokKomponen = 0;
+
+                    for (var s = 0; s < daftarBahan.length; s++) {
+                        if (daftarBahan[s].id === String(komp.kode || komp.id || '').trim() ||
+                            daftarBahan[s].nama.toLowerCase() === String(komp.nama || '').trim().toLowerCase()) {
+                            stokKomponen = daftarBahan[s].stok;
+                            break;
+                        }
+                    }
+                    batasRakitan.push(Math.floor(stokKomponen / butuh));
+                }
+                stokPaket = batasRakitan.length > 0 ? Math.min.apply(null, batasRakitan) : 0;
+            } else if (b && b.stok !== undefined) {
+                stokPaket = Number(b.stok) || 0;
+            }
+
+            hasil.push({
+                id: id,
+                nama: nama,
+                harga: harga,
+                stok: Math.max(0, stokPaket),
+                resep: Array.isArray(resepRaw) ? resepRaw : []
+            });
+        }
+        return hasil;
+    }
+
+    // Helper 3: Validasi gabungan stok bahan baku di keranjang
+    function cekKecukupanStokKeranjangPOS(calonKeranjang) {
+        var daftarBahan = ambilMasterBahanPOS();
+        var daftarBundling = ambilMasterBundlingPOS();
+        var totalPakaiPerKode = {};
+
+        for (var i = 0; i < calonKeranjang.length; i++) {
+            var item = calonKeranjang[i];
+            var qty = Math.max(1, Number(item.qty) || 1);
+
+            if (item.tipe === 'Bundling') {
+                var paket = null;
+                for (var b = 0; b < daftarBundling.length; b++) {
+                    if (daftarBundling[b].id === String(item.id).trim() ||
+                        daftarBundling[b].nama.toLowerCase() === String(item.nama).trim().toLowerCase()) {
+                        paket = daftarBundling[b];
+                        break;
+                    }
+                }
+                if (paket && paket.resep && paket.resep.length > 0) {
+                    for (var r = 0; r < paket.resep.length; r++) {
+                        var kodeKomp = String(paket.resep[r].kode || paket.resep[r].id || '').trim();
+                        var butuhKomp = (Number(paket.resep[r].butuh || paket.resep[r].qty) || 1) * qty;
+                        if (kodeKomp) {
+                            totalPakaiPerKode[kodeKomp] = (totalPakaiPerKode[kodeKomp] || 0) + butuhKomp;
+                        }
+                    }
+                }
+            } else {
+                var kodeSat = String(item.id || '').trim();
+                if (kodeSat) {
+                    totalPakaiPerKode[kodeSat] = (totalPakaiPerKode[kodeSat] || 0) + qty;
+                }
+            }
+        }
+
+        for (var kode in totalPakaiPerKode) {
+            for (var s = 0; s < daftarBahan.length; s++) {
+                if (daftarBahan[s].id === kode) {
+                    if (totalPakaiPerKode[kode] > daftarBahan[s].stok) {
+                        return {
+                            aman: false,
+                            pesan: 'Stok "' + daftarBahan[s].nama + '" tidak mencukupi! Total kebutuhan di keranjang: ' + totalPakaiPerKode[kode] + ' pcs, sedangkan sisa stok gudang hanya ' + daftarBahan[s].stok + ' pcs.'
+                        };
+                    }
+                    break;
+                }
+            }
+        }
+        return { aman: true, pesan: '' };
+    }
+
+    // 1. Render Katalog Produk POS (Dilengkapi Auto-Fetch jika data belum masuk)
+    var sedangTarikStokPOS = false;
+    function renderKatalogPOS() {
+        // Pastikan tanggal pesanan terisi otomatis jika masih dd/mm/yyyy
         var elTgl = document.getElementById('posInputTanggal');
         if (elTgl && !elTgl.value) {
-            elTgl.value = getTanggalHariIniPOS();
+            var tzOff = (new Date()).getTimezoneOffset() * 60000;
+            elTgl.value = (new Date(Date.now() - tzOff)).toISOString().slice(0, 10);
+        }
+
+        var grid = temukanGridKatalogPOS();
+        if (!grid) return;
+
+        // Jika memori stok belum terisi, tarik otomatis dari server
+        if (!ambilSumberStokAplikasiPOS() && !sedangTarikStokPOS && typeof google !== 'undefined') {
+            sedangTarikStokPOS = true;
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    sedangTarikStokPOS = false;
+                    try {
+                        var parsed = (typeof res === 'string') ? JSON.parse(res) : res;
+                        window.dataStokGlobal = parsed;
+                        renderKatalogPOS();
+                    } catch (e) {}
+                })
+                .withFailureHandler(function() { sedangTarikStokPOS = false; })
+                .ambilDataStokLengkap();
+            return;
+        }
+
+        var keywordEl = document.getElementById('posSearchInput');
+        var keyword = keywordEl ? keywordEl.value.toLowerCase().trim() : '';
+
+        var daftarBahan = ambilMasterBahanPOS();
+        var daftarBundling = ambilMasterBundlingPOS();
+        var katalog = [];
+        var filterAktif = (typeof posFilterAktif !== 'undefined') ? posFilterAktif : 'Semua';
+
+        if (filterAktif === 'Semua' || filterAktif === 'Satuan') {
+            for (var i = 0; i < daftarBahan.length; i++) {
+                var bh = daftarBahan[i];
+                if (!bh.nama) continue;
+                katalog.push({ id: bh.id, nama: bh.nama, harga: bh.harga, stok: bh.stok, tipe: 'Satuan' });
+            }
+        }
+
+        if (filterAktif === 'Semua' || filterAktif === 'Bundling') {
+            for (var j = 0; j < daftarBundling.length; j++) {
+                var bd = daftarBundling[j];
+                if (!bd.nama) continue;
+                katalog.push({ id: bd.id, nama: bd.nama, harga: bd.harga, stok: bd.stok, tipe: 'Bundling' });
+            }
+        }
+
+        if (keyword !== '') {
+            katalog = katalog.filter(function(item) {
+                return item.nama.toLowerCase().indexOf(keyword) !== -1 ||
+                       item.id.toLowerCase().indexOf(keyword) !== -1;
+            });
+        }
+
+        if (katalog.length === 0) {
+            grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 text-xs font-medium">Tidak ada produk yang cocok dengan pencarian.</div>';
+            return;
         }
 
         var html = '';
-        if (posKeranjang.length === 0) {
-            html = '<div class="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">' +
-              '<svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>' +
-              '<span class="text-xs font-medium">Keranjang masih kosong</span>' +
-            '</div>';
-        } else {
-            posKeranjang.forEach(function(item, index) {
-                var subtotalItem = (Number(item.harga) || 0) * (Number(item.qty) || 1);
-                var iconTag = item.tipe === 'Bundling' 
-                    ? '<span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded text-[9px] font-bold uppercase mr-1">Bdl</span>'
-                    : '<span class="px-1.5 py-0.5 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 rounded text-[9px] font-bold uppercase mr-1">Pcs</span>';
+        for (var k = 0; k < katalog.length; k++) {
+            var prod = katalog[k];
+            var stokHabis = prod.stok <= 0;
+            var safeId = String(prod.id).replace(/'/g, "\\'");
+            var safeNama = String(prod.nama).replace(/'/g, "\\'");
 
-                html += '<div class="bg-white dark:bg-slate-700 p-2.5 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm flex flex-col gap-2">' +
-                    '<div class="flex justify-between items-start gap-2">' +
-                        '<div class="flex-grow min-w-0">' +
-                            '<h5 class="text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight truncate">' + iconTag + item.nama + '</h5>' +
-                            '<div class="flex items-center gap-1 mt-1.5">' +
-                                '<span class="text-[10px] font-bold text-slate-400">Harga Rp</span>' +
-                                '<input type="text" inputmode="numeric" value="' + (Number(item.harga) || 0).toLocaleString('id-ID') + '" oninput="ubahHargaPOS(' + index + ', this)" onblur="if(!this.value) { this.value=\'0\'; ubahHargaPOS(' + index + ', this); }" class="w-24 px-2 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500">' +
-                            '</div>' +
-                        '</div>' +
-                        '<button type="button" onclick="hapusDariKeranjangPOS(' + index + ')" class="text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/30 dark:hover:bg-rose-900/60 p-1.5 rounded-lg transition shrink-0" title="Hapus Item">' +
-                            '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
-                        '</button>' +
-                    '</div>' +
-                    '<div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-600/50">' +
-                        '<div class="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-0.5">' +
-                            '<button type="button" onclick="ubahQtyPOS(' + index + ', -1)" class="w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300 shadow-xs hover:bg-slate-100 dark:hover:bg-slate-600 transition">' +
-                                '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/></svg>' +
-                            '</button>' +
-                            '<input type="number" min="1" value="' + item.qty + '" oninput="ubahQtyManualPOS(' + index + ', this.value)" onblur="koreksiQtySaatBlurPOS(' + index + ', this)" class="w-12 text-center text-xs font-black text-slate-800 dark:text-white bg-transparent outline-none">' +
-                            '<button type="button" onclick="ubahQtyPOS(' + index + ', 1)" class="w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300 shadow-xs hover:bg-slate-100 dark:hover:bg-slate-600 transition">' +
-                                '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>' +
-                            '</button>' +
-                        '</div>' +
-                        '<span id="posSubItem_' + index + '" class="text-sm font-black text-slate-800 dark:text-white">Rp ' + subtotalItem.toLocaleString('id-ID') + '</span>' +
-                    '</div>' +
-                '</div>';
+            var badgeTipe = prod.tipe === 'Bundling'
+                ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">BDL</span>'
+                : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">PCS</span>';
+
+            var badgeStok = stokHabis
+                ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400">HABIS (0)</span>'
+                : '<span class="text-[11px] font-semibold text-slate-400 dark:text-slate-400">Stok: <strong class="text-slate-700 dark:text-slate-200">' + prod.stok + '</strong></span>';
+
+            var cardClass = stokHabis
+                ? 'bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-3.5 opacity-60 cursor-not-allowed flex flex-col justify-between'
+                : 'bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-2xl p-3.5 shadow-xs hover:shadow-md transition cursor-pointer flex flex-col justify-between group';
+
+            // --- UBAH DARI SINI ---
+            var aksiKlik = stokHabis
+                ? 'alert(\'Stok produk "' + safeNama + '" sudah habis (0 pcs) dan tidak dapat ditambahkan!\');'
+                : 'if(typeof tambahKeKeranjangPOS === "function") { tambahKeKeranjangPOS(\'' + safeId + '\', \'' + safeNama + '\', ' + prod.harga + ', \'' + prod.tipe + '\', ' + prod.stok + '); }';
+// --- BATAS AKHIR KODE ---
+
+            html += '<div onclick="' + aksiKlik + '" class="' + cardClass + '">' +
+                '<div>' +
+                    '<div class="flex items-center justify-between gap-1 mb-2">' + badgeTipe + badgeStok + '</div>' +
+                    '<h4 class="font-bold text-xs text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition line-clamp-2 leading-snug">' + prod.nama + '</h4>' +
+                '</div>' +
+                '<div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">' +
+                    '<span class="font-extrabold text-xs text-emerald-600 dark:text-emerald-400">Rp ' + prod.harga.toLocaleString('id-ID') + '</span>' +
+                    '<span class="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-700 group-hover:bg-emerald-600 group-hover:text-white text-slate-500 flex items-center justify-center transition">' +
+                        '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>' +
+                    '</span>' +
+                '</div>' +
+            '</div>';
+        }
+
+        grid.innerHTML = html;
+    }
+
+    // 2. Tambah Produk ke Keranjang
+    function tambahKeKeranjangPOS(id, nama, harga, tipe, stokMaks) {
+        var batasStok = (stokMaks !== undefined) ? Number(stokMaks) : 999;
+        if (batasStok <= 0) {
+            alert('Tidak dapat menambahkan "' + nama + '". Stok saat ini: 0 pcs.');
+            return;
+        }
+
+        var simulasiKeranjang = JSON.parse(JSON.stringify(posKeranjang));
+        var idxAda = -1;
+
+        for (var i = 0; i < simulasiKeranjang.length; i++) {
+            if (simulasiKeranjang[i].id === id && simulasiKeranjang[i].tipe === tipe) {
+                idxAda = i;
+                break;
+            }
+        }
+
+        if (idxAda !== -1) {
+            var qtyBaru = (Number(simulasiKeranjang[idxAda].qty) || 1) + 1;
+            if (qtyBaru > batasStok) {
+                alert('Stok tidak mencukupi! Sisa stok "' + nama + '" maksimal hanya ' + batasStok + ' pcs.');
+                return;
+            }
+            simulasiKeranjang[idxAda].qty = qtyBaru;
+            simulasiKeranjang[idxAda].stokMaks = batasStok;
+        } else {
+            simulasiKeranjang.push({
+                id: id,
+                nama: nama,
+                harga: Number(harga) || 0,
+                tipe: tipe,
+                qty: 1,
+                stokMaks: batasStok
             });
         }
-        
-        wadah.innerHTML = html;
+
+        var cekBahan = cekKecukupanStokKeranjangPOS(simulasiKeranjang);
+        if (!cekBahan.aman) {
+            alert(cekBahan.pesan);
+            return;
+        }
+
+        posKeranjang = simulasiKeranjang;
+        renderKeranjangPOS();
+    }
+
+    // 3. Tombol Tambah (+) / Kurang (-) di Keranjang
+    function ubahQtyPOS(index, delta) {
+        if (!posKeranjang[index]) return;
+        var item = posKeranjang[index];
+        var stokMaks = Number(item.stokMaks) || 999;
+        var qtySekarang = Number(item.qty) || 1;
+        var qtyTarget = qtySekarang + delta;
+
+        if (qtyTarget <= 0) {
+            posKeranjang.splice(index, 1);
+            renderKeranjangPOS();
+            return;
+        }
+
+        if (qtyTarget > stokMaks) {
+            alert('Stok tidak mencukupi! Sisa stok "' + item.nama + '" hanya tersedia ' + stokMaks + ' pcs.');
+            return;
+        }
+
+        var simulasi = JSON.parse(JSON.stringify(posKeranjang));
+        simulasi[index].qty = qtyTarget;
+        var cekBahan = cekKecukupanStokKeranjangPOS(simulasi);
+        if (!cekBahan.aman) {
+            alert(cekBahan.pesan);
+            return;
+        }
+
+        posKeranjang[index].qty = qtyTarget;
+        renderKeranjangPOS();
+    }
+
+    // 4. Input Ketik Jumlah Manual di Keranjang
+    function ubahQtyManualPOS(index, nilaiInput) {
+        if (!posKeranjang[index]) return;
+        var item = posKeranjang[index];
+        var stokMaks = Number(item.stokMaks) || 999;
+        var angka = parseInt(nilaiInput, 10);
+
+        if (isNaN(angka) || angka < 1) return;
+
+        if (angka > stokMaks) {
+            alert('Jumlah melebihi stok! Stok "' + item.nama + '" hanya tersedia ' + stokMaks + ' pcs.');
+            angka = stokMaks;
+        }
+
+        var simulasi = JSON.parse(JSON.stringify(posKeranjang));
+        simulasi[index].qty = angka;
+        var cekBahan = cekKecukupanStokKeranjangPOS(simulasi);
+        if (!cekBahan.aman) {
+            alert(cekBahan.pesan);
+            renderKeranjangPOS();
+            return;
+        }
+
+        posKeranjang[index].qty = angka;
+        renderKeranjangPOS();
+    }
+
+    // 5. Koreksi Otomatis Saat Input Qty Ditinggalkan (Blur)
+    function koreksiQtySaatBlurPOS(index, inputEl) {
+        if (!posKeranjang[index]) return;
+        var item = posKeranjang[index];
+        var stokMaks = Number(item.stokMaks) || 999;
+        var angka = parseInt(inputEl.value, 10);
+
+        if (isNaN(angka) || angka < 1) {
+            angka = 1;
+        } else if (angka > stokMaks) {
+            alert('Jumlah melebihi stok! Stok "' + item.nama + '" dikembalikan ke batas maksimal (' + stokMaks + ' pcs).');
+            angka = stokMaks;
+        }
+
+        posKeranjang[index].qty = angka;
+        renderKeranjangPOS();
+    }
+
+    // 6. Fungsi Pendamping Keranjang (Ubah Harga, Hapus Item, Hitung Total)
+    function ubahHargaManualPOS(index, nilaiHarga) {
+        if (!posKeranjang[index]) return;
+        var hargaBaru = Number(String(nilaiHarga).replace(/[^0-9]/g, '')) || 0;
+        posKeranjang[index].harga = Math.max(0, hargaBaru);
+        renderKeranjangPOS();
+    }
+
+    function hapusItemKeranjangPOS(index) {
+        if (!posKeranjang[index]) return;
+        posKeranjang.splice(index, 1);
+        renderKeranjangPOS();
+    }
+
+    function hitungTotalPos() {
+        var subtotal = 0;
+        for (var i = 0; i < posKeranjang.length; i++) {
+            subtotal += (Number(posKeranjang[i].qty) || 1) * (Number(posKeranjang[i].harga) || 0);
+        }
+        var elPot = document.getElementById('posInputPotongan');
+        var potongan = elPot ? (Number(String(elPot.value).replace(/[^0-9]/g, '')) || 0) : 0;
+        var netMasukKas = subtotal - potongan;
+
+        var elSub = document.getElementById('posSubtotalBruto') || document.getElementById('posTextSubtotal');
+        if (elSub) elSub.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+
+        var elNet = document.getElementById('posTotalNet') || document.getElementById('posTextTotalNet');
+        if (elNet) elNet.innerText = 'Rp ' + netMasukKas.toLocaleString('id-ID');
+
+        return { subtotal: subtotal, potongan: potongan, netMasukKas: netMasukKas };
+    }
+
+    // 7. Render Daftar Keranjang Belanja POS
+    function renderKeranjangPOS() {
+        var container = document.getElementById('posCartItemsContainer') || document.getElementById('posKeranjangContainer');
+        var badgeCount = document.getElementById('posCartCountBadge');
+        if (!container) return;
+
+        var totalItemQty = 0;
+        for (var c = 0; c < posKeranjang.length; c++) {
+            totalItemQty += (Number(posKeranjang[c].qty) || 1);
+        }
+        if (badgeCount) badgeCount.innerText = totalItemQty + ' Item';
+
+        if (posKeranjang.length === 0) {
+            container.innerHTML = '<div class="py-12 text-center text-slate-400 text-xs font-medium">Keranjang masih kosong.<br>Klik produk di katalog untuk menambahkan.</div>';
+            hitungTotalPos();
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < posKeranjang.length; i++) {
+            var item = posKeranjang[i];
+            var qty = Math.max(1, Number(item.qty) || 1);
+            var harga = Number(item.harga) || 0;
+            var subtotalItem = qty * harga;
+            var stokMaks = Number(item.stokMaks) || qty;
+
+            html += '<div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/70 dark:border-slate-700 flex flex-col gap-2">' +
+                '<div class="flex items-start justify-between gap-2">' +
+                    '<div class="min-w-0 flex-grow">' +
+                        '<div class="flex items-center gap-1.5">' +
+                            '<span class="font-bold text-xs text-slate-800 dark:text-white truncate">' + item.nama + '</span>' +
+                            '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 shrink-0">Maks: ' + stokMaks + '</span>' +
+                        '</div>' +
+                        '<div class="flex items-center gap-1 mt-1">' +
+                            '<span class="text-[10px] text-slate-400 font-semibold">Rp</span>' +
+                            '<input type="number" value="' + harga + '" onchange="ubahHargaManualPOS(' + i + ', this.value)" class="w-24 px-2 py-0.5 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500">' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" onclick="hapusItemKeranjangPOS(' + i + ')" class="p-1 text-slate-400 hover:text-rose-500 transition shrink-0">' +
+                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>' +
+                    '</button>' +
+                '</div>' +
+                '<div class="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">' +
+                    '<div class="flex items-center gap-1">' +
+                        '<button type="button" onclick="ubahQtyPOS(' + i + ', -1)" class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 font-bold text-xs flex items-center justify-center transition">-</button>' +
+                        '<input type="number" min="1" max="' + stokMaks + '" value="' + qty + '" onchange="ubahQtyManualPOS(' + i + ', this.value)" onblur="koreksiQtySaatBlurPOS(' + i + ', this)" class="w-12 text-center text-xs font-extrabold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg py-0.5 text-slate-800 dark:text-white outline-none focus:ring-1 focus:ring-emerald-500">' +
+                        '<button type="button" onclick="ubahQtyPOS(' + i + ', 1)" class="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 font-bold text-xs flex items-center justify-center transition">+</button>' +
+                    '</div>' +
+                    '<span class="font-extrabold text-xs text-slate-800 dark:text-white">Rp ' + subtotalItem.toLocaleString('id-ID') + '</span>' +
+                '</div>' +
+            '</div>';
+        }
+
+        container.innerHTML = html;
         hitungTotalPos();
     }
+
+    // Pemicu otomatis saat halaman selesai dimuat
+    setTimeout(function() {
+        renderKatalogPOS();
+        renderKeranjangPOS();
+    }, 600);
+// --- BATAS AKHIR KODE ---
 
     // Index.html | CLIENT (JavaScript)
 // --- TIMPA FUNGSI eksekusiCheckoutPos DENGAN VERSI INI ---
