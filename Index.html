@@ -1994,7 +1994,7 @@ div[id^="modal"]:not(.hidden) > div {
 
       <button type="button" onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition">
          <span class="flex items-center gap-2.5">
-            <span id="darkIconDesktop" class="flex items-center text-slate-500 dark:text-slate-300">
+            <span id="darkIconDesktopStok" class="flex items-center text-slate-500 dark:text-slate-300">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
             </span> 
             <span>Mode Tampilan</span>
@@ -2323,7 +2323,7 @@ div[id^="modal"]:not(.hidden) > div {
                   <option value="Toko Offline">Toko Offline</option>
                   <option value="WhatsApp / Chat">WhatsApp</option>
                   <option value="Shopee">Shopee Our Fav Snack</option>
-                  <option value="Shopee">Shopee OF Snack</option>
+                  <option value="Shopee OF Snack">Shopee OF Snack</option>
                   <option value="Tokopedia">Tokopedia</option>
                   <option value="TikTok Shop">TikTok Shop</option>
                 </select>
@@ -3846,15 +3846,14 @@ div[id^="modal"]:not(.hidden) > div {
             if (elSubItem) elSubItem.innerText = 'Rp ' + subItem.toLocaleString('id-ID');
         });
 
-        var elSubtotal = document.getElementById('posLabelSubtotal');
-        if (elSubtotal) elSubtotal.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
-
-        var elPotongan = document.getElementById('posInputPotongan');
-        var potonganAdmin = elPotongan ? (Number(String(elPotongan.value).replace(/[^0-9]/g, '')) || 0) : 0;
-
-        // Mendukung hasil penjualan minus jika potongan admin lebih besar dari harga jual
+        var elPot = document.getElementById('posInputPotongan');
+        var potonganAdmin = elPot ? (Number(String(elPot.value).replace(/[^0-9]/g, '')) || 0) : 0;
         var netMasukKas = subtotal - potonganAdmin;
-        var elNet = document.getElementById('posLabelNet');
+
+        var elSub = document.getElementById('posLabelSubtotal') || document.getElementById('posSubtotalBruto');
+        if (elSub) elSub.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+
+        var elNet = document.getElementById('posLabelNet') || document.getElementById('posTotalNet');
         if (elNet) {
             if (netMasukKas < 0) {
                 elNet.innerText = '-Rp ' + Math.abs(netMasukKas).toLocaleString('id-ID');
@@ -3864,7 +3863,7 @@ div[id^="modal"]:not(.hidden) > div {
                 elNet.className = 'text-emerald-600 dark:text-emerald-400 font-black text-sm';
             }
         }
-        
+
         return { subtotal: subtotal, potonganAdmin: potonganAdmin, netMasukKas: netMasukKas };
     }
 
@@ -12581,8 +12580,6 @@ function renderTabelAnalisisProfit() {
   }
 }
 
-// Index.html | CLIENT (JavaScript) - KODE BARU
-// --- UBAH DARI SINI: Logika Master Report & PDF ---
 function renderMasterReportData() {
   if (!cachedData || !dataStokGlobal) {
     showToast("Data belum siap, harap tunggu sinkronisasi...", "info");
@@ -12602,30 +12599,31 @@ function renderMasterReportData() {
     return true;
   }
 
+  // Membersihkan teks dari spasi/simbol agar "Ziplock isi 4 Real Good" terbaca sama dengan "Ziplock isi 4 Realgood"
+  function normKey(str) {
+    return String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
   setTimeout(() => {
-    // =========================================================================
-    // A. PERSIAPAN DATA (LOOKUP MAPS)
-    // =========================================================================
+    // A. PERSIAPAN DATA HPP DARI MASTER STOK
     const produkMap = {};
     (dataStokGlobal.stok || []).forEach(s => { 
-      produkMap[String(s[0]).trim()] = { nama: s[1], kategori: s[2] || '-', stok: Number(s[3]) || 0, satuan: s[4] || 'pcs', hpp: Number(s[5]) || 0 }; 
-      produkMap[String(s[1]).toLowerCase().trim()] = { nama: s[1], kategori: s[2] || '-', stok: Number(s[3]) || 0, satuan: s[4] || 'pcs', hpp: Number(s[5]) || 0 };
-    });
-    
-    const bundlingMap = {};
-    (dataStokGlobal.bundling || []).forEach(b => {
-      let resep = []; try { resep = JSON.parse(b[2]); } catch(e){}
-      let hppTot = 0;
-      resep.forEach(rs => { hppTot += (produkMap[rs.kode]?.hpp || 0) * (Number(rs.butuh) || 1); });
-      bundlingMap[String(b[1]).toLowerCase().trim()] = { nama: b[1], hpp: hppTot, jual: Number(b[3]) || 0 };
+      const hpp = Number(s[5]) || 0;
+      produkMap[String(s[0]).trim()] = hpp; 
+      produkMap[String(s[1]).toLowerCase().trim()] = hpp;
+      produkMap[normKey(s[1])] = hpp;
     });
 
-    // =========================================================================
-    // B. KALKULASI EXECUTIVE SUMMARY
-    // =========================================================================
+    const bundlingMap = {};
+    (dataStokGlobal.bundling || []).forEach(b => {
+      bundlingMap[normKey(b[1])] = { nama: b[1], jual: Number(b[3]) || 0 };
+    });
+
+    // B. KALKULASI OMZET (DARI PEMASUKAN)
     let grossRevenue = 0;
     let totalTrx = 0;
     let mapPelanggan = {};
+    const pemasukanPeriode = [];
 
     (cachedData.pemasukan || []).forEach((r, i) => {
       if (i > 0 && isMasukRentang(r[1])) {
@@ -12633,53 +12631,137 @@ function renderMasterReportData() {
         const ketLower = ket.toLowerCase();
         if (!ketLower.includes('modal') && !ketLower.includes('setor') && !ketLower.includes('investasi')) {
           const nom = Number(r[2]) || 0;
+          const tglNorm = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(r[1]) : String(r[1]).split('T')[0];
+          
           grossRevenue += nom;
           totalTrx++;
-          if (ket && ket !== '-') {
-            if (!mapPelanggan[ket]) mapPelanggan[ket] = { belanja: 0, freq: 0 };
-            mapPelanggan[ket].belanja += nom;
-            mapPelanggan[ket].freq += 1;
-          }
+          pemasukanPeriode.push({ ket, nom, tgl: tglNorm, matched: false });
+
+          // Ekstrak nama pelanggan asli (sebelum tanda " - ")
+          let namaCust = ket.includes(' - ') ? ket.split(' - ')[0].trim() : ket.split('[')[0].trim();
+          if (!namaCust) namaCust = ket;
+          const kunciCust = namaCust.toLowerCase();
+          
+          if (!mapPelanggan[kunciCust]) mapPelanggan[kunciCust] = { namaTampil: namaCust, belanja: 0, freq: 0 };
+          mapPelanggan[kunciCust].belanja += nom;
+          mapPelanggan[kunciCust].freq += 1;
         }
       }
     });
 
+    // C. KALKULASI COGS (HPP) LANGSUNG DARI BAHAN BAKU & BARANG SATUAN DI MUTASI STOK
     let cogsHpp = 0;
     let rugiShrinkage = 0;
     const topProdukMap = {};
-    const produkLakuSet = new Set();
+    const hppPaketTracker = {}; 
 
     (dataStokGlobal.mutasi || []).forEach((m, i) => {
       if (isMasukRentang(m[0])) {
+        const tglM = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(m[0]) : String(m[0]).split('T')[0];
+        const jamM = String(m[1] || '').replace(/'/g, '').trim();
         const tipe = String(m[2] || '');
-        const namaLower = String(m[3] || '').trim().toLowerCase();
+        const namaBarang = String(m[3] || '').trim();
+        const namaLower = namaBarang.toLowerCase();
         const qty = Number(m[4]) || 0;
+        const ketM = String(m[5] || '');
 
-        let netActual = 0; let hasActualNet = false;
-        const matchNet = String(m[5] || '').match(/\[Net:\s*(-?\d+)\]/i);
-        if (matchNet) { netActual = Number(matchNet[1]); hasActualNet = true; }
-
-        if (tipe === 'Penjualan Bundling' || tipe === 'Penjualan Satuan') {
-          const isBdl = tipe === 'Penjualan Bundling';
-          const itm = isBdl ? bundlingMap[namaLower] : produkMap[namaLower];
-          const hppItem = (itm ? itm.hpp : 0) * qty;
-          cogsHpp += hppItem;
-          produkLakuSet.add(namaLower);
-
-          if (itm) {
-            if (!topProdukMap[namaLower]) topProdukMap[namaLower] = { nama: itm.nama, tipe: isBdl ? 'Bundling' : 'Satuan', qty: 0, omzet: 0, modal: 0 };
-            topProdukMap[namaLower].qty += qty;
-            topProdukMap[namaLower].modal += hppItem;
-            topProdukMap[namaLower].omzet += hasActualNet ? netActual : (qty * (isBdl ? itm.jual : Math.round(itm.hpp * 1.3)));
+        // 1. Hitung COGS dari Bahan Bundling yang keluar
+        if (tipe === 'Bahan Bundling Terpakai') {
+          const hppBahan = (produkMap[namaLower] || produkMap[normKey(namaBarang)] || 0) * qty;
+          cogsHpp += hppBahan;
+          
+          // Lacak HPP ini milik paket mana untuk Tabel 5
+          const matchPaket = ketM.match(/Komponen\s+(\d+)x\s+(.+?)\s+\(/i);
+          if (matchPaket) {
+            const keyTrx = `${tglM}|${jamM}|${normKey(matchPaket[2])}`;
+            hppPaketTracker[keyTrx] = (hppPaketTracker[keyTrx] || 0) + hppBahan;
           }
-        } 
+        }
+        // 2. Hitung COGS dari Penjualan Satuan
+        else if (tipe === 'Penjualan Satuan') {
+          const hppSatuan = (produkMap[namaLower] || produkMap[normKey(namaBarang)] || 0) * qty;
+          cogsHpp += hppSatuan;
+
+          let netActual = 0; let hasActualNet = false;
+          const matchNet = ketM.match(/\[Net:\s*(-?\d+)\]/i);
+          if (matchNet) { netActual = Number(matchNet[1]); hasActualNet = true; }
+
+          const keyTop = normKey(namaBarang);
+          if (!topProdukMap[keyTop]) topProdukMap[keyTop] = { nama: namaBarang, tipe: 'Satuan', qty: 0, omzet: 0, modal: 0 };
+          
+          topProdukMap[keyTop].qty += qty;
+          topProdukMap[keyTop].modal += hppSatuan;
+          topProdukMap[keyTop].omzet += hasActualNet ? netActual : (qty * Math.round((hppSatuan/qty) * 1.35));
+        }
+        // 3. Hitung Shrinkage (Kerugian Gudang)
         else if (tipe.includes('Rusak') || tipe.includes('Kadaluarsa') || tipe.includes('Hilang') || tipe.includes('Kurang')) {
-          const itm = produkMap[namaLower];
-          rugiShrinkage += (itm ? itm.hpp : 0) * qty;
+          rugiShrinkage += (produkMap[namaLower] || produkMap[normKey(namaBarang)] || 0) * qty;
         }
       }
     });
 
+    // D. REKAP OMZET BUNDLING UNTUK TABEL 5 (Mencocokkan ke Pemasukan)
+    (dataStokGlobal.mutasi || []).forEach((m) => {
+      if (isMasukRentang(m[0]) && String(m[2] || '') === 'Penjualan Bundling') {
+        const tglM = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(m[0]) : String(m[0]).split('T')[0];
+        const jamM = String(m[1] || '').replace(/'/g, '').trim();
+        const namaPaket = String(m[3] || '').trim();
+        const keyNk = normKey(namaPaket);
+        const qty = Number(m[4]) || 0;
+        const ketM = String(m[5] || '');
+
+        let netActual = 0; let hasActualNet = false;
+        const matchNet = ketM.match(/\[Net:\s*(-?\d+)\]/i);
+        if (matchNet) { netActual = Number(matchNet[1]); hasActualNet = true; }
+
+        // Coba cari nilai transaksi ini di daftar Pemasukan
+        if (!hasActualNet) {
+          pemasukanPeriode.forEach(p => {
+            if (!p.matched && p.tgl === tglM && normKey(p.ket).includes(keyNk)) {
+              netActual = p.nom;
+              hasActualNet = true;
+              p.matched = true;
+            }
+          });
+        }
+
+        const bdlMaster = bundlingMap[keyNk];
+        const omzetFinal = hasActualNet ? netActual : (qty * (bdlMaster ? bdlMaster.jual : 0));
+        
+        // Ambil total modal bahan yang tadi sudah dihitung di hppPaketTracker
+        const keyTrx = `${tglM}|${jamM}|${keyNk}`;
+        const modalPaket = hppPaketTracker[keyTrx] || 0;
+
+        if (!topProdukMap[keyNk]) topProdukMap[keyNk] = { nama: bdlMaster ? bdlMaster.nama : namaPaket, tipe: 'Bundling', qty: 0, omzet: 0, modal: 0 };
+        
+        topProdukMap[keyNk].qty += qty;
+        topProdukMap[keyNk].modal += modalPaket;
+        topProdukMap[keyNk].omzet += omzetFinal;
+      }
+    });
+
+    // Rekonsiliasi sisa Pemasukan Manual yang belum ada di Mutasi_Stok
+    pemasukanPeriode.forEach(p => {
+      if (!p.matched) {
+        const bagianProduk = p.ket.split('[Net]')[0].split('(Bruto')[0];
+        const regexItem = /(\d+)\s*[x×]\s*([^,(\n]+)/gi;
+        let match;
+        while ((match = regexItem.exec(bagianProduk)) !== null) {
+          const qtyMan = Number(match[1]) || 1;
+          const nkMan = normKey(match[2]);
+          // Jika tidak ada di Mutasi, hpp manual = 0
+          if (nkMan && !topProdukMap[nkMan]) {
+             topProdukMap[nkMan] = { nama: String(match[2]).trim(), tipe: 'Lainnya', qty: 0, omzet: 0, modal: 0 };
+          }
+          if (nkMan) {
+             topProdukMap[nkMan].qty += qtyMan;
+             topProdukMap[nkMan].omzet += p.nom;
+          }
+        }
+      }
+    });
+
+    // E. OPEX & BEP
     let opexAdSpend = 0; let opexGaji = 0; let opexLain = 0; let dendaIndisipliner = 0;
     (cachedData.iklan || []).forEach((r, i) => { if (i > 0 && isMasukRentang(r[1])) opexAdSpend += Number(r[2]) || 0; });
     (cachedData.pengeluaranLain || []).forEach((r, i) => {
@@ -12703,9 +12785,7 @@ function renderMasterReportData() {
     const grossProfit = grossRevenue - cogsHpp;
     const netProfit = grossProfit - totalOpex - rugiShrinkage;
 
-    // =========================================================================
-    // C. KALKULASI METRIK BISNIS (KPI) & DOM RENDER
-    // =========================================================================
+    // F. RENDER DOM METRIK
     document.getElementById('mrValOmzetKotor').innerText = formatRupiah(grossRevenue);
     document.getElementById('mrSubTrx').innerText = `${totalTrx.toLocaleString('id-ID')} Transaksi`;
     document.getElementById('mrValHpp').innerText = formatRupiah(cogsHpp);
@@ -12742,15 +12822,15 @@ function renderMasterReportData() {
     (cachedData.penyesuaianGaji || []).forEach((r, i) => { if (i > 0 && isMasukRentang(r[0]) && String(r[2]).includes('Denda')) dendaIndisipliner += (Number(r[3]) || 0); });
     document.getElementById('mrValIndisipliner').innerText = formatRupiah(dendaIndisipliner);
 
+    const totalCust = Object.keys(mapPelanggan).length;
     let custBaru = 0; let custLama = 0; const vipArray = [];
     Object.keys(mapPelanggan).forEach(k => {
       if (mapPelanggan[k].freq === 1) custBaru++; else custLama++;
-      vipArray.push({ nama: k, belanja: mapPelanggan[k].belanja });
+      vipArray.push({ nama: mapPelanggan[k].namaTampil, belanja: mapPelanggan[k].belanja });
     });
-    const totalCust = custBaru + custLama;
+    
     const pctBaru = totalCust > 0 ? Math.round((custBaru/totalCust)*100) : 0;
     const pctLama = totalCust > 0 ? Math.round((custLama/totalCust)*100) : 0;
-    
     document.getElementById('mrPctBaru').innerText = `${pctBaru}%`;
     document.getElementById('mrPctLama').innerText = `${pctLama}%`;
     document.getElementById('mrBarPelangganBaru').style.width = `${pctBaru}%`;
@@ -12761,87 +12841,7 @@ function renderMasterReportData() {
       ? topVip.map((v, idx) => `<li>${idx+1}. ${v.nama} <span class="text-emerald-600 font-bold">(${formatRupiah(v.belanja)})</span></li>`).join('')
       : `<li class="text-slate-400 font-normal">Data pelanggan belum tersedia</li>`;
 
-    // Index.html | CLIENT (JavaScript)
-// --- UBAH DARI SINI: Perbaikan Logika Dead Stock ---
-    // --- PENGISIAN GLOBAL DEAD STOCK ---
-    globalDeadStockList = []; // Reset array
-    let deadStockRp = 0;
-    
-    // 1. SETUP WAKTU DEAD STOCK (Baku: 30 Hari Kebelakang dari Tanggal Akhir Filter)
-    const BATAS_HARI_DEADSTOCK = 30;
-    const endVal = document.getElementById('mrFilterEnd').value;
-    const endTglObj = endVal ? new Date(endVal) : new Date();
-    
-    const startDsObj = new Date(endTglObj);
-    startDsObj.setDate(startDsObj.getDate() - BATAS_HARI_DEADSTOCK);
-    
-    const startDsStr = startDsObj.toISOString().split('T')[0];
-    const endDsStr = endTglObj.toISOString().split('T')[0];
-
-    const produkAktifSet = new Set(); // Himpunan barang yang bergerak dalam 30 hari
-    
-    // 2. LOOP KHUSUS UNTUK MELACAK BARANG AKTIF (Mencegah Jebakan Waktu & Membedah Bundling)
-    (dataStokGlobal.mutasi || []).forEach(m => {
-       const tglMutasi = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(m[0]) : String(m[0]).split('T')[0];
-       const tipe = String(m[2] || '');
-       const namaLower = String(m[3] || '').trim().toLowerCase();
-
-       // Hanya cek mutasi dalam 30 hari terakhir
-       if (tglMutasi >= startDsStr && tglMutasi <= endDsStr) {
-           // Jika ada penjualan atau pengeluaran barang
-           if (tipe === 'Penjualan Bundling' || tipe === 'Penjualan Satuan' || tipe.includes('Keluar')) {
-               produkAktifSet.add(namaLower); // Tandai barang utama sebagai Aktif
-               
-               // JIKA BUNDLING TERJUAL, BONGKAR RESEPNYA!
-               if (tipe === 'Penjualan Bundling') {
-                   const bd = (dataStokGlobal.bundling || []).find(b => String(b[1]).trim().toLowerCase() === namaLower);
-                   if (bd && bd[2]) {
-                       try {
-                           const resep = JSON.parse(bd[2]);
-                           resep.forEach(rs => {
-                               // rs.kode adalah SKU bahan baku. Kita cari nama bahannya.
-                               const sku = String(rs.kode).trim();
-                               if (produkMap[sku]) {
-                                   // Tandai BAHAN BAKU (kardus, toples, dll) sebagai Aktif juga!
-                                   produkAktifSet.add(produkMap[sku].nama.toLowerCase().trim());
-                               }
-                           });
-                       } catch(e) { console.error("Gagal membaca resep bundling", e); }
-                   }
-               }
-           }
-       }
-    });
-
-    const arrKunciMap = Object.keys(produkMap);
-    const arrUnikProduk = [...new Set(arrKunciMap.map(k => produkMap[k].nama))];
-
-    // 3. VONIS DEAD STOCK
-    arrUnikProduk.forEach(namaAsli => {
-        const kunciLower = namaAsli.toLowerCase().trim();
-        // Cek jika produk ini TIDAK ADA di produkAktifSet (Berarti sama sekali tidak bergerak selama 30 hari)
-        if (!produkAktifSet.has(kunciLower) && produkMap[kunciLower] && produkMap[kunciLower].stok > 0) {
-            const itm = produkMap[kunciLower];
-            const nilaiTertahan = itm.stok * itm.hpp;
-            deadStockRp += nilaiTertahan;
-            globalDeadStockList.push({
-                nama: itm.nama,
-                stok: itm.stok,
-                satuan: itm.satuan,
-                hpp: itm.hpp,
-                totalTertahan: nilaiTertahan
-            });
-        }
-    });
-
-    // Urutkan Dead Stock dari nominal tertahan paling besar
-    globalDeadStockList.sort((a, b) => b.totalTertahan - a.totalTertahan);
-
-    document.getElementById('mrValDeadStockQty').innerText = `${globalDeadStockList.length} SKU Pasif`;
-    document.getElementById('mrValDeadStockRp').innerText = formatRupiah(deadStockRp);
-    // ------------------------------------
-// --- BATAS AKHIR PERUBAHAN ---
-
+    // G. RENDER TOP 5 PRODUCTS
     const topArray = Object.keys(topProdukMap).map(k => {
       const itm = topProdukMap[k];
       return { nama: itm.nama, tipe: itm.tipe, qty: itm.qty, omzet: itm.omzet, modal: itm.modal, laba: itm.omzet - itm.modal, margin: itm.omzet > 0 ? ((itm.omzet - itm.modal) / itm.omzet * 100) : 0 };
@@ -12864,37 +12864,16 @@ function renderMasterReportData() {
       tbodyTops.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400 font-medium">Tidak ada transaksi pada periode ini.</td></tr>`;
     }
    
-    // Index.html | CLIENT (JavaScript)
-// --- UBAH DARI SINI: Timpa semua dari Blok D sampai Blok E ---
-
-    // =========================================================================
-    // D. KALKULASI PROYEKSI & TARGET BEP
-    // =========================================================================
-    
-    // 1. Ambil Target BEP (Multi-Source Lookup)
+    // H. KALKULASI PROYEKSI & TARGET BEP
     let targetBep = 0;
-    
-    // 1. Ambil Target BEP (Langsung tembak ke cachedData utama)
-    let sumberBep = null;
-    if (typeof cachedData !== 'undefined' && cachedData && cachedData.bepConfig) {
-        sumberBep = cachedData.bepConfig; // Sumber valid saat pertama kali buka web
-    } else if (typeof bepConfig !== 'undefined' && bepConfig) {
-        sumberBep = bepConfig; // Sumber valid setelah klik tombol simpan
-    }
+    let sumberBep = (typeof cachedData !== 'undefined' && cachedData && cachedData.bepConfig) ? cachedData.bepConfig : ((typeof bepConfig !== 'undefined' && bepConfig) ? bepConfig : null);
 
-    // 2. Ekstrak Angka Target dari sumber yang valid
     if (sumberBep) {
-        if (Number(sumberBep.targetRupiah) > 0) {
-            targetBep = Number(sumberBep.targetRupiah);
-        } else if (Number(sumberBep.targetBep) > 0) {
-            targetBep = Number(sumberBep.targetBep);
-        } else if (Number(sumberBep.biayaTetapTotal) > 0 && Number(sumberBep.margin) > 0) {
-            // Kalkulasi manual berdasarkan kosa kata asli dari Code.gs
-            targetBep = Number(sumberBep.biayaTetapTotal) / (Number(sumberBep.margin) / 100);
-        }
+        if (Number(sumberBep.targetRupiah) > 0) targetBep = Number(sumberBep.targetRupiah);
+        else if (Number(sumberBep.targetBep) > 0) targetBep = Number(sumberBep.targetBep);
+        else if (Number(sumberBep.biayaTetapTotal) > 0 && Number(sumberBep.margin) > 0) targetBep = Number(sumberBep.biayaTetapTotal) / (Number(sumberBep.margin) / 100);
     }
     
-    // Fallback elemen DOM (jaga-jaga jika data belum termuat tapi layar BEP sudah render)
     if (targetBep === 0) {
         const domBep = document.getElementById('bepTargetRupiah') || document.getElementById('valTargetBep');
         if (domBep && domBep.innerText) {
@@ -12903,17 +12882,14 @@ function renderMasterReportData() {
         }
     }
     
-    // 2. Hitung Progres Pencapaian BEP
     let progresBepPct = 0;
     let sisaKejarBep = targetBep;
     let teksSisaBep = "Target BEP belum disetel.";
     let warnaTeksSisa = "text-slate-400"; 
     
     if (targetBep > 0) {
-        // PERBAIKAN: Menggunakan grossRevenue (Omzet) sebagai pembanding, bukan grossProfit
         progresBepPct = (grossRevenue / targetBep) * 100;
         sisaKejarBep = targetBep - grossRevenue;
-        
         if (sisaKejarBep > 0) {
             teksSisaBep = `Kurang ${formatRupiah(sisaKejarBep)} lagi`;
             warnaTeksSisa = "text-rose-500"; 
@@ -12924,41 +12900,24 @@ function renderMasterReportData() {
         }
     }
     
-    // 3. Proyeksi Omzet Akhir Bulan
     let proyeksiOmzet = 0;
-    
     if (startTgl && endTgl) {
         const tglMulai = new Date(startTgl);
         const tglSelesai = new Date(endTgl);
-        
-        const tahunLaporan = tglSelesai.getFullYear();
-        const bulanLaporan = tglSelesai.getMonth();
-        const totalHariSebulan = new Date(tahunLaporan, bulanLaporan + 1, 0).getDate();
-        
-        // Memastikan perhitungan hari inklusif (tanggal 1 s/d 15 = 15 hari, bukan 14 hari)
+        const totalHariSebulan = new Date(tglSelesai.getFullYear(), tglSelesai.getMonth() + 1, 0).getDate();
         const selisihHari = Math.max(1, Math.ceil((tglSelesai - tglMulai) / (1000 * 60 * 60 * 24)) + 1);
-        
-        const rataOmzetHarian = grossRevenue / selisihHari;
-        proyeksiOmzet = rataOmzetHarian * totalHariSebulan;
+        proyeksiOmzet = (grossRevenue / selisihHari) * totalHariSebulan;
     }
 
-    // =========================================================================
-    // E. RENDER PROYEKSI & BEP KE DOM
-    // =========================================================================
-    
     if(document.getElementById('mrValTargetBep')) document.getElementById('mrValTargetBep').innerText = targetBep > 0 ? formatRupiah(targetBep) : "Belum Setel BEP";
     if(document.getElementById('mrValProgresBepPct')) document.getElementById('mrValProgresBepPct').innerText = `${progresBepPct.toFixed(1)}%`;
-    
     const mrSubSisaBepEl = document.getElementById('mrSubSisaBep');
     if (mrSubSisaBepEl) {
         mrSubSisaBepEl.innerText = teksSisaBep;
         mrSubSisaBepEl.className = `text-xs font-bold mt-1.5 ${warnaTeksSisa}`;
     }
-    
     if(document.getElementById('mrBarProgresBep')) document.getElementById('mrBarProgresBep').style.width = `${Math.min(progresBepPct, 100)}%`;
     if(document.getElementById('mrValProyeksiOmzet')) document.getElementById('mrValProyeksiOmzet').innerText = formatRupiah(proyeksiOmzet);
-
-// --- BATAS AKHIR PERUBAHAN ---
 
     sembunyikanLoading();
   }, 100);
@@ -13328,7 +13287,6 @@ function cetakPdfMasterReport() {
 function renderLaporanPnL() {
   if (!cachedData || !dataStokGlobal) return;
 
-  // Set Waktu P&L secara khusus (Memaksa agar selalu Bulanan)
   let tglFilter = document.getElementById('pnlBulanFilter').value;
   if (!tglFilter) {
      tglFilter = new Date().toISOString().slice(0, 7);
@@ -13337,89 +13295,91 @@ function renderLaporanPnL() {
   selectedMonthBulanan = tglFilter;
   currentTimeframe = 'bulanan';
 
-  // PREPARE HPP & HARGA JUAL LOOKUP MAP
+  function normKeyPnL(str) {
+    return String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  // PREPARE HPP
   const produkMap = {};
   (dataStokGlobal.stok || []).forEach(s => { 
-    produkMap[String(s[0]).trim()] = { hpp: Number(s[5]) || 0 }; 
-    produkMap[String(s[1]).toLowerCase().trim()] = { hpp: Number(s[5]) || 0 };
-  });
-  
-  const bundlingMap = {};
-  (dataStokGlobal.bundling || []).forEach(b => {
-    let resep = [];
-    try { resep = JSON.parse(b[2]); } catch(e){}
-    let hppTot = 0;
-    resep.forEach(rs => { hppTot += (produkMap[rs.kode]?.hpp || 0) * (Number(rs.butuh) || 1); });
-    bundlingMap[String(b[1]).toLowerCase().trim()] = { hpp: hppTot, jual: Number(b[3]) || 0 };
+    const hpp = Number(s[5]) || 0;
+    produkMap[String(s[0]).trim()] = hpp; 
+    produkMap[normKeyPnL(s[1])] = hpp;
   });
 
-  // A. PENDAPATAN PENJUALAN (Net dari Pemasukan Sheet)
+  // A. PENDAPATAN PENJUALAN (Net & Ekstraksi Potongan Admin dari Pemasukan Sheet)
   let totalPendapatanNet = 0;
+  let potonganDariTeksPemasukan = 0;
+
   (cachedData.pemasukan || []).forEach((r, i) => {
-    if (i > 0 && normalisasiTanggalYMD(r[1]).startsWith(selectedMonthBulanan)) {
-      const ket = String(r[0] || '').toLowerCase();
-      // Abaikan suntikan modal agar tidak merusak P&L
+    const tglNorm = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(r[1]) : String(r[1]).split('T')[0];
+    if (i > 0 && tglNorm.startsWith(selectedMonthBulanan)) {
+      const ketRaw = String(r[0] || '').trim();
+      const ket = ketRaw.toLowerCase();
       if (!ket.includes('modal') && !ket.includes('setor') && !ket.includes('investasi')) {
         totalPendapatanNet += Number(r[2]) || 0;
+        const matchPot = ketRaw.match(/Potongan:\s*Rp\s*([\d\.]+)/i);
+        if (matchPot) potonganDariTeksPemasukan += Number(matchPot[1].replace(/\./g, '')) || 0;
       }
     }
   });
 
-  // B, C, & E. MENCARI BIAYA ADMIN, HPP, & RUGI DARI MUTASI GUDANG
-  let totalPotonganAdmin = 0;
+  // B, C, & E. MENCARI BIAYA ADMIN, HPP (DARI BAHAN FISIK), & RUGI DARI MUTASI GUDANG
+  let totalPotonganMutasi = 0;
   let hppSatuanLaku = 0;
   let hppBundlingLaku = 0;
   let rugiStokToko = 0;
   const rugiRincianMap = {};
 
   (dataStokGlobal.mutasi || []).forEach((m, i) => {
-    const tglStr = normalisasiTanggalYMD(m[0]);
+    const tglStr = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(m[0]) : String(m[0]).split('T')[0];
     if (tglStr.startsWith(selectedMonthBulanan)) {
       const tipe = String(m[2] || '');
-      const namaLower = String(m[3] || '').trim().toLowerCase();
+      const namaBarang = String(m[3] || '').trim();
+      const nk = normKeyPnL(namaBarang);
       const qty = Number(m[4]) || 0;
+      const ketM = String(m[5] || '');
 
-      // Ekstrak Net Profit riil yang dicatat sistem
-      let netActual = 0;
-      let hasActualNet = false;
-      const matchNet = String(m[5] || '').match(/\[Net:\s*(-?\d+)\]/i);
-      if (matchNet) {
-        netActual = Number(matchNet[1]);
-        hasActualNet = true;
+      // HPP Bundling (Dari Komponen)
+      if (tipe === 'Bahan Bundling Terpakai') {
+        hppBundlingLaku += (produkMap[nk] || 0) * qty;
       }
-
-      // Hitung HPP & Temukan Potongan Admin Tersembunyi
-      if (tipe === 'Penjualan Bundling') {
-        const bdl = bundlingMap[namaLower];
-        const hppItem = (bdl ? bdl.hpp : 0) * qty;
-        hppBundlingLaku += hppItem;
-        
-        if (hasActualNet && bdl) {
-          let grossItem = bdl.jual * qty;
-          let adminFee = grossItem - netActual;
-          if (adminFee > 0) totalPotonganAdmin += adminFee;
-        }
-      } 
+      // HPP Satuan
       else if (tipe === 'Penjualan Satuan') {
-        const itm = produkMap[namaLower];
-        const hppItem = (itm ? itm.hpp : 0) * qty;
+        const hppItem = (produkMap[nk] || 0) * qty;
         hppSatuanLaku += hppItem;
 
-        if (hasActualNet && itm) {
-          let grossEstimasi = Math.round(itm.hpp * 1.3) * qty; // Menggunakan estimasi harga jual default +30%
-          let adminFee = grossEstimasi - netActual;
-          if (adminFee > 0) totalPotonganAdmin += adminFee;
+        const matchNet = ketM.match(/\[Net:\s*(-?\d+)\]/i);
+        if (matchNet) {
+          const netActual = Number(matchNet[1]);
+          const grossEstimasi = Math.round(hppItem * 1.35); 
+          const adminFee = grossEstimasi - netActual;
+          if (adminFee > 0) totalPotonganMutasi += adminFee;
         }
       } 
-      // Deteksi Kebocoran Stok (Opname, Rusak, dll)
-      else if (tipe.includes('Rusak') || tipe.includes('Kadaluarsa') || tipe.includes('Tester') || tipe.includes('Koreksi Fisik') || tipe.includes('Opname (Kurang)')) {
-        const itm = produkMap[namaLower];
-        const lossModal = (itm ? itm.hpp : 0) * qty;
+      // Rugi / Shrinkage
+      else if (tipe.includes('Rusak') || tipe.includes('Kadaluarsa') || tipe.includes('Tester') || tipe.includes('Koreksi Fisik') || tipe.includes('Opname (Kurang')) {
+        const lossModal = (produkMap[nk] || 0) * qty;
         rugiStokToko += lossModal;
         rugiRincianMap[tipe] = (rugiRincianMap[tipe] || 0) + lossModal;
       }
+      
+      // Ambil Potongan Admin dari Baris Penjualan Bundling
+      if (tipe === 'Penjualan Bundling') {
+        const matchNet = ketM.match(/\[Net:\s*(-?\d+)\]/i);
+        if (matchNet) {
+          // Cari harga jual paket di Master_Bundling untuk menghitung selisih Admin
+          const bdlRaw = (dataStokGlobal.bundling || []).find(b => normKeyPnL(b[1]) === nk);
+          if (bdlRaw) {
+            const adminFee = (Number(bdlRaw[3]) * qty) - Number(matchNet[1]);
+            if (adminFee > 0) totalPotonganMutasi += adminFee;
+          }
+        }
+      }
     }
   });
+
+  const totalPotonganAdmin = Math.max(potonganDariTeksPemasukan, totalPotonganMutasi);
 
   // Tampilkan Pendapatan (Gross & Admin)
   const omzetKotor = totalPendapatanNet + totalPotonganAdmin;
@@ -13448,12 +13408,12 @@ function renderLaporanPnL() {
       const ket = String(r[0] || '').toLowerCase();
       const nom = Number(r[2]) || 0;
       if (ket.includes('beban gaji') || ket.includes('gaji karyawan')) bebanGajiTertulis += nom;
-      else bebanOpsLain += nom; // Pembelian Shopee Non-Stok & Operasional masuk ke sini
+      else bebanOpsLain += nom;
     }
   });
 
   let bebanDepresiasi = 0;
-  if (bepConfig && bepConfig.depresiasi) {
+  if (typeof bepConfig !== 'undefined' && bepConfig && bepConfig.depresiasi) {
       bepConfig.depresiasi.forEach(d => { bebanDepresiasi += (Number(d.depresiasiBulanan) || 0); });
   }
 
@@ -13488,8 +13448,8 @@ function renderLaporanPnL() {
 
   // METRIK KARTU ATAS
   document.getElementById('pnlCardOmzet').innerText = formatRupiah(omzetKotor);
-  document.getElementById('pnlCardKotor').innerText = formatRupiah(totalPendapatanNet); // Dipindah menampilkan Net 
-  document.getElementById('pnlCardBeban').innerText = formatRupiah(totalOPEX + totalHPP + rugiStokToko); // Total All Outflow
+  document.getElementById('pnlCardKotor').innerText = formatRupiah(totalPendapatanNet); 
+  document.getElementById('pnlCardBeban').innerText = formatRupiah(totalOPEX + totalHPP + rugiStokToko);
   document.getElementById('pnlCardBersih').innerText = formatRupiah(labaBersih);
   document.getElementById('pnlCardMargin').innerText = `Margin: ${marginBersihPct.toFixed(1)}%`;
 
@@ -13498,18 +13458,17 @@ function renderLaporanPnL() {
   if (labaBersih > 0) {
     boxDist.classList.remove('hidden');
     
-    // Baseline = Biaya Tetap (OPEX Non-Iklan) + Margin Buffer
     const fixedCosts = bebanOpsLain + bebanGajiTertulis + bebanDepresiasi;
-    const baselineBuffer = bepConfig.baselinePct !== undefined ? (bepConfig.baselinePct/100) : 0.1;
+    const baselineBuffer = (typeof bepConfig !== 'undefined' && bepConfig.baselinePct !== undefined) ? (bepConfig.baselinePct/100) : 0.1;
     const targetBaseline = Math.round(fixedCosts + (fixedCosts * baselineBuffer));
     
     document.getElementById('pnlDistBaseline').innerText = formatRupiah(targetBaseline);
 
     if (labaBersih > targetBaseline) {
       const excess = labaBersih - targetBaseline;
-      const jmlStaff = (gajiConfig.daftarKaryawan || []).filter(k => k.role === 'staff').length || 2;
+      const jmlStaff = (typeof gajiConfig !== 'undefined' && gajiConfig.daftarKaryawan) ? gajiConfig.daftarKaryawan.filter(k => k.role === 'staff').length : 2;
       const bonusTimTotal = excess * 0.04;
-      const bonusPerStaff = Math.round(bonusTimTotal / jmlStaff);
+      const bonusPerStaff = Math.round(bonusTimTotal / Math.max(1, jmlStaff));
       
       const sisaOwnerTk = excess - bonusTimTotal;
       const tkPorsi = Math.round(sisaOwnerTk * 0.30);

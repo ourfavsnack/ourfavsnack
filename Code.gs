@@ -465,18 +465,55 @@ function editTransaksi(data) {
   var row = Number(data.rowIndex);
   var tokoVal = (data.toko && String(data.toko).trim() !== '') ? String(data.toko).trim() : "-";
   var userAktif = data.user || "Staf";
-
-  var sheet = ss.getSheetByName(data.kategori);
-  if (!sheet) throw new Error("Sheet tidak ditemukan: " + data.kategori);
   
-  var colCount = Math.min(sheet.getLastColumn(), 6);
-  var rowValuesLama = sheet.getRange(row, 1, 1, colCount).getValues()[0];
-  var dataLamaTeks = rowValuesLama.filter(function(v) { return v !== "" && v !== null; }).join(" | ");
+  // Deteksi jika pengguna memindahkan kategori transaksi saat edit
+  var kategoriLama = data.kategoriLama || data.kategori;
 
-  if (data.kategori === "Pemasukan" || data.kategori === "Pembelian Shopee" || data.kategori === "Iklan") {
-    sheet.getRange(row, 1, 1, 5).setValues([[data.nama, data.tanggal, nominal, tokoVal, jamTeks]]);
+  var sheetLama = ss.getSheetByName(kategoriLama);
+  if (!sheetLama) throw new Error("Sheet lama tidak ditemukan: " + kategoriLama);
+  
+  var colCount = Math.min(sheetLama.getLastColumn(), 6);
+  var rowValuesLama = sheetLama.getRange(row, 1, 1, colCount).getValues()[0];
+  var dataLamaTeks = rowValuesLama.filter(function(v) { return v !== "" && v !== null; }).join(" | ");
+  
+  // Ekstrak data lama untuk pencarian di Arus Kas
+  var tglLama = Utilities.formatDate(new Date(rowValuesLama[1]), "GMT+7", "yyyy-MM-dd");
+  var nominalLama = Number(rowValuesLama[2]) || 0;
+  var namaLama = String(rowValuesLama[0] || "").trim();
+
+  // 1. UPDATE DI SHEET TRANSAKSI (Sesuai Kategori)
+  if (kategoriLama === data.kategori) {
+    // Jika tidak pindah sheet kategori
+    if (data.kategori === "Pemasukan" || data.kategori === "Pembelian Shopee" || data.kategori === "Iklan") {
+      sheetLama.getRange(row, 1, 1, 5).setValues([[data.nama, data.tanggal, nominal, tokoVal, jamTeks]]);
+    } else {
+      sheetLama.getRange(row, 1, 1, 5).setValues([[data.nama, data.tanggal, nominal, "-", jamTeks]]);
+    }
   } else {
-    sheet.getRange(row, 1, 1, 5).setValues([[data.nama, data.tanggal, nominal, "-", jamTeks]]);
+    // Jika pindah kategori: Hapus dari sheet lama, tambah ke sheet baru
+    sheetLama.deleteRow(row);
+    var sheetBaru = pastikanSheetAda(ss, data.kategori, ["Nama", "Tanggal", "Nominal", "Toko", "Jam"]);
+    var tokoField = (data.kategori === "Pemasukan" || data.kategori === "Pembelian Shopee" || data.kategori === "Iklan") ? tokoVal : "-";
+    sheetBaru.appendRow([data.nama, data.tanggal, nominal, tokoField, jamTeks]);
+  }
+
+  // 2. UPDATE DI SHEET ARUS KAS
+  var sheetAK = ss.getSheetByName("Arus Kas");
+  if (sheetAK && sheetAK.getLastRow() > 1) {
+    var akVals = sheetAK.getDataRange().getValues();
+    for (var k = akVals.length - 1; k >= 1; k--) {
+      var tglK = Utilities.formatDate(new Date(akVals[k][0]), "GMT+7", "yyyy-MM-dd");
+      var nomK = Number(akVals[k][3]) || 0;
+      var ketK = String(akVals[k][1] || "").trim();
+      
+      // Cari baris kas yang pasangannya cocok dengan data lama
+      if (tglK === tglLama && nomK === nominalLama && ketK.includes(namaLama)) {
+        var tipeKasBaru = (data.kategori === "Pemasukan") ? "Kas Masuk" : "Kas Keluar";
+        var ketKasBaru = "[" + data.kategori + "] " + data.nama;
+        sheetAK.getRange(k + 1, 1, 1, 5).setValues([[data.tanggal, ketKasBaru, tipeKasBaru, nominal, jamTeks]]);
+        break; // Cukup perbarui satu transaksi yang cocok
+      }
+    }
   }
 
   var dataBaruTeks = [data.nama, data.tanggal, "Rp " + nominal.toLocaleString('id-ID'), tokoVal, data.jam].join(" | ");
@@ -504,13 +541,19 @@ function hapusTransaksi(sheetName, rowIndex, user) {
     values: rowValues
   });
 
+  // Variabel bantu untuk sinkronisasi ke Gudang & POS
+  var tglSync = "";
+  var jamSync = "";
+  var ketSync = "";
+
   // =========================================================================
   // KASUS A: PENGHAPUSAN BERASAL DARI TABEL ARUS KAS
   // =========================================================================
   if (sheetName === "Arus Kas") {
-    var tglKas = Utilities.formatDate(new Date(rowValues[0]), "GMT+7", "yyyy-MM-dd");
+    var tglKas = (rowValues[0] instanceof Date) ? Utilities.formatDate(rowValues[0], "GMT+7", "yyyy-MM-dd") : String(rowValues[0]).split('T')[0];
     var ketKas = String(rowValues[1] || "").trim();
     var nominalKas = Number(rowValues[3]) || 0;
+    var jamKas = String(rowValues[4] || "").replace(/'/g, "").trim();
 
     // Bersihkan prefix kategori
     var targetSheetName = "";
@@ -521,18 +564,22 @@ function hapusTransaksi(sheetName, rowIndex, user) {
       searchNama = ketKas.substring(ketKas.indexOf("]") + 1).trim();
     }
 
+    tglSync = tglKas;
+    jamSync = jamKas;
+    ketSync = searchNama;
+
     // Cari dan hapus di sheet sumbernya (Laporan)
-    var sheetsDicari = targetSheetName ? [targetSheetName] : ["Pemasukan", "Pembelian Shopee", "Pembelian Agen", "Pengeluaran Lain", "Iklan"];
+    var sheetsDicari = (targetSheetName && ss.getSheetByName(targetSheetName)) ? [targetSheetName] : ["Pemasukan", "Pembelian Shopee", "Pembelian Agen", "Pengeluaran Lain", "Iklan"];
     sheetsDicari.forEach(function(sName) {
       var sTarget = ss.getSheetByName(sName);
       if (sTarget && sTarget.getLastRow() > 1) {
         var dVals = sTarget.getDataRange().getValues();
         for (var i = dVals.length - 1; i >= 1; i--) {
-          var tglD = Utilities.formatDate(new Date(dVals[i][1]), "GMT+7", "yyyy-MM-dd");
+          var tglD = (dVals[i][1] instanceof Date) ? Utilities.formatDate(dVals[i][1], "GMT+7", "yyyy-MM-dd") : String(dVals[i][1]).split('T')[0];
           var nomD = Number(dVals[i][2]) || 0;
           var namaD = String(dVals[i][0] || "").trim();
 
-          if (tglD === tglKas && nomD === nominalKas && (namaD.includes(searchNama) || searchNama.includes(namaD))) {
+          if (tglD === tglKas && (nomD === nominalKas || Math.abs(nomD) === nominalKas) && (namaD.includes(searchNama) || searchNama.includes(namaD))) {
             sTarget.deleteRow(i + 1);
             break;
           }
@@ -560,19 +607,24 @@ function hapusTransaksi(sheetName, rowIndex, user) {
   // KASUS B: PENGHAPUSAN BERASAL DARI LAPORAN TRANSAKSI (PEMASUKAN / PENGELUARAN)
   // =========================================================================
   } else if (sheetName !== "Gaji Karyawan") {
-    var tglSumber = Utilities.formatDate(new Date(rowValues[1]), "GMT+7", "yyyy-MM-dd");
+    var tglSumber = (rowValues[1] instanceof Date) ? Utilities.formatDate(rowValues[1], "GMT+7", "yyyy-MM-dd") : String(rowValues[1]).split('T')[0];
     var namaSumber = String(rowValues[0] || "").trim();
     var nominalSumber = Number(rowValues[2]) || 0;
+    var jamSumber = String(rowValues[4] || "").replace(/'/g, "").trim();
+
+    tglSync = tglSumber;
+    jamSync = jamSumber;
+    ketSync = namaSumber.split(" [Net]")[0].trim();
 
     var sKas = ss.getSheetByName("Arus Kas");
     if (sKas && sKas.getLastRow() > 1) {
       var kVals = sKas.getDataRange().getValues();
       for (var k = kVals.length - 1; k >= 1; k--) {
-        var tglK = Utilities.formatDate(new Date(kVals[k][0]), "GMT+7", "yyyy-MM-dd");
+        var tglK = (kVals[k][0] instanceof Date) ? Utilities.formatDate(kVals[k][0], "GMT+7", "yyyy-MM-dd") : String(kVals[k][0]).split('T')[0];
         var nomK = Number(kVals[k][3]) || 0;
         var ketK = String(kVals[k][1] || "").trim();
 
-        if (tglK === tglSumber && nomK === nominalSumber && ketK.includes(namaSumber)) {
+        if (tglK === tglSumber && (nomK === nominalSumber || nomK === Math.abs(nominalSumber)) && (ketK.includes(namaSumber) || ketK.includes(ketSync))) {
           sKas.deleteRow(k + 1);
           break;
         }
@@ -629,6 +681,96 @@ function hapusTransaksi(sheetName, rowIndex, user) {
         if (tglKG === tglGaji && nomKG === totalGaji && ketKG.includes(namaKaryawan)) {
           sKasGaji.deleteRow(kg + 1);
           break;
+        }
+      }
+    }
+  }
+
+  // =========================================================================
+  // SINKRONISASI OTOMATIS KE GUDANG (MASTER STOK, MUTASI, POS, & RETUR)
+  // =========================================================================
+  if (sheetName !== "Gaji Karyawan" && !ketSync.includes("Beban Gaji") && tglSync && jamSync) {
+    var pembeliKunci = ketSync.includes(" - ") ? ketSync.split(" - ")[0].trim() : "";
+
+    // 1. Bersihkan Detail_Penjualan (Nota POS) jika terkait
+    var sheetDetail = ss.getSheetByName("Detail_Penjualan");
+    if (sheetDetail && sheetDetail.getLastRow() > 1) {
+      var dRows = sheetDetail.getDataRange().getValues();
+      for (var d = dRows.length - 1; d >= 1; d--) {
+        var dTgl = (dRows[d][0] instanceof Date) ? Utilities.formatDate(dRows[d][0], "GMT+7", "yyyy-MM-dd") : String(dRows[d][0]).split('T')[0];
+        var dJam = String(dRows[d][1] || "").replace(/'/g, "").trim();
+        var dPembeli = String(dRows[d][2] || "").trim();
+        if (dTgl === tglSync && dJam === jamSync && (ketSync.includes(dPembeli) || (pembeliKunci && dPembeli.includes(pembeliKunci)))) {
+          sheetDetail.deleteRow(d + 1);
+          break;
+        }
+      }
+    }
+
+    // 2. Bersihkan Retur_Penjualan jika transaksi yang dihapus adalah Retur Refund
+    var sheetRetur = ss.getSheetByName("Retur_Penjualan");
+    if (sheetRetur && sheetRetur.getLastRow() > 1) {
+      var rRows = sheetRetur.getDataRange().getValues();
+      for (var rt = rRows.length - 1; rt >= 1; rt--) {
+        var rTgl = (rRows[rt][0] instanceof Date) ? Utilities.formatDate(rRows[rt][0], "GMT+7", "yyyy-MM-dd") : String(rRows[rt][0]).split('T')[0];
+        var rJam = String(rRows[rt][1] || "").replace(/'/g, "").trim();
+        var rNama = String(rRows[rt][2] || "").trim();
+        if (rTgl === tglSync && rJam === jamSync && ketSync.includes(rNama)) {
+          sheetRetur.deleteRow(rt + 1);
+          break;
+        }
+      }
+    }
+
+    // 3. Kembalikan Stok di Master_Stok & Hapus Riwayat di Mutasi_Stok
+    var sheetMutasi = ss.getSheetByName("Mutasi_Stok") || ss.getSheetByName("Mutasi Stok");
+    if (sheetMutasi && sheetMutasi.getLastRow() > 1) {
+      var mRows = sheetMutasi.getDataRange().getValues();
+      var deltaStokMap = {};
+
+      for (var m = mRows.length - 1; m >= 1; m--) {
+        var mTgl = (mRows[m][0] instanceof Date) ? Utilities.formatDate(mRows[m][0], "GMT+7", "yyyy-MM-dd") : String(mRows[m][0]).split('T')[0];
+        var mJam = String(mRows[m][1] || "").replace(/'/g, "").trim();
+        var mTipe = String(mRows[m][2] || "");
+        var mTipeLow = mTipe.toLowerCase();
+        var mNama = String(mRows[m][3] || "").trim();
+        var mQty = Number(mRows[m][4]) || 0;
+        var mKet = String(mRows[m][5] || "");
+
+        var isCocokMutasi = (mTgl === tglSync && mJam === jamSync) && (
+          ketSync.toLowerCase().includes(mNama.toLowerCase()) ||
+          (pembeliKunci && mKet.toLowerCase().includes(pembeliKunci.toLowerCase()))
+        );
+
+        if (isCocokMutasi) {
+          // Hitung pembalikan stok untuk komponen fisik (bukan baris header paket bundling)
+          if (!mTipeLow.includes("penjualan bundling") && !mTipeLow.includes("retur bundling")) {
+            if (mTipeLow.includes("keluar") || mTipeLow.includes("jual") || mTipeLow.includes("terpakai") || mTipeLow.includes("kurang") || mTipeLow.includes("rusak")) {
+              deltaStokMap[mNama] = (deltaStokMap[mNama] || 0) + mQty;
+            } else if (mTipeLow.includes("masuk") || mTipeLow.includes("restock") || mTipeLow.includes("awal") || mTipeLow.includes("lebih") || mTipeLow.includes("kembali")) {
+              deltaStokMap[mNama] = (deltaStokMap[mNama] || 0) - mQty;
+            }
+          }
+          sheetMutasi.deleteRow(m + 1);
+        }
+      }
+
+      // Terapkan perubahan stok kembali ke Master_Stok secara batch
+      if (Object.keys(deltaStokMap).length > 0) {
+        var sheetStok = ss.getSheetByName("Master_Stok");
+        if (sheetStok && sheetStok.getLastRow() > 1) {
+          var dataStok = sheetStok.getDataRange().getValues();
+          var adaStokBerubah = false;
+          for (var s = 1; s < dataStok.length; s++) {
+            var namaGudang = String(dataStok[s][1] || "").trim();
+            if (deltaStokMap[namaGudang] !== undefined) {
+              dataStok[s][3] = Math.max(0, (Number(dataStok[s][3]) || 0) + deltaStokMap[namaGudang]);
+              adaStokBerubah = true;
+            }
+          }
+          if (adaStokBerubah) {
+            sheetStok.getRange(1, 1, dataStok.length, dataStok[0].length).setValues(dataStok);
+          }
         }
       }
     }
@@ -1185,19 +1327,31 @@ function eksekusiPenguranganStok(data) {
   var vals = sheet.getDataRange().getValues();
   var jumlahPcs = Number(data.jumlah) || 0;
   var namaBarang = "";
+  var stokLama = 0; // Deklarasi di luar blok for agar bisa dipakai di Audit Log
 
   for (var i = 1; i < vals.length; i++) {
     if (String(vals[i][0]).trim() === String(data.kode).trim()) {
       namaBarang = vals[i][1];
-      var stokLama = Number(vals[i][3]) || 0;
+      stokLama = Number(vals[i][3]) || 0;
+      
+      // Validasi ketat di sisi server untuk mencegah stok minus
+      if (stokLama < jumlahPcs) {
+        throw new Error("Transaksi ditolak! Sisa stok " + namaBarang + " tidak mencukupi (Sisa: " + stokLama + " pcs).");
+      }
+      
       var stokBaru = Math.max(0, stokLama - jumlahPcs);
       sheet.getRange(i + 1, 4).setValue(stokBaru);
       break;
     }
   }
 
+  // Hentikan proses jika barang fiktif (tidak ditemukan di database)
+  if (!namaBarang) {
+    throw new Error("Barang tidak ditemukan di database stok gudang.");
+  }
+
   // PERBAIKAN BACA TANGGAL DAN PEMBELI
-  var tglPilihan = (data.tanggal && String(data.tanggal).trim() !== "") 
+  var tglPilihan = (data.tanggal && String(data.tanggal).trim() !== "")
     ? String(data.tanggal).trim() 
     : Utilities.formatDate(new Date(), "GMT+7", "yyyy-MM-dd");
   var jamTeks = "'" + Utilities.formatDate(new Date(), "GMT+7", "HH:mm");
@@ -1368,13 +1522,19 @@ function eksekusiPenjualanBundling(data) {
   var jamSekarang = Utilities.formatDate(new Date(), "GMT+7", "HH:mm");
   var mutasiBatch = [];
 
-  // OPTIMASI: Hitung semua pemotongan stok di memori (in-memory update)
+  // OPTIMASI: Hitung semua pemotongan stok di memori (in-memory update) DENGAN VALIDASI
   for (var r = 0; r < resep.length; r++) {
     var butuhTotal = (Number(resep[r].butuh) || 1) * qtyJual;
     for (var s = 0; s < dataStok.length; s++) {
       if (String(dataStok[s][0]) === String(resep[r].kode)) {
         var stokSekarang = Number(dataStok[s][3]) || 0;
-        var sisa = Math.max(0, stokSekarang - butuhTotal);
+        
+        // VALIDASI SERVER: Cegah stok minus
+        if (stokSekarang < butuhTotal) {
+          throw new Error("Transaksi ditolak! Sisa bahan " + dataStok[s][1] + " tidak cukup (Sisa: " + stokSekarang + " pcs, Dibutuhkan: " + butuhTotal + " pcs).");
+        }
+        
+        var sisa = stokSekarang - butuhTotal;
         dataStok[s][3] = sisa; // Potong di array memori
 
         var ketBahan = "Komponen " + qtyJual + "x " + namaPaket + " (" + tokoField + ")";
@@ -1925,7 +2085,7 @@ function eksekusiPenjualanMultiBundling(data) {
   var mutasiBatch = [];
   var ringkasanNamaPaket = [];
 
-  // 1. PROSES PEMOTONGAN SELURUH BAHAN RESEP DARI SEMUA PAKET
+ // 1. PROSES PEMOTONGAN SELURUH BAHAN RESEP DARI SEMUA PAKET DENGAN VALIDASI
   for (var i = 0; i < daftarItem.length; i++) {
     var itemPesanan = daftarItem[i];
     var namaPaket = itemPesanan.namaPaket;
@@ -1939,7 +2099,13 @@ function eksekusiPenjualanMultiBundling(data) {
       for (var s = 0; s < dataStok.length; s++) {
         if (String(dataStok[s][0]) === String(resep[r].kode)) {
           var stokSekarang = Number(dataStok[s][3]) || 0;
-          dataStok[s][3] = Math.max(0, stokSekarang - butuhTotal);
+          
+          // VALIDASI SERVER: Cegah stok minus pada Multi-Bundling
+          if (stokSekarang < butuhTotal) {
+            throw new Error("Transaksi ditolak! Stok bahan " + dataStok[s][1] + " untuk pesanan paket " + namaPaket + " tidak mencukupi (Sisa: " + stokSekarang + " pcs).");
+          }
+          
+          dataStok[s][3] = stokSekarang - butuhTotal;
 
           var ketBahan = "Komponen " + qtyJual + "x " + namaPaket + " (" + tokoField + ")";
           if (pembeli) ketBahan += " - Pesanan: " + pembeli;
@@ -2028,41 +2194,7 @@ function test_verifikasiStrukturData() {
   }
 }
 
-// ==================== AUTO-BACKUP TERJADWAL KE GOOGLE DRIVE ====================
 
-// 1. Fungsi eksekutor backup otomatis
-function jalankanAutoBackupMingguan() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const namaFile = `Backup_OFS_Auto_${Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd_HH-mm")}`;
-    
-    // Simpan salinan ke root Google Drive
-    const fileSalinan = DriveApp.getFileById(ss.getId()).makeCopy(namaFile);
-    console.log(`Auto-backup sukses: ${fileSalinan.getName()}`);
-  } catch (err) {
-    console.error(`Gagal auto-backup: ${err.message}`);
-  }
-}
-
-// 2. Jalankan fungsi ini SEKALI SAJA di editor Apps Script untuk mengaktifkan jadwal otomatis
-function pasangJadwalAutoBackup() {
-  // Hapus trigger lama agar tidak menumpuk
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(t => {
-    if (t.getHandlerFunction() === 'jalankanAutoBackupMingguan') {
-      ScriptApp.deleteTrigger(t);
-    }
-  });
-
-  // Pasang trigger baru: Jalan setiap hari Minggu pukul 23:00 - 00:00 WIB
-  ScriptApp.newTrigger('jalankanAutoBackupMingguan')
-    .timeBased()
-    .onWeekDay(ScriptApp.WeekDay.SUNDAY)
-    .atHour(23)
-    .create();
-
-  console.log("Trigger backup mingguan berhasil dipasang!");
-}
 
 // ====================================================================
 // FITUR BARU: BATALKAN MUTASI & PULIHKAN STOK (AUTO-SYNC KEUANGAN & BUNDLING)
@@ -2076,11 +2208,20 @@ function batalkanMutasiStok(rowIndex, user) {
   var rowValues = sheetMutasi.getRange(rowIndex, 1, 1, 6).getValues()[0];
   var tglRaw = rowValues[0];
   var tgl = (tglRaw instanceof Date) ? Utilities.formatDate(tglRaw, "GMT+7", "yyyy-MM-dd") : String(tglRaw).split('T')[0];
-  var jam = String(rowValues[1] || "").replace(/'/g, "");
+  var jam = String(rowValues[1] || "").replace(/'/g, "").trim();
   var tipe = String(rowValues[2] || "");
   var namaBarang = String(rowValues[3] || "");
   var qty = Number(rowValues[4]) || 0;
+  var ketMutasiAsli = String(rowValues[5] || "");
   var userAktif = user || "Owner";
+
+  // Ekstrak nama pembeli dari keterangan mutasi jika ada (misal: "Pembeli: Kak Nisa")
+  var pembeliMutasi = "";
+  if (ketMutasiAsli.includes("Pembeli:")) {
+    pembeliMutasi = ketMutasiAsli.split("Pembeli:")[1].split("[")[0].trim();
+  } else if (ketMutasiAsli.includes("Pesanan:")) {
+    pembeliMutasi = ketMutasiAsli.split("Pesanan:")[1].split("[")[0].trim();
+  }
 
   var sheetStok = ss.getSheetByName("Master_Stok");
   var dataStok = sheetStok ? sheetStok.getDataRange().getValues() : [];
@@ -2090,7 +2231,7 @@ function batalkanMutasiStok(rowIndex, user) {
   // ==========================================================
   var isBundling = tipe.toLowerCase().includes("bundling");
 
-  if (isBundling && tipe === "Penjualan Bundling") {
+  if (isBundling && (tipe === "Penjualan Bundling" || tipe.indexOf("Retur Bundling") === 0)) {
     // A. BONGKAR RESEP BUNDLING
     var sheetBdl = ss.getSheetByName("Master_Bundling");
     var resep = [];
@@ -2104,27 +2245,33 @@ function batalkanMutasiStok(rowIndex, user) {
       }
     }
 
-    // B. KEMBALIKAN BAHAN BAKU KE MASTER STOK
+    // B. KEMBALIKAN ATAU TARIK BAHAN BAKU DI MASTER STOK
     for (var r = 0; r < resep.length; r++) {
       var butuhTotal = (Number(resep[r].butuh) || 1) * qty;
       for (var s = 1; s < dataStok.length; s++) {
         if (String(dataStok[s][0]) === String(resep[r].kode)) {
           var stokSaatIni = Number(dataStok[s][3]) || 0;
-          sheetStok.getRange(s + 1, 4).setValue(stokSaatIni + butuhTotal);
+          if (tipe === "Penjualan Bundling") {
+            sheetStok.getRange(s + 1, 4).setValue(stokSaatIni + butuhTotal);
+          } else if (tipe === "Retur Bundling (Bagus)") {
+            sheetStok.getRange(s + 1, 4).setValue(Math.max(0, stokSaatIni - butuhTotal));
+          }
           break;
         }
       }
     }
 
-    // C. HAPUS BARIS "Bahan Bundling Terpakai" (Yang jam & tanggalnya sama persis)
+    // C. HAPUS BARIS KOMPONEN BUNDLING TERKAIT (Yang jam, tanggal, & nama paketnya cocok)
     var mutasiVals = sheetMutasi.getDataRange().getValues();
     for (var m = mutasiVals.length - 1; m >= 1; m--) {
       var mTglRaw = mutasiVals[m][0];
       var mTgl = (mTglRaw instanceof Date) ? Utilities.formatDate(mTglRaw, "GMT+7", "yyyy-MM-dd") : String(mTglRaw).split('T')[0];
-      var mJam = String(mutasiVals[m][1] || "").replace(/'/g, "");
+      var mJam = String(mutasiVals[m][1] || "").replace(/'/g, "").trim();
       var mTipe = String(mutasiVals[m][2] || "");
+      var mKet = String(mutasiVals[m][5] || "");
       
-      if (mTgl === tgl && mJam === jam && mTipe === "Bahan Bundling Terpakai") {
+      var isKomponenTerkait = (mTipe === "Bahan Bundling Terpakai" || mTipe === "Bahan Bundling Kembali (Retur)" || mTipe === "Komponen Bundling Rusak");
+      if (mTgl === tgl && mJam === jam && isKomponenTerkait && mKet.includes(namaBarang)) {
         sheetMutasi.deleteRow(m + 1);
       }
     }
@@ -2151,42 +2298,73 @@ function batalkanMutasiStok(rowIndex, user) {
   }
 
   // ==========================================================
-  // 3. SAPU BERSIH TRANSAKSI FINANSIAL TERKAIT (Pemasukan & Arus Kas)
+  // 3. SAPU BERSIH TRANSAKSI FINANSIAL, NOTA POS, & RETUR TERKAIT
   // ==========================================================
   var sheetsKeuangan = ["Pemasukan", "Pembelian Shopee", "Pembelian Agen", "Pengeluaran Lain", "Arus Kas"];
   sheetsKeuangan.forEach(function(sName) {
     var s = ss.getSheetByName(sName);
     if (s && s.getLastRow() > 1) {
       var vals = s.getDataRange().getValues();
-      // Loop dari bawah ke atas agar deleteRow tidak meleset
       for (var r = vals.length - 1; r >= 1; r--) {
          var tglRRaw = vals[r][sName === "Arus Kas" ? 0 : 1];
          var tglR = (tglRRaw instanceof Date) ? Utilities.formatDate(tglRRaw, "GMT+7", "yyyy-MM-dd") : String(tglRRaw).split('T')[0];
-         var colJam = 4; // Kolom Jam ada di indeks 4
-         var jamR = String(vals[r][colJam] || "").replace(/'/g, "");
+         var jamR = String(vals[r][4] || "").replace(/'/g, "").trim();
          var ketR = String(vals[r][sName === "Arus Kas" ? 1 : 0] || "").toLowerCase();
          
-         // Jika Tanggal, Jam, dan Keterangan identik, Hapus!
-         if (tglR === tgl && jamR === jam && ketR.includes(namaBarang.toLowerCase())) {
+         if (tglR === tgl && jamR === jam && (ketR.includes(namaBarang.toLowerCase()) || (pembeliMutasi && ketR.includes(pembeliMutasi.toLowerCase())))) {
             s.deleteRow(r + 1);
          }
       }
     }
   });
 
+  // Hapus dari Detail_Penjualan (Nota Kasir POS) jika ada
+  var sheetDetail = ss.getSheetByName("Detail_Penjualan");
+  if (sheetDetail && sheetDetail.getLastRow() > 1) {
+    var dVals = sheetDetail.getDataRange().getValues();
+    for (var d = dVals.length - 1; d >= 1; d--) {
+      var dTglRaw = dVals[d][0];
+      var dTgl = (dTglRaw instanceof Date) ? Utilities.formatDate(dTglRaw, "GMT+7", "yyyy-MM-dd") : String(dTglRaw).split('T')[0];
+      var dJam = String(dVals[d][1] || "").replace(/'/g, "").trim();
+      var dPembeli = String(dVals[d][2] || "").toLowerCase();
+      var dProduk = String(dVals[d][3] || "").toLowerCase();
+
+      if (dTgl === tgl && dJam === jam && (dProduk.includes(namaBarang.toLowerCase()) || (pembeliMutasi && dPembeli.includes(pembeliMutasi.toLowerCase())))) {
+        sheetDetail.deleteRow(d + 1);
+        break;
+      }
+    }
+  }
+
+  // Hapus dari Retur_Penjualan jika mutasi yang dibatalkan berasal dari Retur
+  var sheetRetur = ss.getSheetByName("Retur_Penjualan");
+  if (sheetRetur && sheetRetur.getLastRow() > 1) {
+    var rVals = sheetRetur.getDataRange().getValues();
+    for (var rt = rVals.length - 1; rt >= 1; rt--) {
+      var rTglRaw = rVals[rt][0];
+      var rTgl = (rTglRaw instanceof Date) ? Utilities.formatDate(rTglRaw, "GMT+7", "yyyy-MM-dd") : String(rTglRaw).split('T')[0];
+      var rJam = String(rVals[rt][1] || "").replace(/'/g, "").trim();
+      var rNama = String(rVals[rt][2] || "").toLowerCase();
+
+      if (rTgl === tgl && rJam === jam && rNama.includes(namaBarang.toLowerCase())) {
+        sheetRetur.deleteRow(rt + 1);
+        break;
+      }
+    }
+  }
+
   // ==========================================================
   // 4. HAPUS BARIS UTAMA DI MUTASI STOK
   // ==========================================================
-  // Cari ulang index karena penghapusan "Bahan Terpakai" di atas bisa menggeser urutan baris
   var mNewVals = sheetMutasi.getDataRange().getValues();
-  for(var mn = mNewVals.length - 1; mn >= 1; mn--) {
+  for (var mn = mNewVals.length - 1; mn >= 1; mn--) {
       var mnTglRaw = mNewVals[mn][0];
       var mnTgl = (mnTglRaw instanceof Date) ? Utilities.formatDate(mnTglRaw, "GMT+7", "yyyy-MM-dd") : String(mnTglRaw).split('T')[0];
-      var mnJam = String(mNewVals[mn][1] || "").replace(/'/g, "");
+      var mnJam = String(mNewVals[mn][1] || "").replace(/'/g, "").trim();
       var mnTipe = String(mNewVals[mn][2] || "");
       var mnNama = String(mNewVals[mn][3] || "");
       
-      if(mnTgl === tgl && mnJam === jam && mnTipe === tipe && mnNama === namaBarang) {
+      if (mnTgl === tgl && mnJam === jam && mnTipe === tipe && mnNama === namaBarang) {
           sheetMutasi.deleteRow(mn + 1);
           break;
       }
@@ -2197,7 +2375,6 @@ function batalkanMutasiStok(rowIndex, user) {
 
   SpreadsheetApp.flush();
   
-  // Kembalikan dua bongkahan data terbaru sekaligus ke browser
   return JSON.stringify({
      success: true,
      stokData: JSON.parse(ambilDataStokLengkap()),
@@ -2246,18 +2423,68 @@ function hapusDataMasterStok(kode, user) {
   var data = sheet.getDataRange().getValues();
   var rowToDelete = -1;
   var namaBarang = "";
+  var kodeBersih = String(kode || "").trim();
   
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(kode)) {
+    if (String(data[i][0]).trim() === kodeBersih) {
       rowToDelete = i + 1;
-      namaBarang = String(data[i][1]);
+      namaBarang = String(data[i][1]).trim();
       break;
     }
   }
   
   if (rowToDelete !== -1) {
+    // 1. Hapus dari Master_Stok
     sheet.deleteRow(rowToDelete);
-    catatAuditLog("HAPUS BARANG", "Master Stok", kode + " - " + namaBarang, "Dihapus permanen dari gudang", user);
+
+    // 2. Bersihkan kode barang ini jika terdaftar di dalam Resep Master_Bundling
+    var sheetBdl = ss.getSheetByName("Master_Bundling");
+    if (sheetBdl && sheetBdl.getLastRow() > 1) {
+      var dataBdl = sheetBdl.getDataRange().getValues();
+      for (var b = 1; b < dataBdl.length; b++) {
+        try {
+          var resepArr = JSON.parse(dataBdl[b][2] || "[]");
+          var resepBersih = resepArr.filter(function(item) {
+            return String(item.kode || "").trim() !== kodeBersih;
+          });
+          if (resepBersih.length !== resepArr.length) {
+            sheetBdl.getRange(b + 1, 3).setValue(JSON.stringify(resepBersih));
+          }
+        } catch (e) {}
+      }
+    }
+
+    // 3. Bersihkan riwayat Stok Awal / Restock barang ini di Mutasi_Stok
+    var sheetMutasi = ss.getSheetByName("Mutasi_Stok") || ss.getSheetByName("Mutasi Stok");
+    if (sheetMutasi && sheetMutasi.getLastRow() > 1 && namaBarang) {
+      var mVals = sheetMutasi.getDataRange().getValues();
+      for (var m = mVals.length - 1; m >= 1; m--) {
+        if (String(mVals[m][3] || "").trim().toLowerCase() === namaBarang.toLowerCase()) {
+          sheetMutasi.deleteRow(m + 1);
+        }
+      }
+    }
+
+    // 4. Bersihkan transaksi belanja Restock barang ini di Pembukuan & Arus Kas
+    if (namaBarang) {
+      var namaLower = namaBarang.toLowerCase();
+      var sheetsBeban = ["Pembelian Agen", "Pembelian Shopee", "Pengeluaran Lain", "Arus Kas"];
+      sheetsBeban.forEach(function(sName) {
+        var sBeban = ss.getSheetByName(sName);
+        if (sBeban && sBeban.getLastRow() > 1) {
+          var bVals = sBeban.getDataRange().getValues();
+          for (var r = bVals.length - 1; r >= 1; r--) {
+            var ketCol = (sName === "Arus Kas") ? 1 : 0;
+            var ketTeks = String(bVals[r][ketCol] || "").toLowerCase();
+            if (ketTeks.includes("restock") && ketTeks.includes(namaLower)) {
+              sBeban.deleteRow(r + 1);
+            }
+          }
+        }
+      });
+    }
+
+    catatAuditLog("HAPUS BARANG", "Master Stok", kodeBersih + " - " + namaBarang, "Dihapus permanen beserta relasi mutasi & bundling", user);
   } else {
     throw new Error("Kode barang tidak ditemukan untuk dihapus.");
   }
@@ -2265,7 +2492,6 @@ function hapusDataMasterStok(kode, user) {
   SpreadsheetApp.flush();
   return ambilDataStokLengkap(); // Kembalikan data segar ke UI
 }
-
 /**
  * Memproses transaksi checkout dari Kasir POS secara batch:
  * - Memvalidasi stok fisik sebelum diproses (LAPIS 3)
@@ -2498,52 +2724,6 @@ function prosesCheckoutPOS(payload) {
   }
 }
 
-// Fungsi Testing Mandiri untuk Uji Coba Lapis 3
-function test_prosesCheckoutPOS_StokKurang() {
-  try {
-    // HARAP GANTI "SKU-XXX" dengan ID Barang di Gudang Anda yang stoknya kurang dari 100
-    var payloadUji = {
-      keranjang: [ { id: "SKU-XXX", nama: "Produk Test Stok", harga: 15000, tipe: "Satuan", qty: 100 } ],
-      pembeli: "Uji Coba Lapis 3",
-      platform: "Toko Offline",
-      potonganAdmin: 0, 
-      subtotalBruto: 1500000,
-      totalBersihCair: 1500000,
-      tanggal: "2026-10-19",
-      user: "Admin"
-    };
-
-    var hasilJson = prosesCheckoutPOS(payloadUji);
-    Logger.log("Hasil Pengujian Lapis 3: " + hasilJson);
-  } catch (e) {
-    Logger.log("Error Script: " + e.message);
-  }
-}
-// --- BATAS AKHIR KODE ---
-
-function test_prosesCheckoutPOS() {
-  try {
-    var payloadUji = {
-      keranjang: [
-        { id: "SKU-TEST", nama: "Produk Simulasi POS", harga: 15000, tipe: "Satuan", qty: 2 }
-      ],
-      pembeli: "Uji Detail Penjualan",
-      platform: "Shopee",
-      potonganAdmin: 5000, 
-      subtotalBruto: 30000,
-      totalBersihCair: 25000,
-      tanggal: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"),
-      user: "Admin"
-    };
-
-    var hasilJson = prosesCheckoutPOS(payloadUji);
-    Logger.log("Status: " + JSON.parse(hasilJson).success);
-  } catch (e) {
-    Logger.log(e.message);
-  }
-}
-// --- BATAS AKHIR KODE ---
-
 /**
  * Fungsi testing mandiri untuk menguji prosesCheckoutPOS langsung dari Editor Apps Script
  * (Termasuk simulasi perubahan harga, tanggal pesanan, dan potongan admin yang menyebabkan minus)
@@ -2571,13 +2751,6 @@ function test_prosesCheckoutPOS() {
   }
 }
 
-// Code.gs | SERVER (Google Apps Script)
-// --- TIMPA FUNGSI hapusTransaksiPOSBerantai DENGAN VERSI INI ---
-
-/**
- * Fungsi untuk mencari dan menghapus transaksi POS secara berantai
- * FITUR BARU: Mengembalikan stok ke Master_Stok dan menghapus riwayat di Mutasi_Stok
- */
 function hapusTransaksiPOSBerantai(rowIndex, tgl, jam, pembeli) {
   var lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -2590,100 +2763,99 @@ function hapusTransaksiPOSBerantai(rowIndex, tgl, jam, pembeli) {
     // 1. KEMBALIKAN STOK FISIK & HAPUS RIWAYAT MUTASI
     // ====================================================================
     var sheetMutasi = ss.getSheetByName("Mutasi_Stok");
-    var itemDikembalikan = {}; // Obyek penyimpan data stok yang harus di-refund
+    var itemDikembalikan = {}; 
 
-    if (sheetMutasi) {
+    if (sheetMutasi && sheetMutasi.getLastRow() > 1) {
       var dataMutasi = sheetMutasi.getDataRange().getValues();
       
-      // Lakukan pencarian dari bawah ke atas agar index aman saat dihapus
       for (var m = dataMutasi.length - 1; m >= 1; m--) {
-        var mTanggal = String(dataMutasi[m][0]).split('T')[0];
-        var mJam = String(dataMutasi[m][1]).replace(/'/g, ''); // Kolom Jam
+        var mTanggalRaw = dataMutasi[m][0];
+        var mTanggal = (mTanggalRaw instanceof Date) ? Utilities.formatDate(mTanggalRaw, "GMT+7", "yyyy-MM-dd") : String(mTanggalRaw).split('T')[0];
+        var mJam = String(dataMutasi[m][1]).replace(/'/g, ''); 
         var mTipe = String(dataMutasi[m][2]);
         var mNamaBarang = String(dataMutasi[m][3]);
         var mQty = Number(dataMutasi[m][4]) || 0;
         var mKet = String(dataMutasi[m][5]);
 
-        // Jika Tanggal, Jam, dan Nama Pembeli cocok
         if (mTanggal === tgl && mJam === jam && mKet.indexOf(pembeli) !== -1) {
-          
-          // Catat jumlah barang untuk dikembalikan ke gudang (Hanya tipe pemotongan fisik)
           if (mTipe === "Penjualan Satuan" || mTipe === "Bahan Bundling Terpakai") {
              if (!itemDikembalikan[mNamaBarang]) itemDikembalikan[mNamaBarang] = 0;
              itemDikembalikan[mNamaBarang] += mQty;
           }
-          
-          // Hapus baris riwayat mutasi ini
           sheetMutasi.deleteRow(m + 1);
           adaYangDihapus = true;
         }
       }
     }
 
-    // Jika ada barang yang harus dikembalikan, eksekusi pengembalian ke Master_Stok
     if (Object.keys(itemDikembalikan).length > 0) {
       var sheetStok = ss.getSheetByName("Master_Stok");
-      if (sheetStok) {
+      if (sheetStok && sheetStok.getLastRow() > 1) {
         var dataStok = sheetStok.getDataRange().getValues();
         var stokBerubah = false;
 
         for (var s = 1; s < dataStok.length; s++) {
           var namaDiStok = String(dataStok[s][1]).trim();
           if (itemDikembalikan[namaDiStok]) {
-             // Kembalikan jumlah stok lama + jumlah yang dibatalkan
              dataStok[s][3] = (Number(dataStok[s][3]) || 0) + itemDikembalikan[namaDiStok];
              stokBerubah = true;
           }
         }
-        
-        // Tulis ulang ke spreadsheet dalam 1 kali proses (Batch)
         if (stokBerubah) {
            sheetStok.getRange(1, 1, dataStok.length, dataStok[0].length).setValues(dataStok);
         }
       }
     }
 
-
     // ====================================================================
-    // 2. HAPUS DARI DETAIL PENJUALAN (RINCIAN NOTA)
+    // 2. HAPUS DARI DETAIL PENJUALAN (Pencarian Presisi, Bukan Urutan Index)
     // ====================================================================
     var sheetDetail = ss.getSheetByName("Detail_Penjualan");
-    if (sheetDetail) {
-      // rowIndex adalah index array (mulai dari 0). Ditambah 2 karena ada Header di baris 1
-      var targetRow = rowIndex + 2; 
-      sheetDetail.deleteRow(targetRow);
-      adaYangDihapus = true;
+    if (sheetDetail && sheetDetail.getLastRow() > 1) {
+      var dataDetail = sheetDetail.getDataRange().getValues();
+      for (var d = dataDetail.length - 1; d >= 1; d--) {
+        var dTanggalRaw = dataDetail[d][0];
+        var dTanggal = (dTanggalRaw instanceof Date) ? Utilities.formatDate(dTanggalRaw, "GMT+7", "yyyy-MM-dd") : String(dTanggalRaw).split('T')[0];
+        var dJam = String(dataDetail[d][1]).replace(/'/g, ''); 
+        var dPembeli = String(dataDetail[d][2]);
+        
+        if (dTanggal === tgl && dJam === jam && dPembeli.indexOf(pembeli) !== -1) {
+          sheetDetail.deleteRow(d + 1);
+          adaYangDihapus = true;
+          break; // Hentikan setelah nota tepat ditemukan
+        }
+      }
     }
-
 
     // ====================================================================
     // 3. HAPUS DARI PEMASUKAN
     // ====================================================================
     var sheetPem = ss.getSheetByName("Pemasukan");
-    if (sheetPem) {
+    if (sheetPem && sheetPem.getLastRow() > 1) {
       var dataPem = sheetPem.getDataRange().getValues();
       for (var i = dataPem.length - 1; i >= 1; i--) {
-        var rowTgl = String(dataPem[i][1]).split('T')[0];
+        var rowTglRaw = dataPem[i][1];
+        var rowTgl = (rowTglRaw instanceof Date) ? Utilities.formatDate(rowTglRaw, "GMT+7", "yyyy-MM-dd") : String(rowTglRaw).split('T')[0];
         var rowJam = String(dataPem[i][4]).replace(/'/g, ''); 
         var rowKet = String(dataPem[i][0]);
         
         if (rowTgl === tgl && rowJam === jam && rowKet.indexOf(pembeli) !== -1) {
           sheetPem.deleteRow(i + 1);
           adaYangDihapus = true;
-          break; // Hentikan pencarian setelah ketemu nota yang dimaksud
+          break; 
         }
       }
     }
-
 
     // ====================================================================
     // 4. HAPUS DARI ARUS KAS
     // ====================================================================
     var sheetAK = ss.getSheetByName("Arus Kas");
-    if (sheetAK) {
+    if (sheetAK && sheetAK.getLastRow() > 1) {
       var dataAK = sheetAK.getDataRange().getValues();
       for (var j = dataAK.length - 1; j >= 1; j--) {
-        var akTgl = String(dataAK[j][0]).split('T')[0];
+        var akTglRaw = dataAK[j][0];
+        var akTgl = (akTglRaw instanceof Date) ? Utilities.formatDate(akTglRaw, "GMT+7", "yyyy-MM-dd") : String(akTglRaw).split('T')[0];
         var akJam = String(dataAK[j][4]).replace(/'/g, ''); 
         var akKet = String(dataAK[j][1]);
         
@@ -2699,14 +2871,14 @@ function hapusTransaksiPOSBerantai(rowIndex, tgl, jam, pembeli) {
       throw new Error("Data transaksi tidak ditemukan di database.");
     }
 
-    // 5. Catat ke Audit Log
     catatAuditLog("KASIR POS", "Hapus & Restore Stok", "-", "Membatalkan & memulihkan stok transaksi a.n " + pembeli + " (" + tgl + " " + jam + ")", "Admin");
 
     SpreadsheetApp.flush();
 
-    // Kembalikan data terbaru ke Client agar layar langsung ter-update
+    // Pastikan mengembalikan stokData yang sudah di-restore juga
     return JSON.stringify({
       success: true,
+      stokData: JSON.parse(ambilDataStokLengkap()),
       bukuData: ambilSemuaData(false)
     });
 
