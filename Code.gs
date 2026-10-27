@@ -205,21 +205,38 @@ function ambilSemuaData(modeFull) {
   }
 
   return {
-    isFullHistory: !!modeFull,
-    pemasukan: getSheetDataOptimized("Pemasukan", 1),
-    shopee: getSheetDataOptimized("Pembelian Shopee", 1),
-    agen: getSheetDataOptimized("Pembelian Agen", 1),
-    pengeluaranLain: getSheetDataOptimized("Pengeluaran Lain", 1),
-    iklan: getSheetDataOptimized("Iklan", 1),
-    laporan: getSheetDataOptimized("Total & Laporan", null),
-    arusKas: getSheetDataOptimized("Arus Kas", 0),
-    gajiKaryawan: getSheetDataOptimized("Gaji Karyawan", 0),
-    penyesuaianGaji: getSheetDataOptimized("Penyesuaian Gaji", 0),
-    invoice: getSheetDataOptimized("Riwayat_Invoice", 0),
-    detailPenjualan: getSheetDataOptimized("Detail_Penjualan", 0),
-    bepConfig: ambilDataBEP(),
-    gajiConfig: configKaryawan
+  isFullHistory: !!modeFull,
+  pemasukan: getSheetDataOptimized("Pemasukan", 1),
+  shopee: getSheetDataOptimized("Pembelian Shopee", 1),
+  agen: getSheetDataOptimized("Pembelian Agen", 1),
+  pengeluaranLain: getSheetDataOptimized("Pengeluaran Lain", 1),
+  iklan: getSheetDataOptimized("Iklan", 1),
+  laporan: getSheetDataOptimized("Total & Laporan", null),
+  arusKas: getSheetDataOptimized("Arus Kas", 0),
+  gajiKaryawan: getSheetDataOptimized("Gaji Karyawan", 0),
+  penyesuaianGaji: getSheetDataOptimized("Penyesuaian Gaji", 0),
+  invoice: getSheetDataOptimized("Riwayat_Invoice", 0),
+  detailPenjualan: getSheetDataOptimized("Detail_Penjualan", 0),
+  // --- TAMBAHKAN DARI SINI ---
+  mutasiStok: getSheetDataOptimized("Mutasi_Stok", 0),
+  masterStok: getSheetDataOptimized("Master_Stok", null),
+  // --- BATAS TAMBAHAN ---
+  bepConfig: ambilDataBEP(),
+  gajiConfig: configKaryawan
   };
+}
+
+function test_cekDataMutasiLabaRugi() {
+  try {
+    var data = ambilSemuaData(false);
+    if (data.mutasiStok && data.masterStok) {
+      Logger.log("BERHASIL: Data Mutasi Stok (" + data.mutasiStok.length + " baris) dan Master Stok (" + data.masterStok.length + " baris) siap dikirim ke frontend.");
+    } else {
+      Logger.log("GAGAL: Data Mutasi/Master Stok tidak ditemukan.");
+    }
+  } catch (e) {
+    Logger.log("Error: " + e.message);
+  }
 }
 
 // HELPER: Ekstrak File ID dari URL Google Drive dan pindahkan ke Trash

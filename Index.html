@@ -3789,6 +3789,54 @@ div[id^="modal"]:not(.hidden) > div {
 
 <!-- ==================== LOGIKA JAVASCRIPT SISTEM ==================== -->
   <script>
+
+    function kalkulasiHppDariMutasi(dataBuku, filterTglMulai, filterTglAkhir) {
+    let totalHppBarang = 0;
+    const petaHpp = {};
+
+    // 1. Buat pemetaan HPP dari Master Stok (Kolom indeks 5 adalah Harga Modal)
+    if (dataBuku && dataBuku.masterStok && dataBuku.masterStok.length > 0) {
+        dataBuku.masterStok.forEach(function(row, index) {
+            if (index === 0) return; // Lewati baris header
+            const nama = String(row[1] || "").trim().toLowerCase();
+            const hpp = Number(row[5]) || 0; 
+            if (nama) petaHpp[nama] = hpp;
+        });
+    }
+
+    // 2. Hitung total HPP berdasarkan mutasi bahan yang keluar pada rentang tanggal
+    if (dataBuku && dataBuku.mutasiStok && dataBuku.mutasiStok.length > 0) {
+        dataBuku.mutasiStok.forEach(function(row, index) {
+            if (index === 0) return; // Lewati baris header
+            
+            // Normalisasi format tanggal menjadi YYYY-MM-DD
+            let tglMutasi = row[0];
+            if (tglMutasi instanceof Date) {
+                tglMutasi = tglMutasi.toISOString().split('T')[0];
+            } else {
+                tglMutasi = String(row[0]).split('T')[0];
+            }
+            
+            if (tglMutasi >= filterTglMulai && tglMutasi <= filterTglAkhir) {
+                const tipeMutasi = String(row[2] || "").toLowerCase();
+                const namaBarang = String(row[3] || "").trim().toLowerCase();
+                const qtyKeluar = Number(row[4]) || 0;
+
+                // Hitung HPP untuk Penjualan Satuan dan Bahan Bundling Terpakai
+                if (tipeMutasi.includes("bahan bundling terpakai") || 
+                    tipeMutasi.includes("penjualan satuan") || 
+                    tipeMutasi.includes("penjualan bundling")) {
+                    
+                    const hppItem = petaHpp[namaBarang] || 0;
+                    totalHppBarang += (qtyKeluar * hppItem);
+                }
+            }
+        });
+    }
+    
+    return totalHppBarang;
+}
+
 // --- UBAH DARI SINI: Mesin Lengkap Kasir POS (Edit Harga, Ketik Qty, Tanggal, Support Minus) ---
 
     var posFilterAktif = 'Semua';
@@ -13324,65 +13372,7 @@ function renderLaporanPnL() {
     }
   });
 
-  // B, C, & E. MENCARI BIAYA ADMIN, HPP (DARI BAHAN FISIK), & RUGI DARI MUTASI GUDANG
-  let totalPotonganMutasi = 0;
-  let hppSatuanLaku = 0;
-  let hppBundlingLaku = 0;
-  let rugiStokToko = 0;
-  const rugiRincianMap = {};
-
-  (dataStokGlobal.mutasi || []).forEach((m, i) => {
-    const tglStr = typeof normalisasiTanggalYMD === 'function' ? normalisasiTanggalYMD(m[0]) : String(m[0]).split('T')[0];
-    if (tglStr.startsWith(selectedMonthBulanan)) {
-      const tipe = String(m[2] || '');
-      const namaBarang = String(m[3] || '').trim();
-      const nk = normKeyPnL(namaBarang);
-      const qty = Number(m[4]) || 0;
-      const ketM = String(m[5] || '');
-
-      // HPP Bundling (Dari Komponen)
-      if (tipe === 'Bahan Bundling Terpakai') {
-        hppBundlingLaku += (produkMap[nk] || 0) * qty;
-      }
-      // HPP Satuan
-      else if (tipe === 'Penjualan Satuan') {
-        const hppItem = (produkMap[nk] || 0) * qty;
-        hppSatuanLaku += hppItem;
-
-        const matchNet = ketM.match(/\[Net:\s*(-?\d+)\]/i);
-        if (matchNet) {
-          const netActual = Number(matchNet[1]);
-          const grossEstimasi = Math.round(hppItem * 1.35); 
-          const adminFee = grossEstimasi - netActual;
-          if (adminFee > 0) totalPotonganMutasi += adminFee;
-        }
-      } 
-      // Rugi / Shrinkage
-      else if (tipe.includes('Rusak') || tipe.includes('Kadaluarsa') || tipe.includes('Tester') || tipe.includes('Koreksi Fisik') || tipe.includes('Opname (Kurang')) {
-        const lossModal = (produkMap[nk] || 0) * qty;
-        rugiStokToko += lossModal;
-        rugiRincianMap[tipe] = (rugiRincianMap[tipe] || 0) + lossModal;
-      }
-      
-      // Ambil Potongan Admin dari Baris Penjualan Bundling
-      if (tipe === 'Penjualan Bundling') {
-        const matchNet = ketM.match(/\[Net:\s*(-?\d+)\]/i);
-        if (matchNet) {
-          // Cari harga jual paket di Master_Bundling untuk menghitung selisih Admin
-          const bdlRaw = (dataStokGlobal.bundling || []).find(b => normKeyPnL(b[1]) === nk);
-          if (bdlRaw) {
-            const adminFee = (Number(bdlRaw[3]) * qty) - Number(matchNet[1]);
-            if (adminFee > 0) totalPotonganMutasi += adminFee;
-          }
-        }
-      }
-    }
-  });
-
-  const totalPotonganAdmin = Math.max(potonganDariTeksPemasukan, totalPotonganMutasi);
-
-  // Tampilkan Pendapatan (Gross & Admin)
-  const omzetKotor = totalPendapatanNet + totalPotonganAdmin;
+ 
   document.getElementById('pnlOmzetKotor').innerText = formatRupiah(omzetKotor);
   document.getElementById('pnlPotonganAdmin').innerText = '-' + formatRupiah(totalPotonganAdmin);
   document.getElementById('pnlTotalA').innerText = formatRupiah(totalPendapatanNet);
