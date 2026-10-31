@@ -222,7 +222,8 @@ function ambilSemuaData(modeFull) {
   masterStok: getSheetDataOptimized("Master_Stok", null),
   // --- BATAS TAMBAHAN ---
   bepConfig: ambilDataBEP(),
-  gajiConfig: configKaryawan
+  gajiConfig: configKaryawan,
+  skuAliasMap: buatIndexAliasSku_()
   };
 }
 
@@ -1210,6 +1211,187 @@ function siapkanSheetStok() {
   pastikanSheetAda(ss, "Mutasi_Stok", ["Tanggal", "Jam", "Tipe", "Nama Barang", "Jumlah", "Keterangan"]);
 }
 
+// ================================================================
+// INDEX ALIAS SKU: MENJAGA RIWAYAT NAMA PRODUK TETAP TERHUBUNG KE SKU
+// ================================================================
+function normalisasiNamaSkuServer_(nilai) {
+  return String(nilai || "").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function simpanAliasNamaSku_(sku, namaAlias, namaSaatIniBaru, sumber) {
+  sku = String(sku || "").trim();
+  namaAlias = String(namaAlias || "").trim();
+  if (!sku || !namaAlias) return;
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName("Alias_SKU");
+  if (!sh) {
+    sh = ss.insertSheet("Alias_SKU");
+    sh.getRange(1, 1, 1, 5).setValues([[
+      "Kode / SKU", "Nama Alias", "Nama Saat Ini", "Sumber", "Aktif"
+    ]]).setFontWeight("bold").setBackground("#d9ead3");
+  }
+
+  var master = ss.getSheetByName("Master_Stok");
+  var namaSekarang = "";
+  if (master && master.getLastRow() > 1) {
+    var mRows = master.getRange(2, 1, master.getLastRow() - 1, 2).getValues();
+    for (var i = 0; i < mRows.length; i++) {
+      if (String(mRows[i][0] || "").trim() === sku) {
+        namaSekarang = String(mRows[i][1] || "").trim();
+        break;
+      }
+    }
+  }
+
+  var key = sku + "|" + normalisasiNamaSkuServer_(namaAlias);
+  var last = sh.getLastRow();
+  if (last > 1) {
+    var vals = sh.getRange(2, 1, last - 1, 5).getValues();
+    for (var r = 0; r < vals.length; r++) {
+      var existingKey = String(vals[r][0] || "").trim() + "|" +
+        normalisasiNamaSkuServer_(vals[r][1]);
+      if (existingKey === key) return;
+    }
+  }
+  sh.appendRow([sku, namaAlias, namaSaatIniBaru || namaSekarang, sumber || "Perubahan Nama Master Stok", "YA"]);
+}
+
+function buatIndexAliasSku_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var masterSheet = ss.getSheetByName("Master_Stok");
+  if (!masterSheet || masterSheet.getLastRow() <= 1) return {};
+
+  var masterRows = masterSheet.getRange(2, 1, masterSheet.getLastRow() - 1,
+    Math.max(6, masterSheet.getLastColumn())).getValues();
+  var masterBySku = {};
+  var petaNamaKeSku = {};
+  var calonBaris = [];
+  var sudahAda = {};
+
+  function tambahAlias(sku, alias, sumber) {
+    sku = String(sku || "").trim();
+    alias = String(alias || "").trim();
+    if (!sku || !alias || !masterBySku[sku]) return;
+    var keyNama = normalisasiNamaSkuServer_(alias);
+    if (!keyNama) return;
+    var keyBaris = sku + "|" + keyNama;
+    if (!sudahAda[keyBaris]) {
+      sudahAda[keyBaris] = true;
+      calonBaris.push([sku, alias, masterBySku[sku].nama, sumber || "Alias Historis", "YA"]);
+    }
+    // Nama Master yang aktif dimasukkan lebih dahulu; jika ada tabrakan,
+    // pemetaan nama aktif tidak ditimpa alias lama.
+    if (!petaNamaKeSku[keyNama]) petaNamaKeSku[keyNama] = sku;
+  }
+
+  // 1. Daftar SKU dan nama barang yang berlaku saat ini.
+  masterRows.forEach(function(row) {
+    var sku = String(row[0] || "").trim();
+    var nama = String(row[1] || "").trim();
+    if (sku) masterBySku[sku] = { nama: nama, hpp: Number(row[5]) || 0 };
+  });
+  masterRows.forEach(function(row) {
+    tambahAlias(row[0], row[1], "Nama aktif Master_Stok");
+  });
+
+  // 2. Muat alias yang pernah disimpan manual/oleh sistem.
+  var aliasSheet = ss.getSheetByName("Alias_SKU");
+  if (!aliasSheet) {
+    aliasSheet = ss.insertSheet("Alias_SKU");
+    aliasSheet.getRange(1, 1, 1, 5).setValues([[
+      "Kode / SKU", "Nama Alias", "Nama Saat Ini", "Sumber", "Aktif"
+    ]]).setFontWeight("bold").setBackground("#d9ead3");
+  } else if (aliasSheet.getLastRow() === 0) {
+    aliasSheet.getRange(1, 1, 1, 5).setValues([[
+      "Kode / SKU", "Nama Alias", "Nama Saat Ini", "Sumber", "Aktif"
+    ]]).setFontWeight("bold").setBackground("#d9ead3");
+  }
+  if (aliasSheet.getLastRow() > 1) {
+    var existingAliases = aliasSheet.getRange(2, 1, aliasSheet.getLastRow() - 1, 5).getValues();
+    existingAliases.forEach(function(row) {
+      var aktif = String(row[4] == null ? "YA" : row[4]).toUpperCase();
+      if (aktif === "TIDAK" || aktif === "FALSE" || aktif === "0") return;
+      tambahAlias(row[0], row[1], row[3] || "Alias_SKU (manual)");
+    });
+  }
+
+  // 3. Rekonstruksi nama sebelum perubahan dari Audit_Log.
+  var auditSheet = ss.getSheetByName("Audit_Log");
+  if (auditSheet && auditSheet.getLastRow() > 1) {
+    var auditRows = auditSheet.getRange(2, 1, auditSheet.getLastRow() - 1,
+      Math.max(6, auditSheet.getLastColumn())).getValues();
+    auditRows.forEach(function(row) {
+      if (String(row[2] || "").trim().toUpperCase() !== "EDIT BARANG") return;
+      var sebelum = String(row[4] || "").trim();
+      var pemisah = sebelum.indexOf(" - ");
+      if (pemisah < 1) return;
+      var sku = sebelum.substring(0, pemisah).trim();
+      var namaLama = sebelum.substring(pemisah + 3).trim();
+      tambahAlias(sku, namaLama, "Audit_Log: nama sebelum edit");
+    });
+  }
+
+  // 4. Resep Master_Bundling menyimpan SKU + nama bahan saat resep dibuat.
+  var bundleSheet = ss.getSheetByName("Master_Bundling");
+  if (bundleSheet && bundleSheet.getLastRow() > 1) {
+    var bundleRows = bundleSheet.getRange(2, 1, bundleSheet.getLastRow() - 1,
+      Math.max(3, bundleSheet.getLastColumn())).getValues();
+    bundleRows.forEach(function(row) {
+      var jsonResep = String(row[2] || "");
+      if (!jsonResep) return;
+      try {
+        var resep = JSON.parse(jsonResep);
+        if (!Array.isArray(resep)) return;
+        resep.forEach(function(item) {
+          tambahAlias(item.kode || item.sku, item.nama, "Master_Bundling: nama bahan di resep");
+        });
+      } catch (e) {
+        Logger.log("Alias SKU: resep bundling gagal dibaca: " + e.message);
+      }
+    });
+  }
+
+  // 5. Simpan alias historis baru ke sheet secara batch (tanpa mengubah mutasi lama).
+  var existingKeys = {};
+  if (aliasSheet.getLastRow() > 1) {
+    var currentRows = aliasSheet.getRange(2, 1, aliasSheet.getLastRow() - 1, 5).getValues();
+    currentRows.forEach(function(row) {
+      existingKeys[String(row[0] || "").trim() + "|" + normalisasiNamaSkuServer_(row[1])] = true;
+    });
+  }
+  var addRows = calonBaris.filter(function(row) {
+    var k = String(row[0]) + "|" + normalisasiNamaSkuServer_(row[1]);
+    if (existingKeys[k]) return false;
+    existingKeys[k] = true;
+    return true;
+  });
+  if (addRows.length) {
+    aliasSheet.getRange(aliasSheet.getLastRow() + 1, 1, addRows.length, 5).setValues(addRows);
+  }
+
+  // Segarkan kolom Nama Saat Ini agar setiap alias selalu menunjuk nama master terbaru.
+  if (aliasSheet.getLastRow() > 1) {
+    var semuaAliasTersimpan = aliasSheet.getRange(2, 1, aliasSheet.getLastRow() - 1, 5).getValues();
+    var aliasBerubah = false;
+    semuaAliasTersimpan.forEach(function(row) {
+      var skuRow = String(row[0] || "").trim();
+      if (masterBySku[skuRow] && String(row[2] || "") !== masterBySku[skuRow].nama) {
+        row[2] = masterBySku[skuRow].nama;
+        aliasBerubah = true;
+      }
+    });
+    if (aliasBerubah) {
+      aliasSheet.getRange(2, 1, semuaAliasTersimpan.length, 5).setValues(semuaAliasTersimpan);
+    }
+  }
+
+  // Kembalikan peta nama ternormalisasi -> SKU untuk dipakai laporan.
+  return petaNamaKeSku;
+}
+
 function ambilDataStokLengkap() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   function getRows(name) {
@@ -1235,7 +1417,8 @@ function ambilDataStokLengkap() {
   return JSON.stringify({
     stok: getRows("Master_Stok"),
     bundling: getRows("Master_Bundling"),
-    mutasi: getRows("Mutasi_Stok")
+    mutasi: getRows("Mutasi_Stok"),
+    skuAliasMap: buatIndexAliasSku_()
   });
 }
 
@@ -2418,6 +2601,13 @@ function editDataMasterStok(payload) {
   }
   
   if (rowToEdit !== -1) {
+    // Simpan nama lama sebagai alias SKU sebelum nama Master ditimpa.
+    var namaSebelumEdit = String(data[rowToEdit - 1][1] || "").trim();
+    var namaSesudahEdit = String(payload.nama || "").trim();
+    if (namaSebelumEdit && normalisasiNamaSkuServer_(namaSebelumEdit) !== normalisasiNamaSkuServer_(namaSesudahEdit)) {
+      simpanAliasNamaSku_(payload.kode, namaSebelumEdit, namaSesudahEdit, "Perubahan Nama Master Stok");
+    }
+
     // Menimpa Kolom B (Nama), C (Kategori), dan G (Min Stok)
     sheet.getRange(rowToEdit, 2).setValue(payload.nama);
     sheet.getRange(rowToEdit, 3).setValue(payload.kategori);
