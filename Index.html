@@ -1221,7 +1221,7 @@ div[id^="modal"]:not(.hidden) > div {
             <div class="bg-slate-900 dark:bg-slate-950 text-white p-4 rounded-2xl mt-4 space-y-2 border border-slate-800 shadow-inner hidden" id="pnlKotakDistribusi">
               <h4 class="font-bold text-slate-300 text-xs uppercase tracking-widest border-b border-slate-700 pb-1 mb-2">Simulasi Distribusi Laba Bersih</h4>
               <div class="flex justify-between text-[11px] text-slate-400"><span>Target Baseline Toko:</span><span id="pnlDistBaseline">Rp 0</span></div>
-              <div class="flex justify-between text-[11px] text-slate-400"><span>Excess Omzet (Sisa Laba di atas Baseline):</span><span id="pnlDistExcess" class="text-emerald-400 font-bold">Rp 0</span></div>
+              <div class="flex justify-between text-[11px] text-slate-400"><span>Excess Omzet (Omzet di atas Baseline):</span><span id="pnlDistExcess" class="text-emerald-400 font-bold">Rp 0</span></div>
               
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 mt-3 border-t border-slate-700">
                 <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-600">
@@ -7094,6 +7094,8 @@ function switchTab(tab) {
             updateWidgetHariIni(); 
             renderDashboardLaporan(); 
             renderHalamanBEP(); 
+            // Pastikan panel distribusi memakai konfigurasi BEP terbaru dari Cloud.
+            try { renderDistribusiBagiHasilBerdasarkanOmzet(); } catch (e) { console.error("Refresh distribusi gagal:", e); }
             renderHalamanGaji(); 
             renderArusKas();
             renderTableBodyTransaksi();
@@ -13331,9 +13333,178 @@ function cetakPdfMasterReport() {
 }
 // --- BATAS AKHIR TAMBAHAN ---
 
+// ==================== SIMULASI DISTRIBUSI LABA BERDASARKAN OMZET ====================
+function renderDistribusiBagiHasilBerdasarkanOmzet() {
+  const boxDist = document.getElementById('pnlKotakDistribusi');
+  if (!boxDist) return;
+
+  // Panel bisa dihitung tanpa menunggu data stok / HPP.
+  if (typeof cachedData === 'undefined' || !cachedData) return;
+
+  function angkaDistribusi(nilai) {
+    if (typeof nilai === 'number') {
+      return Number.isFinite(nilai) ? nilai : 0;
+    }
+    const bersih = String(nilai == null ? '' : nilai).trim().replace(/[^\d-]/g, '');
+    return parseInt(bersih, 10) || 0;
+  }
+
+  // 1. Tentukan bulan yang sedang dipilih pada laporan P&L.
+  const inputBulan = document.getElementById('pnlBulanFilter');
+  const bulanDipilih = (inputBulan && inputBulan.value)
+    ? inputBulan.value
+    : ((typeof selectedMonthBulanan !== 'undefined' && selectedMonthBulanan)
+        ? selectedMonthBulanan
+        : new Date().toISOString().slice(0, 7));
+
+  // 2. Ambil omzet dari sheet Pemasukan, sama seperti modul BEP/dasbor.
+  // Kolom C (index 2) adalah nominal yang benar-benar dicatat masuk.
+  // Modal, setoran, dan investasi bukan omzet penjualan.
+  let omzetBulanan = 0;
+  const barisPemasukan = Array.isArray(cachedData.pemasukan) ? cachedData.pemasukan : [];
+
+  for (let i = 1; i < barisPemasukan.length; i++) {
+    const row = barisPemasukan[i] || [];
+    const tanggal = (typeof normalisasiTanggalYMD === 'function')
+      ? normalisasiTanggalYMD(row[1])
+      : String(row[1] || '').split('T')[0];
+
+    if (!tanggal || !tanggal.startsWith(bulanDipilih)) continue;
+
+    const keterangan = String(row[0] || '').toLowerCase();
+    if (keterangan.includes('modal') ||
+        keterangan.includes('setor') ||
+        keterangan.includes('investasi')) {
+      continue;
+    }
+
+    omzetBulanan += angkaDistribusi(row[2]);
+  }
+
+  // 3. Ambil baseline langsung dari konfigurasi Target & BEP Toko.
+  const cfgBEP = (typeof bepConfig !== 'undefined' && bepConfig)
+    ? bepConfig
+    : (cachedData.bepConfig || {});
+
+  let targetBaseline = angkaDistribusi(cfgBEP.baseline);
+
+  // Fallback jika baseline belum tersimpan: hitung dengan rumus yang sama
+  // seperti hitungUlangBEP() pada tab Target & BEP Toko.
+  if (targetBaseline <= 0) {
+    let biayaTetap = angkaDistribusi(cfgBEP.biayaTetapTotal);
+
+    if (biayaTetap <= 0) {
+      let totalGajiBEP = 0;
+      (cfgBEP.gaji || []).forEach(item => {
+        totalGajiBEP += angkaDistribusi(item.totalHari) *
+          (angkaDistribusi(item.jumlahHari) || 1);
+      });
+
+      let totalDepresiasiBEP = 0;
+      (cfgBEP.depresiasi || []).forEach(item => {
+        const masaPakai = angkaDistribusi(item.masaPakai) || 1;
+        const hargaBarang = angkaDistribusi(item.hargaBarang);
+        totalDepresiasiBEP += masaPakai > 0 ? Math.round(hargaBarang / masaPakai) : 0;
+      });
+
+      let totalOperasionalBEP = 0;
+      (cfgBEP.operasional || []).forEach(item => {
+        totalOperasionalBEP += angkaDistribusi(item.nominalHari) *
+          (angkaDistribusi(item.jumlahHari) || 30);
+      });
+
+      biayaTetap = totalGajiBEP + totalDepresiasiBEP + totalOperasionalBEP;
+    }
+
+    const marginBEP = angkaDistribusi(cfgBEP.margin) || 25;
+    const baselinePct = (cfgBEP.baselinePct === undefined || cfgBEP.baselinePct === null)
+      ? 10
+      : angkaDistribusi(cfgBEP.baselinePct);
+
+    const bepBulanan = marginBEP > 0
+      ? Math.round(biayaTetap / (marginBEP / 100))
+      : 0;
+
+    targetBaseline = Math.round(
+      bepBulanan + (bepBulanan * (baselinePct / 100))
+    );
+  }
+
+  // Panel tetap terlihat agar baseline dan statusnya bisa diperiksa.
+  boxDist.classList.remove('hidden');
+  document.getElementById('pnlDistBaseline').innerText =
+    targetBaseline > 0 ? formatRupiah(targetBaseline) : 'Baseline belum tersedia';
+
+  const elExcess = document.getElementById('pnlDistExcess');
+  const elTim = document.getElementById('pnlDistTim');
+  const elTanganKanan = document.getElementById('pnlDistTanganKanan');
+  const elOwner = document.getElementById('pnlDistOwner');
+
+  if (targetBaseline <= 0) {
+    elExcess.innerText = 'Periksa pengaturan Target & BEP Toko';
+    elTim.innerText = 'Rp 0';
+    elTanganKanan.innerText = 'Rp 0';
+    elOwner.innerText = 'Rp 0';
+    console.warn('[Distribusi OFS] Baseline BEP belum tersedia.', cfgBEP);
+    return;
+  }
+
+  // 4. Hitung kelebihan OMZET, bukan laba bersih.
+  const excessOmzet = Math.max(0, omzetBulanan - targetBaseline);
+
+  if (excessOmzet <= 0) {
+    elExcess.innerText = 'Belum memenuhi Baseline';
+    elTim.innerText = 'Rp 0';
+    elTanganKanan.innerText = 'Rp 0';
+    elOwner.innerText = 'Rp 0';
+  } else {
+    // 4% untuk tim, dibagi rata per staf operasional.
+    const daftarKaryawan = (typeof gajiConfig !== 'undefined' &&
+      gajiConfig && Array.isArray(gajiConfig.daftarKaryawan))
+      ? gajiConfig.daftarKaryawan
+      : [];
+
+    const jumlahStaffTerdaftar = daftarKaryawan.length
+      ? daftarKaryawan.filter(k => !k.role ||
+          String(k.role).trim().toLowerCase() === 'staff').length
+      : 2;
+
+    const pembagiStaff = Math.max(1, jumlahStaffTerdaftar);
+    const bonusTimTotal = Math.round(excessOmzet * 0.04);
+    const bonusPerStaff = Math.round(bonusTimTotal / pembagiStaff);
+
+    // Sisa 96% dibagi 30% untuk Tangan Kanan dan 70% untuk Owner.
+    const sisaSetelahBonusTim = Math.max(0, excessOmzet - bonusTimTotal);
+    const porsiTanganKanan = Math.round(sisaSetelahBonusTim * 0.30);
+    const porsiOwner = sisaSetelahBonusTim - porsiTanganKanan;
+
+    elExcess.innerText = formatRupiah(excessOmzet);
+    elTim.innerText = formatRupiah(bonusPerStaff) + ' /org';
+    elTanganKanan.innerText = formatRupiah(porsiTanganKanan);
+    elOwner.innerText = formatRupiah(porsiOwner);
+  }
+
+  console.log('[Distribusi OFS]', {
+    bulan: bulanDipilih,
+    omzet: omzetBulanan,
+    baseline: targetBaseline,
+    excessOmzet: excessOmzet
+  });
+}
+
 // ==================== LOGIKA MASTER PROFIT & LOSS (P&L) ====================
 function renderLaporanPnL() {
-  if (!cachedData || !dataStokGlobal) return;
+  // Render panel distribusi terlebih dahulu. Panel ini tidak bergantung pada HPP/stok.
+  try {
+    renderDistribusiBagiHasilBerdasarkanOmzet();
+  } catch (err) {
+    console.error('Gagal menghitung distribusi laba berdasarkan omzet:', err);
+  }
+
+  // Bagian P&L lama memiliki variabel lain yang belum didefinisikan.
+  // Tangkap error tersebut agar tidak membatalkan panel distribusi di atas.
+  try {
+    if (!cachedData || !dataStokGlobal) return;
 
   let tglFilter = document.getElementById('pnlBulanFilter').value;
   if (!tglFilter) {
@@ -13372,7 +13543,65 @@ function renderLaporanPnL() {
     }
   });
 
- 
+  // ================================================================
+  // PERBAIKAN DATA P&L: definisikan semua variabel yang dipakai di bawah
+  // Omzet Kotor = Pendapatan Bersih + potongan admin yang tercatat di keterangan.
+  // ================================================================
+  const totalPotonganAdmin = potonganDariTeksPemasukan;
+  const omzetKotor = totalPendapatanNet + totalPotonganAdmin;
+
+  // Siapkan lookup HPP dari Master_Stok: kode, nama, dan nama ternormalisasi.
+  (dataStokGlobal.stok || []).forEach(s => {
+    const kode = String(s[0] || '').trim();
+    const nama = String(s[1] || '').trim();
+    const hpp = Number(s[5]) || 0;
+    if (kode) produkMap[kode] = hpp;
+    if (nama) {
+      produkMap[nama.toLowerCase()] = hpp;
+      produkMap[normKeyPnL(nama)] = hpp;
+    }
+  });
+
+  // Hitung HPP barang satuan, bahan baku bundling, dan kerugian stok
+  // dari Mutasi_Stok pada bulan yang sedang dipilih.
+  let hppSatuanLaku = 0;
+  let hppBundlingLaku = 0;
+  let rugiStokToko = 0;
+  const rugiRincianMap = {};
+
+  (dataStokGlobal.mutasi || []).forEach(m => {
+    const tanggalMutasi = typeof normalisasiTanggalYMD === 'function'
+      ? normalisasiTanggalYMD(m[0])
+      : String(m[0] || '').split('T')[0];
+
+    if (!tanggalMutasi || !tanggalMutasi.startsWith(selectedMonthBulanan)) return;
+
+    const tipe = String(m[2] || '').trim();
+    const namaBarang = String(m[3] || '').trim();
+    const namaLower = namaBarang.toLowerCase();
+    const qty = Number(m[4]) || 0;
+
+    const hppPerUnit = Number(
+      produkMap[namaLower] || produkMap[normKeyPnL(namaBarang)] || 0
+    );
+    const nilaiHPP = hppPerUnit * qty;
+
+    if (tipe === 'Penjualan Satuan') {
+      hppSatuanLaku += nilaiHPP;
+    } else if (tipe === 'Bahan Bundling Terpakai') {
+      hppBundlingLaku += nilaiHPP;
+    } else if (
+      tipe.includes('Rusak') ||
+      tipe.includes('Kadaluarsa') ||
+      tipe.includes('Hilang') ||
+      tipe.includes('Kurang')
+    ) {
+      rugiStokToko += nilaiHPP;
+      rugiRincianMap[namaBarang || 'Barang tidak diketahui'] =
+        (rugiRincianMap[namaBarang || 'Barang tidak diketahui'] || 0) + nilaiHPP;
+    }
+  });
+
   document.getElementById('pnlOmzetKotor').innerText = formatRupiah(omzetKotor);
   document.getElementById('pnlPotonganAdmin').innerText = '-' + formatRupiah(totalPotonganAdmin);
   document.getElementById('pnlTotalA').innerText = formatRupiah(totalPendapatanNet);
@@ -13443,39 +13672,11 @@ function renderLaporanPnL() {
   document.getElementById('pnlCardBersih').innerText = formatRupiah(labaBersih);
   document.getElementById('pnlCardMargin').innerText = `Margin: ${marginBersihPct.toFixed(1)}%`;
 
-  // DISTRIBUSI BAGI HASIL
-  const boxDist = document.getElementById('pnlKotakDistribusi');
-  if (labaBersih > 0) {
-    boxDist.classList.remove('hidden');
-    
-    const fixedCosts = bebanOpsLain + bebanGajiTertulis + bebanDepresiasi;
-    const baselineBuffer = (typeof bepConfig !== 'undefined' && bepConfig.baselinePct !== undefined) ? (bepConfig.baselinePct/100) : 0.1;
-    const targetBaseline = Math.round(fixedCosts + (fixedCosts * baselineBuffer));
-    
-    document.getElementById('pnlDistBaseline').innerText = formatRupiah(targetBaseline);
-
-    if (labaBersih > targetBaseline) {
-      const excess = labaBersih - targetBaseline;
-      const jmlStaff = (typeof gajiConfig !== 'undefined' && gajiConfig.daftarKaryawan) ? gajiConfig.daftarKaryawan.filter(k => k.role === 'staff').length : 2;
-      const bonusTimTotal = excess * 0.04;
-      const bonusPerStaff = Math.round(bonusTimTotal / Math.max(1, jmlStaff));
-      
-      const sisaOwnerTk = excess - bonusTimTotal;
-      const tkPorsi = Math.round(sisaOwnerTk * 0.30);
-      const ownerPorsi = Math.round(sisaOwnerTk * 0.70);
-
-      document.getElementById('pnlDistExcess').innerText = formatRupiah(excess);
-      document.getElementById('pnlDistTim').innerText = formatRupiah(bonusPerStaff) + ' /org';
-      document.getElementById('pnlDistTanganKanan').innerText = formatRupiah(tkPorsi);
-      document.getElementById('pnlDistOwner').innerText = formatRupiah(ownerPorsi);
-    } else {
-      document.getElementById('pnlDistExcess').innerText = "Belum memenuhi Baseline";
-      document.getElementById('pnlDistTim').innerText = "Rp 0";
-      document.getElementById('pnlDistTanganKanan').innerText = "Rp 0";
-      document.getElementById('pnlDistOwner').innerText = "Rp 0";
-    }
-  } else {
-    boxDist.classList.add('hidden');
+  // Distribusi sudah dihitung secara terpisah berdasarkan omzet dan baseline BEP.
+  // Jangan hitung ulang memakai labaBersih di sini.
+  renderDistribusiBagiHasilBerdasarkanOmzet();
+  } catch (err) {
+    console.error('Bagian P&L selain simulasi distribusi mengalami error:', err);
   }
 }
 
